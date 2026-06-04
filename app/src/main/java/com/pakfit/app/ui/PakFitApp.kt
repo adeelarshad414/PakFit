@@ -1,5 +1,14 @@
 package com.pakfit.app.ui
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -35,10 +44,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.pakfit.app.domain.ActivityLevel
 import com.pakfit.app.domain.AnalysisDashboard
 import com.pakfit.app.domain.AnalysisDashboardEngine
@@ -62,7 +75,11 @@ import com.pakfit.app.domain.DiabetesStatus
 import com.pakfit.app.domain.EquipmentAccess
 import com.pakfit.app.domain.FoodCategory
 import com.pakfit.app.domain.FoodItem
+import com.pakfit.app.domain.FoodPhotoCalorieEstimate
+import com.pakfit.app.domain.FoodPhotoEstimator
+import com.pakfit.app.domain.FoodPhotoPortion
 import com.pakfit.app.domain.FoodRecordEngine
+import com.pakfit.app.domain.FoodSearchEngine
 import com.pakfit.app.domain.FitnessPlan
 import com.pakfit.app.domain.Gender
 import com.pakfit.app.domain.Goal
@@ -1373,6 +1390,146 @@ private fun MentalScreeningLine(result: MentalScreeningResult) {
 }
 
 @Composable
+private fun OnlineFoodSearchCard(
+    selectedFood: FoodItem,
+    searchEngine: FoodSearchEngine
+) {
+    val context = LocalContext.current
+    var query by remember(selectedFood.id) { mutableStateOf("${selectedFood.name} ${selectedFood.serving}") }
+    var status by remember { mutableStateOf("") }
+
+    ControlCard(title = "Online Calorie Search") {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            label = { Text("Food search") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Button(
+            onClick = {
+                val url = searchEngine.buildCalorieSearchUrl(query)
+                status = openExternalUrl(context, url)
+            }
+        ) {
+            Text("Search online calories")
+        }
+        if (status.isNotBlank()) {
+            Text(status, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun FoodPhotoEstimatorCard(
+    selectedFood: FoodItem,
+    catalog: List<FoodItem>,
+    estimator: FoodPhotoEstimator,
+    searchEngine: FoodSearchEngine
+) {
+    val context = LocalContext.current
+    var capturedBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var cameraStatus by remember { mutableStateOf("No photo captured yet.") }
+    var foodHint by remember(selectedFood.id) { mutableStateOf(selectedFood.name) }
+    var portion by remember { mutableStateOf(FoodPhotoPortion.MEDIUM) }
+    var searchStatus by remember { mutableStateOf("") }
+    val estimate = estimator.estimateFromHint(
+        foodHint = foodHint.ifBlank { selectedFood.name },
+        catalog = catalog,
+        portion = portion
+    )
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        capturedBitmap = bitmap
+        cameraStatus = if (bitmap == null) {
+            "No photo captured."
+        } else {
+            "Photo captured. Estimate uses the food hint and portion."
+        }
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            cameraLauncher.launch(null)
+        } else {
+            cameraStatus = "Camera permission denied."
+        }
+    }
+
+    ControlCard(title = "Food Photo Calorie Estimate") {
+        Text(
+            text = "Capture a food photo, then confirm the food name and portion. This MVP does not run computer vision yet.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Button(
+            onClick = {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    cameraLauncher.launch(null)
+                } else {
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            }
+        ) {
+            Text("Capture food photo")
+        }
+        capturedBitmap?.let { bitmap ->
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "Captured food photo",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+        Text(cameraStatus, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        OutlinedTextField(
+            value = foodHint,
+            onValueChange = { foodHint = it },
+            label = { Text("Food hint") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        ChoiceFlow(
+            values = FoodPhotoPortion.entries,
+            selected = portion,
+            label = { it.label },
+            onSelect = { portion = it }
+        )
+        PhotoEstimateLine(estimate)
+        Button(
+            onClick = {
+                val url = searchEngine.buildCalorieSearchUrl(estimate.onlineVerificationQuery)
+                searchStatus = openExternalUrl(context, url)
+            }
+        ) {
+            Text("Verify estimate online")
+        }
+        if (searchStatus.isNotBlank()) {
+            Text(searchStatus, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun PhotoEstimateLine(estimate: FoodPhotoCalorieEstimate) {
+    Text("${estimate.foodName}: ${estimate.estimatedCalories} kcal", fontWeight = FontWeight.Bold)
+    Text("Confidence: ${estimate.confidence.label}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(estimate.message, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.76f))
+}
+
+private fun openExternalUrl(context: Context, url: String): String {
+    return runCatching {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        "Opened online calorie search."
+    }.getOrElse {
+        "No browser app was available for online search."
+    }
+}
+
+@Composable
 private fun FoodRecordCard(
     catalog: List<FoodItem>,
     selectedCategory: FoodCategory,
@@ -1406,6 +1563,8 @@ private fun FoodRecordCard(
 ) {
     val visibleFoods = catalog.filter { it.category == selectedCategory }.ifEmpty { catalog }
     val selectedFood = catalog.firstOrNull { it.id == selectedFoodId } ?: visibleFoods.first()
+    val foodSearchEngine = remember { FoodSearchEngine() }
+    val foodPhotoEstimator = remember { FoodPhotoEstimator() }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         ControlCard(title = "Desi Food Catalog") {
@@ -1427,6 +1586,18 @@ private fun FoodRecordCard(
                 onSelect = onFoodChange
             )
         }
+
+        OnlineFoodSearchCard(
+            selectedFood = selectedFood,
+            searchEngine = foodSearchEngine
+        )
+
+        FoodPhotoEstimatorCard(
+            selectedFood = selectedFood,
+            catalog = catalog,
+            estimator = foodPhotoEstimator,
+            searchEngine = foodSearchEngine
+        )
 
         ControlCard(title = "Manual Food Entry") {
             OutlinedTextField(

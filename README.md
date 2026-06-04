@@ -33,6 +33,8 @@ PakFit is a spec-first Android MVP for Pakistani health, fitness, workout, and n
 - PHQ-9 and GAD-7 mental wellness screening with severity bands, non-diagnostic copy, and safety actions
 - Pakistan crisis and emergency resources surfaced for self-harm thoughts, severe distress, or inability to stay safe
 - Daily calorie tracker with meal-level and hourly food entries, hourly intake totals, meal-wise totals, and newest-first food history
+- Online calorie search from the Tracker workflow using encoded food queries and Pakistani food context
+- Camera capture and food photo preview with portion-based calorie estimate, confidence label, and online verification path
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
 - Unit tests driven from the MVP and safety specs
 - Offline-friendly Gradle setup for the local Codex workspace
