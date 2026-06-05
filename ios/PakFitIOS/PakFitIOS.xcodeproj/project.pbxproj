@@ -13,6 +13,7 @@
 		1A0000010000000000000004 /* PakFitEngines.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000104 /* PakFitEngines.swift */; };
 		1A0000010000000000000005 /* PakFitSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000107 /* PakFitSnapshot.swift */; };
 		1A0000010000000000000006 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000108 /* PrivacyInfo.xcprivacy */; };
+		1A0000010000000000000007 /* PakFitSecureSnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000109 /* PakFitSecureSnapshotStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		1A0000010000000000000106 /* PakFitIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PakFitIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A0000010000000000000107 /* PakFitSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PakFitSnapshot.swift; sourceTree = "<group>"; };
 		1A0000010000000000000108 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1A0000010000000000000109 /* PakFitSecureSnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PakFitSecureSnapshotStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 			children = (
 				1A0000010000000000000101 /* PakFitIOSApp.swift */,
 				1A0000010000000000000102 /* PakFitScreens.swift */,
+				1A0000010000000000000109 /* PakFitSecureSnapshotStore.swift */,
 				1A0000010000000000000108 /* PrivacyInfo.xcprivacy */,
 			);
 			path = PakFitApp;
@@ -154,6 +157,7 @@
 			files = (
 				1A0000010000000000000001 /* PakFitIOSApp.swift in Sources */,
 				1A0000010000000000000002 /* PakFitScreens.swift in Sources */,
+				1A0000010000000000000007 /* PakFitSecureSnapshotStore.swift in Sources */,
 				1A0000010000000000000003 /* PakFitModels.swift in Sources */,
 				1A0000010000000000000004 /* PakFitEngines.swift in Sources */,
 				1A0000010000000000000005 /* PakFitSnapshot.swift in Sources */,

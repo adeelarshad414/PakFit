@@ -313,9 +313,9 @@ fun PakFitApp(
     var localDataStatus by remember {
         mutableStateOf(
             if (restoredSnapshot != null) {
-                "Restored a local snapshot saved at ${restoredSnapshot.savedAtIso}."
+                "Restored a secure local snapshot saved at ${restoredSnapshot.savedAtIso}."
             } else {
-                "No local snapshot saved yet. Data stays on this device until you choose an action."
+                "No secure local snapshot saved yet. Data stays on this device until you choose an action."
             }
         )
     }
@@ -716,17 +716,17 @@ fun PakFitApp(
                             } else {
                                 val snapshot = buildCurrentSnapshot()
                                 localSnapshotStore.save(snapshot)
-                                localDataStatus = "Saved local snapshot at ${snapshot.savedAtIso}."
+                                localDataStatus = "Saved encrypted local snapshot at ${snapshot.savedAtIso}."
                                 localExportPreview = ""
                             }
                         },
                         onRestore = {
                             val snapshot = localSnapshotStore.restoreOrNull()
                             if (snapshot == null) {
-                                localDataStatus = "No valid local snapshot found on this device."
+                                localDataStatus = "No valid secure local snapshot found on this device."
                             } else {
                                 applySnapshot(snapshot)
-                                localDataStatus = "Restored local snapshot saved at ${snapshot.savedAtIso}."
+                                localDataStatus = "Restored secure local snapshot saved at ${snapshot.savedAtIso}."
                                 localExportPreview = ""
                             }
                         },
@@ -737,7 +737,7 @@ fun PakFitApp(
                                 val snapshot = buildCurrentSnapshot()
                                 val payload = localSnapshotStore.export(snapshot)
                                 localExportPreview = payload.lines().take(12).joinToString("\n")
-                                localDataStatus = "Export preview generated locally. Food photo image bytes are not included."
+                                localDataStatus = "Plaintext export preview generated locally. Food photo image bytes are not included."
                             }
                         },
                         onClear = {
@@ -960,7 +960,7 @@ private fun LocalDataCard(
 ) {
     ControlCard(title = "Local Data & Privacy") {
         Text(
-            text = "Snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. It stays local unless you export it.",
+            text = "Secure snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. Export preview is plaintext and user-controlled.",
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(

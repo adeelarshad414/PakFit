@@ -2,7 +2,7 @@
 
 ## Current Data
 
-The current app stores user data only in an explicit local snapshot after required consent acknowledgements are complete. It sends no data to a backend.
+The current app stores user data only in an explicit local snapshot after required consent acknowledgements are complete. The saved snapshot is protected at rest with platform secure storage and sends no data to a backend.
 
 ## Sensitive Data Classes
 
@@ -27,6 +27,7 @@ The current app stores user data only in an explicit local snapshot after requir
 - Do not add secrets to the repository.
 - Keep analytics off until consent and schema specs exist.
 - Block local save/export until the required consent and clinical-boundary acknowledgements are complete.
+- Protect saved local snapshots at rest using Android Keystore-backed encryption on Android and Keychain-backed storage on iOS.
 - Keep food photo image bytes out of the local snapshot.
 - Keep recommendation rules deterministic and testable for the current slice.
 - Add backend auth and storage threat model before introducing APIs.

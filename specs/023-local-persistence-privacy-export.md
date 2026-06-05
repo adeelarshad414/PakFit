@@ -15,19 +15,22 @@ Close the largest production-readiness gap left in the MVP audit: app state is i
 - Provide an export payload for user-controlled backup or support review.
 - Provide a clear/delete local snapshot action.
 - Do not store food photo image bytes in the snapshot.
+- Protect the saved local snapshot at rest with platform secure storage.
 
 ## Non-Functional Requirements
 
 - Use a schema version so future migrations can reject unsupported payloads safely.
 - Keep the snapshot offline-first and local; no sync, analytics, account, or backend behavior should be implied.
+- Android should encrypt the SharedPreferences payload with an Android Keystore-backed AES-GCM key.
+- iOS should save the sensitive payload in Keychain and use UserDefaults only for non-sensitive local state or legacy migration.
 - Keep medical and mental wellness content framed as sensitive health data.
 - Keep all current app copy English-only.
 - Add unit tests for round-trip restore, summary counts, and migration rejection.
 
 ## Acceptance Evidence
 
-- Android includes a pure Kotlin snapshot codec and SharedPreferences-backed local store.
-- iOS includes a Codable snapshot path and local UserDefaults actions.
+- Android includes a pure Kotlin snapshot codec and encrypted SharedPreferences-backed local store.
+- iOS includes a Codable snapshot path and Keychain-backed local store.
 - Domain tests prove snapshot round-tripping and unsupported schema rejection.
 - Android unit tests and debug APK build pass.
 - iOS SwiftPM app compile and core smoke tests pass.

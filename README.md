@@ -38,6 +38,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Camera capture and food photo preview with portion-based calorie estimate, confidence label, and online verification path
 - iOS food photo controls for selecting an image and capturing from camera on iPhone
 - Local save/restore/export preview for profile, food logs, health markers, lifestyle inputs, mental wellness inputs, clinical risk factors, and manual foods
+- Data-at-rest protection for local snapshots using Android Keystore-backed encryption and iOS Keychain storage
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
 - iOS parity spec and Swift tests for calorie targets, food tracking, BMI, lab markers, online search, and photo estimates
@@ -92,7 +93,7 @@ REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/APK, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
-Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` for the current local-only UserDefaults snapshot behavior.
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` for current local-only UserDefaults state behavior.
 
 ## Development Rule
 

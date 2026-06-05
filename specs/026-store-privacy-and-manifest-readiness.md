@@ -7,7 +7,7 @@ Add platform privacy artifacts that align with PakFit's current local-first heal
 ## Functional Requirements
 
 - Add an iOS privacy manifest to the app target.
-- Declare `UserDefaults` required-reason API usage for app-only local snapshot storage.
+- Declare `UserDefaults` required-reason API usage for app-only local state and migration markers.
 - Declare no tracking domains and no collected data types for the current no-backend/no-analytics build.
 - Add draft privacy policy, Google Play Data safety mapping, and App Store privacy mapping.
 - Add release validation checks for the privacy manifest.

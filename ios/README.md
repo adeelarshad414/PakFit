@@ -6,7 +6,7 @@ PakFit iOS is the SwiftUI application path for the Pakistani health, fitness, wo
 
 - SwiftUI app with Dashboard, Tracker, Health, and Plan tabs.
 - Tracker photo controls for choosing a food photo and capturing from camera on iPhone.
-- Local save, restore, clear, and export-preview actions backed by UserDefaults and Codable snapshots.
+- Local save, restore, clear, and export-preview actions backed by Keychain, UserDefaults metadata, and Codable snapshots.
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots.
 - Shared `PakFitCore` Swift module for calorie targets, Pakistani food catalog, food records, BMI, lab marker flags, online search URL generation, and food photo calorie estimates.
 - Unit tests for the core engines under `ios/PakFitIOS/Tests`.

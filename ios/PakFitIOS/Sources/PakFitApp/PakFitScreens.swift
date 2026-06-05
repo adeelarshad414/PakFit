@@ -87,7 +87,7 @@ final class PakFitViewModel: ObservableObject {
     @Published var catalog: [FoodItem]
     @Published var entries: [MealEntry]
     @Published var photoEstimate: FoodPhotoCalorieEstimate
-    @Published var localDataStatus = "No local snapshot saved yet. Data stays on this device until you choose an action."
+    @Published var localDataStatus = "No secure local snapshot saved yet. Data stays on this device until you choose an action."
     @Published var localExportPreview = ""
 
     private let planEngine = PakistaniRecommendationEngine()
@@ -97,7 +97,9 @@ final class PakFitViewModel: ObservableObject {
     private let photoEstimator = FoodPhotoEstimator()
     private let snapshotCodec = PakFitSnapshotCodec()
     private let consentEngine = ConsentGovernanceEngine()
-    private let snapshotKey = "pakfit.localSnapshot"
+    private let secureSnapshotStore = PakFitSecureSnapshotStore()
+    private let legacySnapshotKey = "pakfit.localSnapshot"
+    private let snapshotStatusKey = "pakfit.localSnapshot.lastSavedAt"
     private let isoFormatter = ISO8601DateFormatter()
 
     init() {
@@ -116,9 +118,15 @@ final class PakFitViewModel: ObservableObject {
             portion: .medium
         )
 
-        if let snapshot = restoreSnapshotFromDefaults() {
+        if let snapshot = restoreSnapshotFromSecureStore() {
             apply(snapshot)
-            localDataStatus = "Restored local snapshot saved at \(snapshot.savedAtIso)."
+            localDataStatus = "Restored secure local snapshot saved at \(snapshot.savedAtIso)."
+        } else if let snapshot = restoreLegacySnapshotFromDefaults() {
+            apply(snapshot)
+            migrateLegacySnapshotToSecureStore(snapshot)
+            localDataStatus = "Migrated an older local snapshot into secure storage."
+        } else if let lastSavedAt = UserDefaults.standard.string(forKey: snapshotStatusKey) {
+            localDataStatus = "A previous local snapshot marker exists from \(lastSavedAt), but the secure payload could not be restored."
         }
     }
 
@@ -213,21 +221,22 @@ final class PakFitViewModel: ObservableObject {
         }
         let snapshot = buildSnapshot(savedAtIso: isoFormatter.string(from: Date()))
         do {
-            UserDefaults.standard.set(try snapshotCodec.encode(snapshot), forKey: snapshotKey)
-            localDataStatus = "Saved local snapshot at \(snapshot.savedAtIso)."
+            try secureSnapshotStore.save(try snapshotCodec.encode(snapshot))
+            UserDefaults.standard.set(snapshot.savedAtIso, forKey: snapshotStatusKey)
+            localDataStatus = "Saved secure local snapshot at \(snapshot.savedAtIso)."
             localExportPreview = ""
         } catch {
-            localDataStatus = "Could not save local snapshot."
+            localDataStatus = "Could not save local snapshot securely."
         }
     }
 
     func restoreLocalSnapshot() {
-        guard let snapshot = restoreSnapshotFromDefaults() else {
-            localDataStatus = "No valid local snapshot found on this device."
+        guard let snapshot = restoreSnapshotFromSecureStore() else {
+            localDataStatus = "No valid secure local snapshot found on this device."
             return
         }
         apply(snapshot)
-        localDataStatus = "Restored local snapshot saved at \(snapshot.savedAtIso)."
+        localDataStatus = "Restored secure local snapshot saved at \(snapshot.savedAtIso)."
         localExportPreview = ""
     }
 
@@ -240,15 +249,21 @@ final class PakFitViewModel: ObservableObject {
             let snapshot = buildSnapshot(savedAtIso: isoFormatter.string(from: Date()))
             let payload = try snapshotCodec.encode(snapshot)
             localExportPreview = payload.split(separator: "\n").prefix(12).joined(separator: "\n")
-            localDataStatus = "Export preview generated locally. Food photo image bytes are not included."
+            localDataStatus = "Plaintext export preview generated locally. Food photo image bytes are not included."
         } catch {
             localDataStatus = "Could not generate export preview."
         }
     }
 
     func clearLocalSnapshot() {
-        UserDefaults.standard.removeObject(forKey: snapshotKey)
-        localDataStatus = "Local saved snapshot cleared from this device."
+        do {
+            try secureSnapshotStore.clear()
+            UserDefaults.standard.removeObject(forKey: legacySnapshotKey)
+            UserDefaults.standard.removeObject(forKey: snapshotStatusKey)
+            localDataStatus = "Secure local saved snapshot cleared from this device."
+        } catch {
+            localDataStatus = "Could not clear secure local snapshot."
+        }
         localExportPreview = ""
     }
 
@@ -278,9 +293,24 @@ final class PakFitViewModel: ObservableObject {
         consentState = updated
     }
 
-    private func restoreSnapshotFromDefaults() -> PakFitUserSnapshot? {
-        guard let payload = UserDefaults.standard.string(forKey: snapshotKey) else { return nil }
+    private func restoreSnapshotFromSecureStore() -> PakFitUserSnapshot? {
+        guard let payload = secureSnapshotStore.restoreOrNil() else { return nil }
         return try? snapshotCodec.decode(payload)
+    }
+
+    private func restoreLegacySnapshotFromDefaults() -> PakFitUserSnapshot? {
+        guard let payload = UserDefaults.standard.string(forKey: legacySnapshotKey) else { return nil }
+        return try? snapshotCodec.decode(payload)
+    }
+
+    private func migrateLegacySnapshotToSecureStore(_ snapshot: PakFitUserSnapshot) {
+        do {
+            try secureSnapshotStore.save(try snapshotCodec.encode(snapshot))
+            UserDefaults.standard.set(snapshot.savedAtIso, forKey: snapshotStatusKey)
+            UserDefaults.standard.removeObject(forKey: legacySnapshotKey)
+        } catch {
+            localDataStatus = "Legacy snapshot restored, but secure migration did not finish."
+        }
     }
 
     private func buildSnapshot(savedAtIso: String) -> PakFitUserSnapshot {
@@ -727,7 +757,7 @@ struct LocalDataPanel: View {
     var body: some View {
         Panel(title: "Local Data & Privacy") {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. It stays local unless you export it.")
+                Text("Secure snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. Export preview is plaintext and user-controlled.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 
