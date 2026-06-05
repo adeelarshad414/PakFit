@@ -6,7 +6,8 @@
 - Future ViewModel tests for state behavior.
 - Future Compose UI tests for onboarding and plan review.
 - Future repository tests for persistence.
-- Future CI checks for tests, lint, build, dependency audit, and release readiness.
+- CI checks for tests, Android lint, build, release artifact evidence, and source/security gates.
+- Future dependency audit and deeper UI automation.
 
 ## Current Required Tests
 
@@ -36,6 +37,8 @@
 - Todos are generated from low meal count, low burn, health flags, and low protein progress.
 - History is sorted newest first and exposes recent records.
 - Existing Pakistani food, vegetarian, home workout, and goal behavior tests remain passing.
+- Android lintDebug and lintRelease pass before APK/AAB artifacts are accepted.
+- Release builds keep R8 minification and resource shrinking enabled.
 
 ## Acceptance Criteria
 

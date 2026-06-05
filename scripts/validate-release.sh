@@ -25,8 +25,8 @@ if ! command -v "$GRADLE_CMD" >/dev/null 2>&1 && [[ ! -x "$GRADLE_CMD" ]]; then
   exit 1
 fi
 
-echo "== Android unit tests, debug APK, release APK, and release AAB =="
-"$GRADLE_CMD" testDebugUnitTest assembleDebug assembleRelease bundleRelease
+echo "== Android unit tests, lint, debug APK, release APK, and release AAB =="
+"$GRADLE_CMD" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 
 echo "== iOS Swift core smoke tests =="
 if command -v swift >/dev/null 2>&1; then

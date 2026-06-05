@@ -9,8 +9,11 @@ RELEASE_METADATA_FILE="$ROOT_DIR/app/build/outputs/apk/release/output-metadata.j
 DEBUG_APK_FILE="${DEBUG_APK_FILE:-$ROOT_DIR/app/build/outputs/apk/debug/app-debug.apk}"
 RELEASE_APK_FILE="${RELEASE_APK_FILE:-}"
 RELEASE_AAB_FILE="${RELEASE_AAB_FILE:-$ROOT_DIR/app/build/outputs/bundle/release/app-release.aab}"
+RELEASE_MAPPING_FILE="${RELEASE_MAPPING_FILE:-$ROOT_DIR/app/build/outputs/mapping/release/mapping.txt}"
 REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/outputs/PakFit/reports}"
 PRIVACY_MANIFEST="$ROOT_DIR/ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy"
+ANDROID_BUILD_FILE="$ROOT_DIR/app/build.gradle.kts"
+IOS_PROJECT_FILE="$ROOT_DIR/ios/PakFitIOS/PakFitIOS.xcodeproj/project.pbxproj"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -106,6 +109,20 @@ apk_signature_status() {
   fi
 }
 
+gradle_flag_status() {
+  local pattern="$1"
+  if grep -q "$pattern" "$ANDROID_BUILD_FILE"; then
+    echo "enabled"
+  else
+    echo "not detected"
+  fi
+}
+
+xcode_setting_value() {
+  local key="$1"
+  sed -n "s/.*$key = \\([^;]*\\);.*/\\1/p" "$IOS_PROJECT_FILE" | head -1
+}
+
 APPLICATION_ID="$(metadata_value "$RELEASE_METADATA_FILE" applicationId)"
 DEBUG_VARIANT_NAME="$(metadata_value "$DEBUG_METADATA_FILE" variantName)"
 RELEASE_VARIANT_NAME="$(metadata_value "$RELEASE_METADATA_FILE" variantName)"
@@ -128,6 +145,22 @@ RELEASE_SIGNING_ENV_STATUS="not configured in this run"
 if [[ -n "${PAKFIT_RELEASE_STORE_FILE:-}" && -n "${PAKFIT_RELEASE_STORE_PASSWORD:-}" && -n "${PAKFIT_RELEASE_KEY_ALIAS:-}" && -n "${PAKFIT_RELEASE_KEY_PASSWORD:-}" ]]; then
   RELEASE_SIGNING_ENV_STATUS="configured from PAKFIT_RELEASE_* environment variables"
 fi
+RELEASE_MINIFY_STATUS="$(gradle_flag_status "isMinifyEnabled = true")"
+RELEASE_RESOURCE_SHRINK_STATUS="$(gradle_flag_status "isShrinkResources = true")"
+RELEASE_PROGUARD_STATUS="not detected"
+if [[ -f "$ROOT_DIR/app/proguard-rules.pro" ]] && grep -q "proguard-android-optimize.txt" "$ANDROID_BUILD_FILE"; then
+  RELEASE_PROGUARD_STATUS="default optimized rules plus app/proguard-rules.pro"
+fi
+RELEASE_MAPPING_STATUS="missing"
+RELEASE_MAPPING_BYTES=""
+RELEASE_MAPPING_SHA256=""
+if [[ -f "$RELEASE_MAPPING_FILE" ]]; then
+  RELEASE_MAPPING_STATUS="$RELEASE_MAPPING_FILE"
+  RELEASE_MAPPING_BYTES="$(wc -c < "$RELEASE_MAPPING_FILE" | tr -d ' ')"
+  RELEASE_MAPPING_SHA256="$(sha256_file "$RELEASE_MAPPING_FILE")"
+fi
+IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
+IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 REPORT_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -182,6 +215,14 @@ mkdir -p "$REPORT_DIR"
   echo "- APK SHA-256: $RELEASE_APK_SHA256"
   echo "- APK signature status: $RELEASE_APK_SIGNATURE_STATUS"
   echo "- Release signing environment: $RELEASE_SIGNING_ENV_STATUS"
+  echo "- R8 minification: $RELEASE_MINIFY_STATUS"
+  echo "- Resource shrinking: $RELEASE_RESOURCE_SHRINK_STATUS"
+  echo "- ProGuard/R8 rules: $RELEASE_PROGUARD_STATUS"
+  echo "- R8 mapping path: $RELEASE_MAPPING_STATUS"
+  if [[ -n "$RELEASE_MAPPING_BYTES" ]]; then
+    echo "- R8 mapping bytes: $RELEASE_MAPPING_BYTES"
+    echo "- R8 mapping SHA-256: $RELEASE_MAPPING_SHA256"
+  fi
   echo
   echo "### Release Android App Bundle"
   echo
@@ -193,13 +234,15 @@ mkdir -p "$REPORT_DIR"
   echo
   echo "- Swift package: ios/PakFitIOS/Package.swift"
   echo "- Xcode project: ios/PakFitIOS/PakFitIOS.xcodeproj"
+  echo "- Marketing version: ${IOS_MARKETING_VERSION:-not detected}"
+  echo "- Build version: ${IOS_BUILD_VERSION:-not detected}"
   echo "- Privacy manifest: $PRIVACY_MANIFEST_STATUS"
   echo "- Required reason API declared: NSPrivacyAccessedAPICategoryUserDefaults / CA92.1"
   echo
   echo "## Validation Gate"
   echo
   echo "- Local command: bash scripts/validate-release.sh"
-  echo "- Android: testDebugUnitTest, assembleDebug, assembleRelease, and bundleRelease"
+  echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"
   echo "- Source gates: English-only app source and secret-pattern smoke check"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"

@@ -9,6 +9,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Generate a Markdown release report after debug and release Android artifacts are built.
 - Include Android application ID, debug/release variants, version name, version code, artifact paths, sizes, and SHA-256 checksums.
 - Include release APK signing verification status when `apksigner` is available.
+- Include release minification, resource shrinking, ProGuard/R8 rules, and mapping file checksum evidence.
 - Include release AAB path, size, and SHA-256.
 - Include git branch, git SHA, and worktree status.
 - Include iOS Swift package/Xcode project paths and privacy manifest status.
@@ -25,4 +26,5 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 
 - `scripts/generate-release-report.sh` creates a report after `scripts/validate-release.sh`.
 - The report includes debug APK, release APK, and release AAB SHA-256 values plus vended metadata from `output-metadata.json`.
+- The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - GitHub Actions uploads release evidence reports as artifacts.

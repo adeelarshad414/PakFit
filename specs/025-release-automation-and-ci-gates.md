@@ -6,9 +6,9 @@ Move PakFit from manual-only validation toward repeatable production release evi
 
 ## Functional Requirements
 
-- Provide a local release validation script that runs Android unit tests, builds debug APK, release APK, and release AAB artifacts, runs the iOS Swift smoke suite, compiles the SwiftUI app target, and checks English-only app source.
+- Provide a local release validation script that runs Android unit tests, Android debug/release lint, builds debug APK, release APK, and release AAB artifacts, runs the iOS Swift smoke suite, compiles the SwiftUI app target, and checks English-only app source.
 - Provide export scripts that copy the built debug APK, release APK, and release AAB to versioned destinations using build metadata.
-- Add GitHub Actions CI for Android unit tests plus debug APK, release APK, and release AAB artifact upload.
+- Add GitHub Actions CI for Android unit tests, lint, debug APK, release APK, and release AAB artifact upload.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
 - Add source quality gates for English-only app source and obvious hardcoded secret patterns.
 
@@ -22,6 +22,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 ## Acceptance Evidence
 
 - `scripts/validate-release.sh` passes locally.
+- `lintDebug` and `lintRelease` are part of the required validation path.
 - `scripts/export-android-debug-apk.sh` can export a versioned debug APK after validation.
 - `scripts/export-android-release-artifacts.sh` can export versioned release APK and AAB artifacts after validation.
 - `.github/workflows/pakfit-ci.yml` defines Android, iOS Swift, and source-gate jobs.

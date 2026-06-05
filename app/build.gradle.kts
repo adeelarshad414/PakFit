@@ -26,8 +26,8 @@ android {
         applicationId = "com.pakfit.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 14
-        versionName = "0.14.0"
+        versionCode = 15
+        versionName = "0.15.0"
     }
 
     buildFeatures {
@@ -57,10 +57,21 @@ android {
 
     buildTypes {
         getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             if (hasReleaseSigning) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+    }
+
+    lint {
+        abortOnError = true
+        checkReleaseBuilds = true
     }
 
     compileOptions {
