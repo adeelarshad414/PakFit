@@ -11,6 +11,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add GitHub Actions CI for Android unit tests, lint, debug APK, release APK, and release AAB artifact upload.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
 - Add source quality gates for English-only app source and obvious hardcoded secret patterns.
+- Add platform privacy gates for iOS privacy manifest and Android backup/data-extraction posture.
 
 ## Non-Functional Requirements
 
@@ -23,6 +24,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 
 - `scripts/validate-release.sh` passes locally.
 - `lintDebug` and `lintRelease` are part of the required validation path.
+- Android Auto Backup and sensitive snapshot backup/data-extraction exclusions are part of the required validation path.
 - `scripts/export-android-debug-apk.sh` can export a versioned debug APK after validation.
 - `scripts/export-android-release-artifacts.sh` can export versioned release APK and AAB artifacts after validation.
 - `.github/workflows/pakfit-ci.yml` defines Android, iOS Swift, and source-gate jobs.

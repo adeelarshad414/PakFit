@@ -11,6 +11,7 @@ This draft maps current PakFit behavior to a Google Play Data safety form. It mu
 - No advertising SDK.
 - Sensitive profile, health, food, lifestyle, mental wellness, clinical risk, consent, and manual food data stays local to the device.
 - Saved Android snapshot payloads are encrypted with an Android Keystore-backed AES-GCM key.
+- Android Auto Backup is disabled, and backup/data-extraction rules exclude the sensitive local snapshot preference.
 - Food photo image bytes are not stored in local snapshots.
 - Online calorie search opens an external web search controlled by the user.
 
@@ -35,6 +36,7 @@ For this repository state:
 
 - Local snapshot save/export requires consent acknowledgements.
 - Saved local snapshots are protected at rest with platform secure storage.
+- Android cloud backup/device-transfer restore of the sensitive local snapshot is not supported by this build; user-controlled export remains the explicit backup path.
 - Data can be cleared locally by the user.
 - No secrets, analytics keys, or backend credentials are present in the app.
 

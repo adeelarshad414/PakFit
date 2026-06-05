@@ -39,6 +39,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - iOS food photo controls for selecting an image and capturing from camera on iPhone
 - Local save/restore/export preview for profile, food logs, health markers, lifestyle inputs, mental wellness inputs, clinical risk factors, and manual foods
 - Data-at-rest protection for local snapshots using Android Keystore-backed encryption and iOS Keychain storage
+- Android Auto Backup disabled with explicit backup/data-extraction exclusions for sensitive local snapshot storage
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance

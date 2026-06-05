@@ -12,7 +12,7 @@ PakFit can handle profile details, goals, activity level, diet pattern, training
 
 The current app stores sensitive data only on the user's device after required consent acknowledgements are complete. Local snapshots can include profile, health markers, food logs, lifestyle inputs, mental wellness inputs, clinical risk factors, consent state, and manual food items.
 
-Saved local snapshots are protected at rest with platform storage controls: Android uses an Android Keystore-backed encrypted payload, and iOS stores the sensitive snapshot payload in Keychain.
+Saved local snapshots are protected at rest with platform storage controls: Android uses an Android Keystore-backed encrypted payload, and iOS stores the sensitive snapshot payload in Keychain. Android Auto Backup is disabled for the app, and Android backup/data-extraction rules explicitly exclude the sensitive local snapshot preference.
 
 Food photo image bytes are not saved in the local snapshot.
 

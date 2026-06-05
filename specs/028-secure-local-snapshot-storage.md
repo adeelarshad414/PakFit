@@ -8,6 +8,7 @@ Protect PakFit's sensitive local health snapshot at rest on both Android and iOS
 
 - Android saves local snapshots as encrypted payloads in SharedPreferences.
 - Android encryption uses an Android Keystore-backed AES-GCM key.
+- Android disables Auto Backup and excludes the sensitive snapshot preference from backup/data-extraction rules.
 - Android can restore legacy plaintext snapshots and rewrites them encrypted after successful restore.
 - iOS saves the sensitive snapshot payload in Keychain.
 - iOS uses UserDefaults only for non-sensitive local state and legacy plaintext migration markers.

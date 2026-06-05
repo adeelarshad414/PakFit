@@ -28,6 +28,7 @@ The current app stores user data only in an explicit local snapshot after requir
 - Keep analytics off until consent and schema specs exist.
 - Block local save/export until the required consent and clinical-boundary acknowledgements are complete.
 - Protect saved local snapshots at rest using Android Keystore-backed encryption on Android and Keychain-backed storage on iOS.
+- Disable Android Auto Backup and exclude sensitive local snapshot storage from Android backup/data-extraction rules.
 - Keep food photo image bytes out of the local snapshot.
 - Keep recommendation rules deterministic and testable for the current slice.
 - Add backend auth and storage threat model before introducing APIs.

@@ -33,6 +33,7 @@
 
 - Sensitive health data remains local to the device.
 - Saved local snapshots must use platform secure storage for data-at-rest protection.
+- Android Auto Backup must remain disabled, and backup/data-extraction rules must exclude sensitive local snapshot storage.
 - Local save/export requires consent and clinical-boundary acknowledgements.
 - Food photo image bytes are not saved in the local snapshot.
 - No analytics are emitted; optional analytics remains future-gated by explicit opt-in, schema, and privacy notice.

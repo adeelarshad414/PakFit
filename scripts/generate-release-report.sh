@@ -13,6 +13,9 @@ RELEASE_MAPPING_FILE="${RELEASE_MAPPING_FILE:-$ROOT_DIR/app/build/outputs/mappin
 REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/outputs/PakFit/reports}"
 PRIVACY_MANIFEST="$ROOT_DIR/ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy"
 ANDROID_BUILD_FILE="$ROOT_DIR/app/build.gradle.kts"
+ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
+ANDROID_BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"
+ANDROID_DATA_EXTRACTION_RULES="$ROOT_DIR/app/src/main/res/xml/data_extraction_rules.xml"
 IOS_PROJECT_FILE="$ROOT_DIR/ios/PakFitIOS/PakFitIOS.xcodeproj/project.pbxproj"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
@@ -118,6 +121,16 @@ gradle_flag_status() {
   fi
 }
 
+file_pattern_status() {
+  local file="$1"
+  local pattern="$2"
+  if [[ -f "$file" ]] && grep -q "$pattern" "$file"; then
+    echo "present"
+  else
+    echo "not detected"
+  fi
+}
+
 xcode_setting_value() {
   local key="$1"
   sed -n "s/.*$key = \\([^;]*\\);.*/\\1/p" "$IOS_PROJECT_FILE" | head -1
@@ -159,6 +172,16 @@ if [[ -f "$RELEASE_MAPPING_FILE" ]]; then
   RELEASE_MAPPING_BYTES="$(wc -c < "$RELEASE_MAPPING_FILE" | tr -d ' ')"
   RELEASE_MAPPING_SHA256="$(sha256_file "$RELEASE_MAPPING_FILE")"
 fi
+ANDROID_AUTO_BACKUP_STATUS="not disabled"
+if [[ "$(file_pattern_status "$ANDROID_MANIFEST" 'android:allowBackup="false"')" == "present" ]]; then
+  ANDROID_AUTO_BACKUP_STATUS="disabled"
+fi
+ANDROID_BACKUP_RULES_STATUS="$(file_pattern_status "$ANDROID_MANIFEST" 'android:fullBackupContent="@xml/backup_rules"')"
+ANDROID_DATA_EXTRACTION_STATUS="$(file_pattern_status "$ANDROID_MANIFEST" 'android:dataExtractionRules="@xml/data_extraction_rules"')"
+ANDROID_BACKUP_SNAPSHOT_EXCLUSION="$(file_pattern_status "$ANDROID_BACKUP_RULES" 'pakfit_local_snapshot.xml')"
+ANDROID_EXTRACTION_SNAPSHOT_EXCLUSION="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" 'pakfit_local_snapshot.xml')"
+ANDROID_CLOUD_BACKUP_RULE="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" '<cloud-backup')"
+ANDROID_DEVICE_TRANSFER_RULE="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" '<device-transfer>')"
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
@@ -199,6 +222,13 @@ mkdir -p "$REPORT_DIR"
   echo "- Application ID: $APPLICATION_ID"
   echo "- Version name: $VERSION_NAME"
   echo "- Version code: $VERSION_CODE"
+  echo "- Android Auto Backup: $ANDROID_AUTO_BACKUP_STATUS"
+  echo "- Full backup rules reference: $ANDROID_BACKUP_RULES_STATUS"
+  echo "- Data extraction rules reference: $ANDROID_DATA_EXTRACTION_STATUS"
+  echo "- Sensitive snapshot backup exclusion: $ANDROID_BACKUP_SNAPSHOT_EXCLUSION"
+  echo "- Sensitive snapshot data-extraction exclusion: $ANDROID_EXTRACTION_SNAPSHOT_EXCLUSION"
+  echo "- Cloud backup rule block: $ANDROID_CLOUD_BACKUP_RULE"
+  echo "- Device transfer rule block: $ANDROID_DEVICE_TRANSFER_RULE"
   echo
   echo "### Debug APK"
   echo
@@ -246,6 +276,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"
   echo "- Source gates: English-only app source and secret-pattern smoke check"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
+  echo "- Android backup privacy gate: Auto Backup disabled and sensitive snapshot exclusions checked"
   echo
   echo "## Release Boundaries"
   echo

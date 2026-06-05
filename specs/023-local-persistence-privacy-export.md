@@ -22,6 +22,7 @@ Close the largest production-readiness gap left in the MVP audit: app state is i
 - Use a schema version so future migrations can reject unsupported payloads safely.
 - Keep the snapshot offline-first and local; no sync, analytics, account, or backend behavior should be implied.
 - Android should encrypt the SharedPreferences payload with an Android Keystore-backed AES-GCM key.
+- Android Auto Backup should be disabled, and backup/data-extraction XML should exclude `pakfit_local_snapshot.xml`.
 - iOS should save the sensitive payload in Keychain and use UserDefaults only for non-sensitive local state or legacy migration.
 - Keep medical and mental wellness content framed as sensitive health data.
 - Keep all current app copy English-only.

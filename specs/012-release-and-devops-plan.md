@@ -73,6 +73,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Run English-only source check.
 - Run basic hardcoded secret-pattern smoke check.
 - Validate iOS privacy manifest format and UserDefaults required-reason declaration.
+- Validate Android Auto Backup is disabled and sensitive snapshot backup/data-extraction exclusions exist.
 - Store APK artifact.
 - Keep Android release minification and resource shrinking enabled.
 - Keep signing secrets out of source control and inject Android release signing through secure CI/local environment variables.
@@ -87,6 +88,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - APK version metadata updated for meaningful MVP revisions.
 - Health safety reviewed.
 - Privacy/security notes reviewed.
+- Android platform backup privacy gate passing.
 - No secrets in repository.
 
 ## Acceptance Criteria

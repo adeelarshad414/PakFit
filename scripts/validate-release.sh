@@ -58,6 +58,41 @@ if ! grep -q "CA92.1" "$PRIVACY_MANIFEST"; then
   exit 1
 fi
 
+echo "== Android backup privacy gate =="
+ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
+BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"
+DATA_EXTRACTION_RULES="$ROOT_DIR/app/src/main/res/xml/data_extraction_rules.xml"
+if ! grep -q 'android:allowBackup="false"' "$ANDROID_MANIFEST"; then
+  echo "Android Auto Backup must stay disabled for sensitive local health snapshots." >&2
+  exit 1
+fi
+if ! grep -q 'android:fullBackupContent="@xml/backup_rules"' "$ANDROID_MANIFEST"; then
+  echo "Android manifest must reference backup_rules.xml." >&2
+  exit 1
+fi
+if ! grep -q 'android:dataExtractionRules="@xml/data_extraction_rules"' "$ANDROID_MANIFEST"; then
+  echo "Android manifest must reference data_extraction_rules.xml." >&2
+  exit 1
+fi
+for backup_file in "$BACKUP_RULES" "$DATA_EXTRACTION_RULES"; do
+  if [[ ! -f "$backup_file" ]]; then
+    echo "Missing Android backup privacy file: $backup_file" >&2
+    exit 1
+  fi
+  if ! grep -q 'pakfit_local_snapshot.xml' "$backup_file"; then
+    echo "Android backup privacy file must exclude pakfit_local_snapshot.xml: $backup_file" >&2
+    exit 1
+  fi
+done
+if ! grep -q '<cloud-backup' "$DATA_EXTRACTION_RULES"; then
+  echo "Android data extraction rules must define cloud-backup behavior." >&2
+  exit 1
+fi
+if ! grep -q '<device-transfer>' "$DATA_EXTRACTION_RULES"; then
+  echo "Android data extraction rules must define device-transfer behavior." >&2
+  exit 1
+fi
+
 echo "== English-only app source check =="
 if command -v rg >/dev/null 2>&1; then
   if rg -n "Urdu|اردو|[\u0600-\u06FF]" README.md app/src ios; then
