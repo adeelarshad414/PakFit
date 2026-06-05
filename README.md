@@ -91,6 +91,8 @@ OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/APK, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` for the current local-only UserDefaults snapshot behavior.
+
 ## Development Rule
 
 Every new feature should start in `specs/`, then become a failing domain test, then move into implementation and UI. This keeps the agent loop measurable and prevents the app from becoming generic fitness advice.

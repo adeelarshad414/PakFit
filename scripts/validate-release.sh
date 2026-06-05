@@ -40,6 +40,24 @@ else
   exit 1
 fi
 
+echo "== iOS privacy manifest =="
+PRIVACY_MANIFEST="$ROOT_DIR/ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy"
+if [[ ! -f "$PRIVACY_MANIFEST" ]]; then
+  echo "Missing iOS privacy manifest: $PRIVACY_MANIFEST" >&2
+  exit 1
+fi
+if command -v plutil >/dev/null 2>&1; then
+  plutil -lint "$PRIVACY_MANIFEST"
+fi
+if ! grep -q "NSPrivacyAccessedAPICategoryUserDefaults" "$PRIVACY_MANIFEST"; then
+  echo "Privacy manifest must declare UserDefaults required-reason API usage." >&2
+  exit 1
+fi
+if ! grep -q "CA92.1" "$PRIVACY_MANIFEST"; then
+  echo "Privacy manifest must declare CA92.1 for app-only UserDefaults storage." >&2
+  exit 1
+fi
+
 echo "== English-only app source check =="
 if command -v rg >/dev/null 2>&1; then
   if rg -n "Urdu|اردو|[\u0600-\u06FF]" README.md app/src ios; then
@@ -47,7 +65,7 @@ if command -v rg >/dev/null 2>&1; then
     exit 1
   fi
   echo "== Secret-pattern smoke check =="
-  if rg -n "(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]+" README.md app ios specs scripts .github; then
+  if rg -n "(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]+" README.md app ios specs scripts docs .github; then
     echo "Potential hardcoded secret detected." >&2
     exit 1
   fi

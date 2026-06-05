@@ -17,7 +17,10 @@ let package = Package(
         .target(name: "PakFitCore"),
         .executableTarget(
             name: "PakFitApp",
-            dependencies: ["PakFitCore"]
+            dependencies: ["PakFitCore"],
+            resources: [
+                .copy("PrivacyInfo.xcprivacy")
+            ]
         ),
         .executableTarget(
             name: "PakFitCoreSmokeTests",

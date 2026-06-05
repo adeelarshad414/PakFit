@@ -39,6 +39,7 @@ OUTPUT_DIR=/path/to/output bash scripts/export-android-debug-apk.sh
 - Compile the SwiftUI app target.
 - Run English-only source check.
 - Run basic hardcoded secret-pattern smoke check.
+- Validate iOS privacy manifest format and UserDefaults required-reason declaration.
 - Store APK artifact.
 - Add release signing only after secure secret storage is configured.
 
