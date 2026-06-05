@@ -42,6 +42,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Android Auto Backup disabled with explicit backup/data-extraction exclusions for sensitive local snapshot storage
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
+- Offline dependency inventory with dynamic/SNAPSHOT dependency gate for Android and Swift package posture
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
 - iOS parity spec and Swift tests for calorie targets, food tracking, BMI, lab markers, online search, and photo estimates
 - Unit tests driven from the MVP and safety specs
@@ -108,10 +109,11 @@ This Codex machine currently has Command Line Tools selected instead of full Xco
 bash scripts/validate-release.sh
 OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-debug-apk.sh
 OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-release-artifacts.sh
+REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/reports bash scripts/generate-dependency-inventory.sh
 REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/reports bash scripts/generate-release-report.sh
 ```
 
-GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
+GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
 Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` for current local-only UserDefaults state behavior.
 

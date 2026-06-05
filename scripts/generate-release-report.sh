@@ -11,6 +11,7 @@ RELEASE_APK_FILE="${RELEASE_APK_FILE:-}"
 RELEASE_AAB_FILE="${RELEASE_AAB_FILE:-$ROOT_DIR/app/build/outputs/bundle/release/app-release.aab}"
 RELEASE_MAPPING_FILE="${RELEASE_MAPPING_FILE:-$ROOT_DIR/app/build/outputs/mapping/release/mapping.txt}"
 REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/outputs/PakFit/reports}"
+DEPENDENCY_DIR="${DEPENDENCY_DIR:-$REPORT_DIR/dependencies}"
 PRIVACY_MANIFEST="$ROOT_DIR/ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy"
 ANDROID_BUILD_FILE="$ROOT_DIR/app/build.gradle.kts"
 ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
@@ -182,6 +183,25 @@ ANDROID_BACKUP_SNAPSHOT_EXCLUSION="$(file_pattern_status "$ANDROID_BACKUP_RULES"
 ANDROID_EXTRACTION_SNAPSHOT_EXCLUSION="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" 'pakfit_local_snapshot.xml')"
 ANDROID_CLOUD_BACKUP_RULE="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" '<cloud-backup')"
 ANDROID_DEVICE_TRANSFER_RULE="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" '<device-transfer>')"
+DEPENDENCY_REPORT_FILE="$REPORT_DIR/PakFit-v${VERSION_NAME}-dependency-inventory.md"
+ANDROID_RELEASE_DEPENDENCY_TREE="$DEPENDENCY_DIR/PakFit-v${VERSION_NAME}-android-releaseRuntimeClasspath.txt"
+IOS_DEPENDENCY_FILE="$DEPENDENCY_DIR/PakFit-v${VERSION_NAME}-ios-swift-package-dependencies.txt"
+DEPENDENCY_REPORT_STATUS="missing"
+DEPENDENCY_REPORT_BYTES=""
+DEPENDENCY_REPORT_SHA256=""
+ANDROID_RELEASE_DEPENDENCY_SHA256=""
+IOS_DEPENDENCY_SHA256=""
+if [[ -f "$DEPENDENCY_REPORT_FILE" ]]; then
+  DEPENDENCY_REPORT_STATUS="$DEPENDENCY_REPORT_FILE"
+  DEPENDENCY_REPORT_BYTES="$(wc -c < "$DEPENDENCY_REPORT_FILE" | tr -d ' ')"
+  DEPENDENCY_REPORT_SHA256="$(sha256_file "$DEPENDENCY_REPORT_FILE")"
+fi
+if [[ -f "$ANDROID_RELEASE_DEPENDENCY_TREE" ]]; then
+  ANDROID_RELEASE_DEPENDENCY_SHA256="$(sha256_file "$ANDROID_RELEASE_DEPENDENCY_TREE")"
+fi
+if [[ -f "$IOS_DEPENDENCY_FILE" ]]; then
+  IOS_DEPENDENCY_SHA256="$(sha256_file "$IOS_DEPENDENCY_FILE")"
+fi
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
@@ -260,6 +280,19 @@ mkdir -p "$REPORT_DIR"
   echo "- AAB bytes: $RELEASE_AAB_BYTES"
   echo "- AAB SHA-256: $RELEASE_AAB_SHA256"
   echo
+  echo "## Dependency Inventory"
+  echo
+  echo "- Inventory report: $DEPENDENCY_REPORT_STATUS"
+  if [[ -n "$DEPENDENCY_REPORT_BYTES" ]]; then
+    echo "- Inventory report bytes: $DEPENDENCY_REPORT_BYTES"
+    echo "- Inventory report SHA-256: $DEPENDENCY_REPORT_SHA256"
+  fi
+  echo "- Android release dependency tree: $ANDROID_RELEASE_DEPENDENCY_TREE"
+  echo "- Android release dependency tree SHA-256: ${ANDROID_RELEASE_DEPENDENCY_SHA256:-missing}"
+  echo "- iOS Swift package dependency file: $IOS_DEPENDENCY_FILE"
+  echo "- iOS Swift package dependency SHA-256: ${IOS_DEPENDENCY_SHA256:-missing}"
+  echo "- Dependency gate: dynamic and SNAPSHOT dependency declarations are blocked by scripts/generate-dependency-inventory.sh"
+  echo
   echo "## iOS"
   echo
   echo "- Swift package: ios/PakFitIOS/Package.swift"
@@ -273,6 +306,7 @@ mkdir -p "$REPORT_DIR"
   echo
   echo "- Local command: bash scripts/validate-release.sh"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
+  echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"
   echo "- Source gates: English-only app source and secret-pattern smoke check"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
@@ -284,6 +318,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Unsigned release APKs and locally generated AABs are build evidence, not store-submission proof."
   echo "- Play Console submission still requires upload-key signing verification and store track validation."
   echo "- iOS simulator/archive/signing still requires full Xcode.app and signing assets."
+  echo "- Live vulnerability advisory scanning still requires a network-enabled scanner or dependency review service."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

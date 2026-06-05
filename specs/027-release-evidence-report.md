@@ -13,6 +13,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include release AAB path, size, and SHA-256.
 - Include git branch, git SHA, and worktree status.
 - Include Android Auto Backup and backup/data-extraction sensitive snapshot exclusion status.
+- Include dependency inventory report path, checksums, and dynamic/SNAPSHOT dependency gate status.
 - Include iOS Swift package/Xcode project paths and privacy manifest status.
 - Include the exact release validation command and gates.
 - State release boundaries for Android upload-key signing, Play Console validation, iOS signing, and legal/privacy review.
@@ -29,4 +30,5 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes debug APK, release APK, and release AAB SHA-256 values plus vended metadata from `output-metadata.json`.
 - The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - The report includes Android backup privacy status.
+- The report includes dependency inventory status and checksums.
 - GitHub Actions uploads release evidence reports as artifacts.

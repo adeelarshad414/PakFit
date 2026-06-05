@@ -28,6 +28,9 @@ fi
 echo "== Android unit tests, lint, debug APK, release APK, and release AAB =="
 "$GRADLE_CMD" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 
+echo "== Dependency inventory gate =="
+GRADLE_CMD="$GRADLE_CMD" bash scripts/generate-dependency-inventory.sh
+
 echo "== iOS Swift core smoke tests =="
 if command -v swift >/dev/null 2>&1; then
   (

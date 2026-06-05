@@ -36,6 +36,9 @@ jobs:
       - name: Run Android unit tests, lint, and assemble APK/AAB artifacts
         run: gradle testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 
+      - name: Generate dependency inventory
+        run: bash scripts/generate-dependency-inventory.sh
+
       - name: Generate release evidence report
         run: bash scripts/generate-release-report.sh
 
@@ -64,7 +67,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PakFit-release-evidence
-          path: outputs/PakFit/reports/*.md
+          path: |
+            outputs/PakFit/reports/*.md
+            outputs/PakFit/reports/dependencies/*.txt
           if-no-files-found: error
 
   ios-swift:

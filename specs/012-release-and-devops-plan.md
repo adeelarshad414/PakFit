@@ -63,6 +63,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 
 - Run unit tests.
 - Run Android debug and release lint.
+- Generate dependency inventory and fail dynamic/SNAPSHOT dependency declarations.
 - Build debug APK.
 - Build release APK and Android App Bundle.
 - Upload debug APK artifact.
@@ -83,6 +84,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Specs updated.
 - Tests passing.
 - Android lint passing.
+- Dependency inventory gate passing.
 - Debug APK, release APK, and release AAB build.
 - Release APK uses R8 minification and resource shrinking.
 - APK version metadata updated for meaningful MVP revisions.
@@ -105,3 +107,10 @@ Given the Android release build runs
 When validation completes
 Then lintDebug and lintRelease have passed
 And the release build uses R8 minification and resource shrinking
+
+### Scenario: Dependency inventory is reproducible
+
+Given the release validation command runs
+When dependency inventory is generated
+Then dynamic and SNAPSHOT dependencies are blocked
+And Android and Swift dependency inventory files are recorded in release evidence
