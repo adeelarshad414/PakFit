@@ -37,6 +37,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Online calorie search from the Tracker workflow using encoded food queries and Pakistani food context
 - Camera capture and food photo preview with portion-based calorie estimate, confidence label, and online verification path
 - iOS food photo controls for selecting an image and capturing from camera on iPhone
+- Local save/restore/export preview for profile, food logs, health markers, lifestyle inputs, mental wellness inputs, clinical risk factors, and manual foods
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
 - iOS parity spec and Swift tests for calorie targets, food tracking, BMI, lab markers, online search, and photo estimates
 - Unit tests driven from the MVP and safety specs

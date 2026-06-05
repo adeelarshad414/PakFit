@@ -93,6 +93,53 @@ func runPakFitCoreSmokeTests() throws {
     try expect(highConfidence.confidence == .high, "catalog photo estimate should be high confidence")
     try expect(lowConfidence.estimatedCalories == 180, "unknown small portion should use fallback calories")
     try expect(lowConfidence.confidence == .low, "unknown photo estimate should be low confidence")
+
+    let snapshot = PakFitUserSnapshot(
+        savedAtIso: "2026-06-05T15:00:00Z",
+        profile: planProfile,
+        labProfile: LabProfile(
+            totalCholesterolMgDl: 220,
+            ldlMgDl: 130,
+            hdlMgDl: 38,
+            triglyceridesMgDl: 180,
+            uricAcidMgDl: 8.4,
+            fastingBloodSugarMgDl: 140,
+            systolicBpMmHg: 142,
+            diastolicBpMmHg: 90,
+            hba1cPercent: 6.7,
+            hemoglobinGdl: 13.5,
+            diabetesStatus: .diabetes
+        ),
+        dailyRecord: DailyFoodRecord(
+            date: "2026-06-05",
+            mealEntries: tracker.entriesNewestFirst,
+            caloriesBurned: 400
+        ),
+        lifestyleRecord: DailyLifestyleRecord(
+            waterLiters: 2.4,
+            steps: 7_200,
+            sleepHours: 6.8,
+            workoutMinutes: 35,
+            stressLevel: 2
+        ),
+        mentalWellnessInput: MentalWellnessInput(
+            phq9Score: 8,
+            gad7Score: 6,
+            supportFlags: [.panicOrSevereDistress],
+            panicOrSevereDistress: true
+        ),
+        clinicalRiskFactors: [.familyHistoryDiabetes, .highSaltIntake],
+        manualFoodItems: [manual]
+    )
+    let snapshotCodec = PakFitSnapshotCodec()
+    let payload = try snapshotCodec.encode(snapshot)
+    let decoded = try snapshotCodec.decode(payload)
+    let summary = snapshotCodec.summary(decoded)
+    try expect(decoded == snapshot, "snapshot should round-trip through Codable JSON")
+    try expect(summary.mealEntries == 3, "snapshot summary should count meal entries")
+    try expect(summary.manualFoodItems == 1, "snapshot summary should count manual food")
+    try expect(summary.healthMarkerValues == 11, "snapshot summary should count health marker values")
+    try expect(!payload.localizedCaseInsensitiveContains("imageBytes"), "snapshot should not include food photo bytes")
 }
 
 do {

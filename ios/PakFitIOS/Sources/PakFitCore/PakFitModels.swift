@@ -1,17 +1,17 @@
 import Foundation
 
-public enum Gender: String, CaseIterable, Hashable {
+public enum Gender: String, CaseIterable, Hashable, Codable {
     case female = "Female"
     case male = "Male"
 }
 
-public enum Goal: String, CaseIterable, Hashable {
+public enum Goal: String, CaseIterable, Hashable, Codable {
     case fatLoss = "Fat loss"
     case muscleGain = "Muscle gain"
     case generalFitness = "General fitness"
 }
 
-public enum ActivityLevel: String, CaseIterable, Hashable {
+public enum ActivityLevel: String, CaseIterable, Hashable, Codable {
     case sedentary = "Mostly sitting"
     case light = "Walks sometimes"
     case active = "Active routine"
@@ -28,18 +28,18 @@ public enum ActivityLevel: String, CaseIterable, Hashable {
     }
 }
 
-public enum DietPattern: String, CaseIterable, Hashable {
+public enum DietPattern: String, CaseIterable, Hashable, Codable {
     case halalOmnivore = "Halal omnivore"
     case vegetarian = "Vegetarian"
     case eggFriendly = "Egg friendly"
 }
 
-public enum TrainingPlace: String, CaseIterable, Hashable {
+public enum TrainingPlace: String, CaseIterable, Hashable, Codable {
     case home = "Home"
     case gym = "Gym"
 }
 
-public enum LifestyleMode: String, CaseIterable, Hashable {
+public enum LifestyleMode: String, CaseIterable, Hashable, Codable {
     case ramadanFasting = "Ramadan fasting"
     case daawatOrWedding = "Daawat or wedding week"
     case budgetFriendly = "Budget-friendly"
@@ -47,7 +47,7 @@ public enum LifestyleMode: String, CaseIterable, Hashable {
     case eatingOut = "Eating out"
 }
 
-public enum EquipmentAccess: String, CaseIterable, Hashable {
+public enum EquipmentAccess: String, CaseIterable, Hashable, Codable {
     case walkingRoute = "Walking route"
     case noEquipment = "No equipment"
     case dumbbells = "Dumbbells"
@@ -55,7 +55,7 @@ public enum EquipmentAccess: String, CaseIterable, Hashable {
     case gymMachines = "Gym machines"
 }
 
-public enum MedicalCaution: String, CaseIterable, Hashable {
+public enum MedicalCaution: String, CaseIterable, Hashable, Codable {
     case pregnancy = "Pregnancy"
     case diabetesMedication = "Diabetes medication"
     case heartSymptoms = "Heart symptoms"
@@ -65,7 +65,7 @@ public enum MedicalCaution: String, CaseIterable, Hashable {
     case kneeOrJointLimitation = "Knee pain or joint limitation"
 }
 
-public struct UserProfile: Equatable {
+public struct UserProfile: Equatable, Codable {
     public var age: Int
     public var weightKg: Double
     public var heightCm: Int
@@ -105,21 +105,21 @@ public struct UserProfile: Equatable {
     }
 }
 
-public struct NutritionTargets: Equatable {
+public struct NutritionTargets: Equatable, Codable {
     public let calories: Int
     public let proteinGrams: Int
     public let fiberGrams: Int
     public let waterLiters: Double
 }
 
-public struct WorkoutBlock: Equatable {
+public struct WorkoutBlock: Equatable, Codable {
     public let title: String
     public let daysPerWeek: Int
     public let sessions: [String]
     public let scheduleNotes: [String]
 }
 
-public struct FitnessPlan: Equatable {
+public struct FitnessPlan: Equatable, Codable {
     public let nutritionTargets: NutritionTargets
     public let mealGuidance: [String]
     public let workout: WorkoutBlock
@@ -129,7 +129,7 @@ public struct FitnessPlan: Equatable {
     public let planFocus: [String]
 }
 
-public enum FoodCategory: String, CaseIterable, Hashable {
+public enum FoodCategory: String, CaseIterable, Hashable, Codable {
     case rotiRiceBread = "Roti, rice, bread"
     case daalLegumes = "Daal and legumes"
     case protein = "Protein"
@@ -142,7 +142,7 @@ public enum FoodCategory: String, CaseIterable, Hashable {
     case manual = "Manual"
 }
 
-public struct FoodItem: Identifiable, Equatable {
+public struct FoodItem: Identifiable, Equatable, Codable {
     public let id: String
     public var name: String
     public var category: FoodCategory
@@ -170,7 +170,7 @@ public struct FoodItem: Identifiable, Equatable {
     }
 }
 
-public struct MealEntry: Equatable, Identifiable {
+public struct MealEntry: Equatable, Identifiable, Codable {
     public let id: UUID
     public var mealName: String
     public var foodItem: FoodItem
@@ -192,7 +192,7 @@ public struct MealEntry: Equatable, Identifiable {
     }
 }
 
-public struct DailyFoodRecord: Equatable {
+public struct DailyFoodRecord: Equatable, Codable {
     public var date: String
     public var mealEntries: [MealEntry]
     public var caloriesBurned: Int
@@ -204,7 +204,7 @@ public struct DailyFoodRecord: Equatable {
     }
 }
 
-public struct CalorieSummary: Equatable {
+public struct CalorieSummary: Equatable, Codable {
     public let days: Int
     public let calorieIntake: Int
     public let caloriesBurned: Int
@@ -212,7 +212,7 @@ public struct CalorieSummary: Equatable {
     public let mealCount: Int
 }
 
-public struct HourlyCalorieBreakdown: Equatable, Identifiable {
+public struct HourlyCalorieBreakdown: Equatable, Identifiable, Codable {
     public var id: Int { hour }
     public let hour: Int
     public let label: String
@@ -220,14 +220,14 @@ public struct HourlyCalorieBreakdown: Equatable, Identifiable {
     public let entries: [MealEntry]
 }
 
-public struct MealCalorieBreakdown: Equatable, Identifiable {
+public struct MealCalorieBreakdown: Equatable, Identifiable, Codable {
     public var id: String { mealName }
     public let mealName: String
     public let calorieIntake: Int
     public let entries: [MealEntry]
 }
 
-public struct DailyCalorieTracker: Equatable {
+public struct DailyCalorieTracker: Equatable, Codable {
     public let date: String
     public let summary: CalorieSummary
     public let hourlyBreakdown: [HourlyCalorieBreakdown]
@@ -235,13 +235,13 @@ public struct DailyCalorieTracker: Equatable {
     public let entriesNewestFirst: [MealEntry]
 }
 
-public enum DiabetesStatus: String, CaseIterable, Hashable {
+public enum DiabetesStatus: String, CaseIterable, Hashable, Codable {
     case notDiabetic = "No diabetes"
     case prediabetes = "Prediabetes"
     case diabetes = "Diabetes"
 }
 
-public enum BmiCategory: String, CaseIterable, Hashable {
+public enum BmiCategory: String, CaseIterable, Hashable, Codable {
     case underweight = "Underweight"
     case healthyWeight = "Healthy weight"
     case overweight = "Overweight"
@@ -250,7 +250,7 @@ public enum BmiCategory: String, CaseIterable, Hashable {
     case obesityClass3 = "Obesity class 3"
 }
 
-public enum MarkerType: String, CaseIterable, Hashable {
+public enum MarkerType: String, CaseIterable, Hashable, Codable {
     case lipidProfile = "Lipid profile"
     case uricAcid = "Uric acid"
     case bloodSugar = "Blood sugar"
@@ -261,13 +261,13 @@ public enum MarkerType: String, CaseIterable, Hashable {
     case emergencySymptoms = "Emergency symptoms"
 }
 
-public enum MarkerRiskLevel: String, CaseIterable, Hashable {
+public enum MarkerRiskLevel: String, CaseIterable, Hashable, Codable {
     case watch = "Watch"
     case clinicianReview = "Review with clinician"
     case emergency = "Emergency care"
 }
 
-public struct LabProfile: Equatable {
+public struct LabProfile: Equatable, Codable {
     public var totalCholesterolMgDl: Int?
     public var ldlMgDl: Int?
     public var hdlMgDl: Int?
@@ -310,13 +310,13 @@ public struct LabProfile: Equatable {
     }
 }
 
-public struct BmiReport: Equatable {
+public struct BmiReport: Equatable, Codable {
     public let value: Double
     public let category: BmiCategory
     public let note: String
 }
 
-public struct HealthMarkerFlag: Equatable, Identifiable {
+public struct HealthMarkerFlag: Equatable, Identifiable, Codable {
     public var id: String { "\(markerType.rawValue)-\(title)" }
     public let markerType: MarkerType
     public let riskLevel: MarkerRiskLevel
@@ -325,13 +325,13 @@ public struct HealthMarkerFlag: Equatable, Identifiable {
     public let sourceCategory: String
 }
 
-public struct HealthReport: Equatable {
+public struct HealthReport: Equatable, Codable {
     public let bmi: BmiReport
     public let flags: [HealthMarkerFlag]
     public let medicalDisclaimer: String
 }
 
-public enum FoodPhotoPortion: String, CaseIterable, Hashable {
+public enum FoodPhotoPortion: String, CaseIterable, Hashable, Codable {
     case small = "Small"
     case medium = "Medium"
     case large = "Large"
@@ -348,13 +348,13 @@ public enum FoodPhotoPortion: String, CaseIterable, Hashable {
     }
 }
 
-public enum FoodPhotoConfidence: String, CaseIterable, Hashable {
+public enum FoodPhotoConfidence: String, CaseIterable, Hashable, Codable {
     case high = "High"
     case medium = "Medium"
     case low = "Low"
 }
 
-public struct FoodPhotoCalorieEstimate: Equatable {
+public struct FoodPhotoCalorieEstimate: Equatable, Codable {
     public let foodName: String
     public let estimatedCalories: Int
     public let confidence: FoodPhotoConfidence

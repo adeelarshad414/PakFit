@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.pakfit.app.data.AndroidPakFitLocalSnapshotStore
 import com.pakfit.app.domain.ActivityLevel
 import com.pakfit.app.domain.AnalysisDashboard
 import com.pakfit.app.domain.AnalysisDashboardEngine
@@ -96,10 +97,14 @@ import com.pakfit.app.domain.MentalWellnessEngine
 import com.pakfit.app.domain.MentalWellnessInput
 import com.pakfit.app.domain.MentalWellnessReport
 import com.pakfit.app.domain.PakistaniRecommendationEngine
+import com.pakfit.app.domain.PakFitSnapshotCodec
+import com.pakfit.app.domain.PakFitSnapshotSummary
+import com.pakfit.app.domain.PakFitUserSnapshot
 import com.pakfit.app.domain.SafetyWarning
 import com.pakfit.app.domain.TrendInsight
 import com.pakfit.app.domain.TrainingPlace
 import com.pakfit.app.domain.UserProfile
+import java.time.Instant
 import kotlin.math.roundToInt
 
 private enum class ThemeMode(val label: String) {
@@ -195,6 +200,10 @@ fun PakFitTheme(
 fun PakFitApp(
     engine: PakistaniRecommendationEngine = PakistaniRecommendationEngine()
 ) {
+    val context = LocalContext.current
+    val snapshotCodec = remember { PakFitSnapshotCodec() }
+    val localSnapshotStore = remember(context) { AndroidPakFitLocalSnapshotStore(context, snapshotCodec) }
+    val restoredSnapshot = remember { localSnapshotStore.restoreOrNull() }
     var themeMode by remember { mutableStateOf(ThemeMode.LIGHT) }
     var appSection by remember { mutableStateOf(AppSection.DASHBOARD) }
     val healthReportCalculator = remember { HealthReportCalculator() }
@@ -203,51 +212,106 @@ fun PakFitApp(
     val clinicalIntelligenceEngine = remember { ClinicalIntelligenceEngine() }
     val mentalWellnessEngine = remember { MentalWellnessEngine() }
     val coachReviewEngine = remember { CoachReviewEngine(foodRecordEngine) }
-    var goal by remember { mutableStateOf(Goal.FAT_LOSS) }
-    var activity by remember { mutableStateOf(ActivityLevel.LIGHT) }
-    var diet by remember { mutableStateOf(DietPattern.HALAL_OMNIVORE) }
-    var gender by remember { mutableStateOf(Gender.MALE) }
-    var place by remember { mutableStateOf(TrainingPlace.HOME) }
-    var ageYears by remember { mutableFloatStateOf(30f) }
-    var heightCm by remember { mutableFloatStateOf(170f) }
-    var weightKg by remember { mutableFloatStateOf(75f) }
-    var lifestyleModes by remember { mutableStateOf(emptySet<LifestyleMode>()) }
+    var goal by remember { mutableStateOf(restoredSnapshot?.profile?.goal ?: Goal.FAT_LOSS) }
+    var activity by remember { mutableStateOf(restoredSnapshot?.profile?.activityLevel ?: ActivityLevel.LIGHT) }
+    var diet by remember { mutableStateOf(restoredSnapshot?.profile?.dietPattern ?: DietPattern.HALAL_OMNIVORE) }
+    var gender by remember { mutableStateOf(restoredSnapshot?.profile?.gender ?: Gender.MALE) }
+    var place by remember { mutableStateOf(restoredSnapshot?.profile?.trainingPlace ?: TrainingPlace.HOME) }
+    var ageYears by remember { mutableFloatStateOf((restoredSnapshot?.profile?.age ?: 30).toFloat()) }
+    var heightCm by remember { mutableFloatStateOf((restoredSnapshot?.profile?.heightCm ?: 170).toFloat()) }
+    var weightKg by remember { mutableFloatStateOf((restoredSnapshot?.profile?.weightKg ?: 75.0).toFloat()) }
+    var lifestyleModes by remember { mutableStateOf(restoredSnapshot?.profile?.lifestyleModes ?: emptySet()) }
     var equipmentAccess by remember {
-        mutableStateOf(setOf(EquipmentAccess.WALKING_ROUTE, EquipmentAccess.NO_EQUIPMENT))
+        mutableStateOf(
+            restoredSnapshot?.profile?.equipmentAccess
+                ?: setOf(EquipmentAccess.WALKING_ROUTE, EquipmentAccess.NO_EQUIPMENT)
+        )
     }
-    var cautions by remember { mutableStateOf(emptySet<MedicalCaution>()) }
-    var diabetesStatus by remember { mutableStateOf(DiabetesStatus.NOT_DIABETIC) }
-    var totalCholesterol by remember { mutableFloatStateOf(180f) }
-    var ldl by remember { mutableFloatStateOf(100f) }
-    var hdl by remember { mutableFloatStateOf(45f) }
-    var triglycerides by remember { mutableFloatStateOf(140f) }
-    var uricAcid by remember { mutableFloatStateOf(6.0f) }
-    var fastingSugar by remember { mutableFloatStateOf(95f) }
-    var systolicBp by remember { mutableFloatStateOf(120f) }
-    var diastolicBp by remember { mutableFloatStateOf(80f) }
-    var hba1c by remember { mutableFloatStateOf(5.4f) }
-    var hemoglobin by remember { mutableFloatStateOf(14f) }
-    var clinicalRiskFactors by remember { mutableStateOf(emptySet<ClinicalRiskFactor>()) }
-    var phq9Score by remember { mutableFloatStateOf(4f) }
-    var gad7Score by remember { mutableFloatStateOf(4f) }
-    var mentalSupportFlags by remember { mutableStateOf(emptySet<MentalSupportFlag>()) }
-    var catalog by remember { mutableStateOf(foodRecordEngine.defaultCatalog()) }
+    var cautions by remember { mutableStateOf(restoredSnapshot?.profile?.medicalCautions ?: emptySet()) }
+    var diabetesStatus by remember {
+        mutableStateOf(restoredSnapshot?.labProfile?.diabetesStatus ?: DiabetesStatus.NOT_DIABETIC)
+    }
+    var totalCholesterol by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.totalCholesterolMgDl ?: 180).toFloat())
+    }
+    var ldl by remember { mutableFloatStateOf((restoredSnapshot?.labProfile?.ldlMgDl ?: 100).toFloat()) }
+    var hdl by remember { mutableFloatStateOf((restoredSnapshot?.labProfile?.hdlMgDl ?: 45).toFloat()) }
+    var triglycerides by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.triglyceridesMgDl ?: 140).toFloat())
+    }
+    var uricAcid by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.uricAcidMgDl ?: 6.0).toFloat())
+    }
+    var fastingSugar by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.fastingBloodSugarMgDl ?: 95).toFloat())
+    }
+    var systolicBp by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.systolicBpMmHg ?: 120).toFloat())
+    }
+    var diastolicBp by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.diastolicBpMmHg ?: 80).toFloat())
+    }
+    var hba1c by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.hba1cPercent ?: 5.4).toFloat())
+    }
+    var hemoglobin by remember {
+        mutableFloatStateOf((restoredSnapshot?.labProfile?.hemoglobinGdl ?: 14.0).toFloat())
+    }
+    var clinicalRiskFactors by remember { mutableStateOf(restoredSnapshot?.clinicalRiskFactors ?: emptySet()) }
+    var phq9Score by remember {
+        mutableFloatStateOf((restoredSnapshot?.mentalWellnessInput?.phq9Score ?: 4).toFloat())
+    }
+    var gad7Score by remember {
+        mutableFloatStateOf((restoredSnapshot?.mentalWellnessInput?.gad7Score ?: 4).toFloat())
+    }
+    var mentalSupportFlags by remember {
+        mutableStateOf(restoredSnapshot?.mentalWellnessInput?.supportFlags ?: emptySet())
+    }
+    var catalog by remember {
+        mutableStateOf(
+            restoredSnapshot?.manualFoodItems?.fold(foodRecordEngine.defaultCatalog()) { base, item ->
+                foodRecordEngine.addManualFoodItem(base, item)
+            } ?: foodRecordEngine.defaultCatalog()
+        )
+    }
     var selectedCategory by remember { mutableStateOf(FoodCategory.ROTI_RICE_BREAD) }
     var selectedFoodId by remember { mutableStateOf("roti-medium") }
     var mealName by remember { mutableStateOf("Lunch") }
     var mealTimeHour by remember { mutableFloatStateOf(13f) }
     var servings by remember { mutableFloatStateOf(1f) }
-    var caloriesBurnedToday by remember { mutableFloatStateOf(350f) }
-    var waterLitersToday by remember { mutableFloatStateOf(2.0f) }
-    var stepsToday by remember { mutableFloatStateOf(4_000f) }
-    var sleepHours by remember { mutableFloatStateOf(7f) }
-    var workoutMinutes by remember { mutableFloatStateOf(20f) }
-    var stressLevel by remember { mutableFloatStateOf(3f) }
-    var mealEntries by remember { mutableStateOf(emptyList<MealEntry>()) }
+    var caloriesBurnedToday by remember {
+        mutableFloatStateOf((restoredSnapshot?.dailyRecord?.caloriesBurned ?: 350).toFloat())
+    }
+    var waterLitersToday by remember {
+        mutableFloatStateOf((restoredSnapshot?.lifestyleRecord?.waterLiters ?: 2.0).toFloat())
+    }
+    var stepsToday by remember {
+        mutableFloatStateOf((restoredSnapshot?.lifestyleRecord?.steps ?: 4_000).toFloat())
+    }
+    var sleepHours by remember {
+        mutableFloatStateOf((restoredSnapshot?.lifestyleRecord?.sleepHours ?: 7.0).toFloat())
+    }
+    var workoutMinutes by remember {
+        mutableFloatStateOf((restoredSnapshot?.lifestyleRecord?.workoutMinutes ?: 20).toFloat())
+    }
+    var stressLevel by remember {
+        mutableFloatStateOf((restoredSnapshot?.lifestyleRecord?.stressLevel ?: 3).toFloat())
+    }
+    var mealEntries by remember { mutableStateOf(restoredSnapshot?.dailyRecord?.mealEntries ?: emptyList()) }
     var manualCategory by remember { mutableStateOf("Home foods") }
     var manualFoodName by remember { mutableStateOf("") }
     var manualServing by remember { mutableStateOf("1 serving") }
     var manualCalories by remember { mutableFloatStateOf(200f) }
+    var localDataStatus by remember {
+        mutableStateOf(
+            if (restoredSnapshot != null) {
+                "Restored a local snapshot saved at ${restoredSnapshot.savedAtIso}."
+            } else {
+                "No local snapshot saved yet. Data stays on this device until you choose an action."
+            }
+        )
+    }
+    var localExportPreview by remember { mutableStateOf("") }
 
     val profile = UserProfile(
         age = ageYears.roundToInt(),
@@ -322,6 +386,70 @@ fun PakFitApp(
         healthReport = healthReport,
         proteinGramsLogged = estimateProteinLogged(mealEntries)
     )
+
+    fun manualFoodsForSnapshot(): List<FoodItem> {
+        return catalog
+            .filter { it.category == FoodCategory.MANUAL || it.customCategory != null }
+            .distinctBy { it.id }
+    }
+
+    fun buildCurrentSnapshot(): PakFitUserSnapshot {
+        return PakFitUserSnapshot(
+            savedAtIso = Instant.now().toString(),
+            profile = profile,
+            labProfile = labProfile,
+            dailyRecord = todayRecord,
+            lifestyleRecord = lifestyleRecord,
+            mentalWellnessInput = MentalWellnessInput(
+                phq9Score = phq9Score.roundToInt(),
+                gad7Score = gad7Score.roundToInt(),
+                supportFlags = mentalSupportFlags
+            ),
+            clinicalRiskFactors = clinicalRiskFactors,
+            manualFoodItems = manualFoodsForSnapshot()
+        )
+    }
+
+    fun applySnapshot(snapshot: PakFitUserSnapshot) {
+        goal = snapshot.profile.goal
+        activity = snapshot.profile.activityLevel
+        diet = snapshot.profile.dietPattern
+        gender = snapshot.profile.gender
+        place = snapshot.profile.trainingPlace
+        ageYears = snapshot.profile.age.toFloat()
+        heightCm = snapshot.profile.heightCm.toFloat()
+        weightKg = snapshot.profile.weightKg.toFloat()
+        lifestyleModes = snapshot.profile.lifestyleModes
+        equipmentAccess = snapshot.profile.equipmentAccess
+        cautions = snapshot.profile.medicalCautions
+        diabetesStatus = snapshot.labProfile.diabetesStatus
+        totalCholesterol = (snapshot.labProfile.totalCholesterolMgDl ?: 180).toFloat()
+        ldl = (snapshot.labProfile.ldlMgDl ?: 100).toFloat()
+        hdl = (snapshot.labProfile.hdlMgDl ?: 45).toFloat()
+        triglycerides = (snapshot.labProfile.triglyceridesMgDl ?: 140).toFloat()
+        uricAcid = (snapshot.labProfile.uricAcidMgDl ?: 6.0).toFloat()
+        fastingSugar = (snapshot.labProfile.fastingBloodSugarMgDl ?: 95).toFloat()
+        systolicBp = (snapshot.labProfile.systolicBpMmHg ?: 120).toFloat()
+        diastolicBp = (snapshot.labProfile.diastolicBpMmHg ?: 80).toFloat()
+        hba1c = (snapshot.labProfile.hba1cPercent ?: 5.4).toFloat()
+        hemoglobin = (snapshot.labProfile.hemoglobinGdl ?: 14.0).toFloat()
+        clinicalRiskFactors = snapshot.clinicalRiskFactors
+        phq9Score = (snapshot.mentalWellnessInput.phq9Score ?: 4).toFloat()
+        gad7Score = (snapshot.mentalWellnessInput.gad7Score ?: 4).toFloat()
+        mentalSupportFlags = snapshot.mentalWellnessInput.supportFlags
+        catalog = snapshot.manualFoodItems.fold(foodRecordEngine.defaultCatalog()) { base, item ->
+            foodRecordEngine.addManualFoodItem(base, item)
+        }
+        mealEntries = snapshot.dailyRecord.mealEntries
+        caloriesBurnedToday = snapshot.dailyRecord.caloriesBurned.toFloat()
+        waterLitersToday = snapshot.lifestyleRecord.waterLiters.toFloat()
+        stepsToday = snapshot.lifestyleRecord.steps.toFloat()
+        sleepHours = snapshot.lifestyleRecord.sleepHours.toFloat()
+        workoutMinutes = snapshot.lifestyleRecord.workoutMinutes.toFloat()
+        stressLevel = snapshot.lifestyleRecord.stressLevel.toFloat()
+        selectedFoodId = catalog.firstOrNull()?.id ?: "roti-medium"
+        selectedCategory = catalog.firstOrNull()?.category ?: FoodCategory.ROTI_RICE_BREAD
+    }
 
     PakFitTheme(darkTheme = themeMode == ThemeMode.DARK) {
         Surface(
@@ -564,6 +692,38 @@ fun PakFitApp(
                         stressLevel = stressLevel,
                         onStressLevelChange = { stressLevel = it }
                     )
+                    LocalDataCard(
+                        summary = snapshotCodec.summary(buildCurrentSnapshot()),
+                        status = localDataStatus,
+                        exportPreview = localExportPreview,
+                        onSave = {
+                            val snapshot = buildCurrentSnapshot()
+                            localSnapshotStore.save(snapshot)
+                            localDataStatus = "Saved local snapshot at ${snapshot.savedAtIso}."
+                            localExportPreview = ""
+                        },
+                        onRestore = {
+                            val snapshot = localSnapshotStore.restoreOrNull()
+                            if (snapshot == null) {
+                                localDataStatus = "No valid local snapshot found on this device."
+                            } else {
+                                applySnapshot(snapshot)
+                                localDataStatus = "Restored local snapshot saved at ${snapshot.savedAtIso}."
+                                localExportPreview = ""
+                            }
+                        },
+                        onExportPreview = {
+                            val snapshot = buildCurrentSnapshot()
+                            val payload = localSnapshotStore.export(snapshot)
+                            localExportPreview = payload.lines().take(12).joinToString("\n")
+                            localDataStatus = "Export preview generated locally. Food photo image bytes are not included."
+                        },
+                        onClear = {
+                            localSnapshotStore.clear()
+                            localDataStatus = "Local saved snapshot cleared from this device."
+                            localExportPreview = ""
+                        }
+                    )
                     CoachReviewCard(coachReview)
             AnalysisDashboardCard(dashboard)
                 }
@@ -759,6 +919,94 @@ private fun ControlCard(
             Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             content()
         }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LocalDataCard(
+    summary: PakFitSnapshotSummary,
+    status: String,
+    exportPreview: String,
+    onSave: () -> Unit,
+    onRestore: () -> Unit,
+    onExportPreview: () -> Unit,
+    onClear: () -> Unit
+) {
+    ControlCard(title = "Local Data & Privacy") {
+        Text(
+            text = "Snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. It stays local unless you export it.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onSave,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Save")
+            }
+            Button(
+                onClick = onRestore,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Restore")
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onExportPreview,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Export Preview")
+            }
+            Button(
+                onClick = onClear,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Clear")
+            }
+        }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            SnapshotMetricPill("Meals", summary.mealEntries)
+            SnapshotMetricPill("Manual foods", summary.manualFoodItems)
+            SnapshotMetricPill("Health values", summary.healthMarkerValues)
+            SnapshotMetricPill("Support flags", summary.supportFlagCount)
+        }
+        Text(
+            text = status,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        if (exportPreview.isNotBlank()) {
+            Text(
+                text = exportPreview,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SnapshotMetricPill(label: String, value: Int) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Text(
+            text = "$label: $value",
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

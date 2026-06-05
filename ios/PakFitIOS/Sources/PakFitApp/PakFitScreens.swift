@@ -70,6 +70,15 @@ final class PakFitViewModel: ObservableObject {
     @Published var foodSearchQuery = "Chicken biryani"
     @Published var photoFoodHint = "Chicken biryani"
     @Published var photoPortion: FoodPhotoPortion = .medium
+    @Published var waterLiters = 2.4
+    @Published var steps = 7_200
+    @Published var sleepHours = 6.8
+    @Published var workoutMinutes = 35
+    @Published var stressLevel = 2
+    @Published var phq9Score = 4
+    @Published var gad7Score = 4
+    @Published var mentalSupportFlags: Set<MentalSupportFlag> = []
+    @Published var clinicalRiskFactors: Set<ClinicalRiskFactor> = [.familyHistoryDiabetes, .highSaltIntake]
     @Published var manualFoodName = "Homemade chicken salan"
     @Published var manualCategory = "Desi dish"
     @Published var manualServing = "1 bowl"
@@ -77,12 +86,17 @@ final class PakFitViewModel: ObservableObject {
     @Published var catalog: [FoodItem]
     @Published var entries: [MealEntry]
     @Published var photoEstimate: FoodPhotoCalorieEstimate
+    @Published var localDataStatus = "No local snapshot saved yet. Data stays on this device until you choose an action."
+    @Published var localExportPreview = ""
 
     private let planEngine = PakistaniRecommendationEngine()
     private let foodEngine = FoodRecordEngine()
     private let healthEngine = HealthReportCalculator()
     private let searchEngine = FoodSearchEngine()
     private let photoEstimator = FoodPhotoEstimator()
+    private let snapshotCodec = PakFitSnapshotCodec()
+    private let snapshotKey = "pakfit.localSnapshot"
+    private let isoFormatter = ISO8601DateFormatter()
 
     init() {
         let defaultCatalog = foodEngine.defaultCatalog()
@@ -99,6 +113,11 @@ final class PakFitViewModel: ObservableObject {
             catalog: defaultCatalog,
             portion: .medium
         )
+
+        if let snapshot = restoreSnapshotFromDefaults() {
+            apply(snapshot)
+            localDataStatus = "Restored local snapshot saved at \(snapshot.savedAtIso)."
+        }
     }
 
     var plan: FitnessPlan {
@@ -115,6 +134,28 @@ final class PakFitViewModel: ObservableObject {
 
     var tracker: DailyCalorieTracker {
         foodEngine.buildDailyTracker(record: todayRecord)
+    }
+
+    var lifestyleRecord: DailyLifestyleRecord {
+        DailyLifestyleRecord(
+            waterLiters: waterLiters,
+            steps: steps,
+            sleepHours: sleepHours,
+            workoutMinutes: workoutMinutes,
+            stressLevel: stressLevel
+        )
+    }
+
+    var mentalWellnessInput: MentalWellnessInput {
+        MentalWellnessInput(
+            phq9Score: phq9Score,
+            gad7Score: gad7Score,
+            supportFlags: mentalSupportFlags
+        )
+    }
+
+    var snapshotSummary: PakFitSnapshotSummary {
+        snapshotCodec.summary(buildSnapshot(savedAtIso: "Draft"))
     }
 
     var searchURL: URL? {
@@ -158,6 +199,83 @@ final class PakFitViewModel: ObservableObject {
             portion: photoPortion
         )
     }
+
+    func saveLocalSnapshot() {
+        let snapshot = buildSnapshot(savedAtIso: isoFormatter.string(from: Date()))
+        do {
+            UserDefaults.standard.set(try snapshotCodec.encode(snapshot), forKey: snapshotKey)
+            localDataStatus = "Saved local snapshot at \(snapshot.savedAtIso)."
+            localExportPreview = ""
+        } catch {
+            localDataStatus = "Could not save local snapshot."
+        }
+    }
+
+    func restoreLocalSnapshot() {
+        guard let snapshot = restoreSnapshotFromDefaults() else {
+            localDataStatus = "No valid local snapshot found on this device."
+            return
+        }
+        apply(snapshot)
+        localDataStatus = "Restored local snapshot saved at \(snapshot.savedAtIso)."
+        localExportPreview = ""
+    }
+
+    func exportLocalSnapshotPreview() {
+        do {
+            let snapshot = buildSnapshot(savedAtIso: isoFormatter.string(from: Date()))
+            let payload = try snapshotCodec.encode(snapshot)
+            localExportPreview = payload.split(separator: "\n").prefix(12).joined(separator: "\n")
+            localDataStatus = "Export preview generated locally. Food photo image bytes are not included."
+        } catch {
+            localDataStatus = "Could not generate export preview."
+        }
+    }
+
+    func clearLocalSnapshot() {
+        UserDefaults.standard.removeObject(forKey: snapshotKey)
+        localDataStatus = "Local saved snapshot cleared from this device."
+        localExportPreview = ""
+    }
+
+    private func restoreSnapshotFromDefaults() -> PakFitUserSnapshot? {
+        guard let payload = UserDefaults.standard.string(forKey: snapshotKey) else { return nil }
+        return try? snapshotCodec.decode(payload)
+    }
+
+    private func buildSnapshot(savedAtIso: String) -> PakFitUserSnapshot {
+        PakFitUserSnapshot(
+            savedAtIso: savedAtIso,
+            profile: profile,
+            labProfile: labProfile,
+            dailyRecord: todayRecord,
+            lifestyleRecord: lifestyleRecord,
+            mentalWellnessInput: mentalWellnessInput,
+            clinicalRiskFactors: clinicalRiskFactors,
+            manualFoodItems: catalog.filter { $0.category == .manual || $0.customCategory != nil }
+        )
+    }
+
+    private func apply(_ snapshot: PakFitUserSnapshot) {
+        profile = snapshot.profile
+        labProfile = snapshot.labProfile
+        caloriesBurned = snapshot.dailyRecord.caloriesBurned
+        waterLiters = snapshot.lifestyleRecord.waterLiters
+        steps = snapshot.lifestyleRecord.steps
+        sleepHours = snapshot.lifestyleRecord.sleepHours
+        workoutMinutes = snapshot.lifestyleRecord.workoutMinutes
+        stressLevel = snapshot.lifestyleRecord.stressLevel
+        phq9Score = snapshot.mentalWellnessInput.phq9Score ?? 4
+        gad7Score = snapshot.mentalWellnessInput.gad7Score ?? 4
+        mentalSupportFlags = snapshot.mentalWellnessInput.supportFlags
+        clinicalRiskFactors = snapshot.clinicalRiskFactors
+        catalog = snapshot.manualFoodItems.reduce(foodEngine.defaultCatalog()) { current, item in
+            foodEngine.addManualFoodItem(catalog: current, item: item)
+        }
+        entries = snapshot.dailyRecord.mealEntries
+        selectedFoodID = catalog.first?.id ?? "roti-medium"
+        refreshPhotoEstimate()
+    }
 }
 
 struct PakFitRootView: View {
@@ -192,6 +310,8 @@ struct DashboardScreen: View {
                     HeaderView(model: model)
 
                     StatGrid(summary: model.tracker.summary, target: model.plan.nutritionTargets.calories)
+
+                    LocalDataPanel(model: model)
 
                     Panel(title: "Calorie Progress") {
                         VStack(alignment: .leading, spacing: 12) {
@@ -556,6 +676,72 @@ struct StatTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
+struct LocalDataPanel: View {
+    @ObservedObject var model: PakFitViewModel
+
+    var body: some View {
+        Panel(title: "Local Data & Privacy") {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. It stays local unless you export it.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    Button {
+                        model.saveLocalSnapshot()
+                    } label: {
+                        Label("Save", systemImage: "square.and.arrow.down")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        model.restoreLocalSnapshot()
+                    } label: {
+                        Label("Restore", systemImage: "arrow.counterclockwise")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button {
+                        model.exportLocalSnapshotPreview()
+                    } label: {
+                        Label("Export", systemImage: "doc.text")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button {
+                        model.clearLocalSnapshot()
+                    } label: {
+                        Label("Clear", systemImage: "trash")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                FlowLayout(items: [
+                    "Meals: \(model.snapshotSummary.mealEntries)",
+                    "Manual foods: \(model.snapshotSummary.manualFoodItems)",
+                    "Health values: \(model.snapshotSummary.healthMarkerValues)",
+                    "Support flags: \(model.snapshotSummary.supportFlagCount)"
+                ])
+
+                Text(model.localDataStatus)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                if !model.localExportPreview.isEmpty {
+                    Text(model.localExportPreview)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(12)
+                }
+            }
+        }
     }
 }
 

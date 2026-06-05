@@ -121,4 +121,51 @@ final class PakFitCoreTests: XCTestCase {
         XCTAssertEqual(lowConfidence.estimatedCalories, 180)
         XCTAssertEqual(lowConfidence.confidence, .low)
     }
+
+    func testSnapshotRoundTripsSensitiveLocalDataWithoutImageBytes() throws {
+        let manual = FoodItem(
+            id: "manual-chicken-salan",
+            name: "Homemade chicken salan",
+            category: .manual,
+            serving: "1 bowl",
+            calories: 340,
+            customCategory: "Home foods"
+        )
+        let snapshot = PakFitUserSnapshot(
+            savedAtIso: "2026-06-05T15:00:00Z",
+            profile: UserProfile(),
+            labProfile: LabProfile(
+                totalCholesterolMgDl: 220,
+                ldlMgDl: 130,
+                hdlMgDl: 38,
+                triglyceridesMgDl: 180,
+                uricAcidMgDl: 8.4,
+                fastingBloodSugarMgDl: 140,
+                systolicBpMmHg: 142,
+                diastolicBpMmHg: 90,
+                hba1cPercent: 6.7,
+                hemoglobinGdl: 13.5,
+                diabetesStatus: .diabetes
+            ),
+            dailyRecord: DailyFoodRecord(
+                date: "2026-06-05",
+                mealEntries: [MealEntry(mealName: "Dinner", foodItem: manual, servings: 1.5, timeLabel: "20:30")],
+                caloriesBurned: 420
+            ),
+            lifestyleRecord: DailyLifestyleRecord(waterLiters: 2.4, steps: 7_200, sleepHours: 6.8, workoutMinutes: 35, stressLevel: 2),
+            mentalWellnessInput: MentalWellnessInput(phq9Score: 8, gad7Score: 6, supportFlags: [.panicOrSevereDistress]),
+            clinicalRiskFactors: [.familyHistoryDiabetes, .highSaltIntake],
+            manualFoodItems: [manual]
+        )
+
+        let codec = PakFitSnapshotCodec()
+        let payload = try codec.encode(snapshot)
+        let decoded = try codec.decode(payload)
+        let summary = codec.summary(decoded)
+
+        XCTAssertEqual(decoded, snapshot)
+        XCTAssertEqual(summary.manualFoodItems, 1)
+        XCTAssertEqual(summary.supportFlagCount, 1)
+        XCTAssertFalse(payload.localizedCaseInsensitiveContains("imageBytes"))
+    }
 }
