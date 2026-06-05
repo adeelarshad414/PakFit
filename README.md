@@ -42,6 +42,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Android Auto Backup disabled with explicit backup/data-extraction exclusions for sensitive local snapshot storage
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
+- Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate
 - Offline dependency inventory with dynamic/SNAPSHOT dependency gate for Android and Swift package posture
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
 - iOS parity spec and Swift tests for calorie targets, food tracking, BMI, lab markers, online search, and photo estimates
@@ -53,7 +54,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
-/opt/homebrew/opt/gradle@8/bin/gradle testDebugUnitTest
+./gradlew testDebugUnitTest
 ```
 
 ## Android Build
@@ -61,7 +62,7 @@ export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-h
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
-/opt/homebrew/opt/gradle@8/bin/gradle assembleDebug
+./gradlew assembleDebug
 ```
 
 On a normal developer machine, you can omit `GRADLE_USER_HOME` or point it at your own Gradle cache.
@@ -71,7 +72,7 @@ Build local release artifacts:
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
-/opt/homebrew/opt/gradle@8/bin/gradle assembleRelease bundleRelease
+./gradlew assembleRelease bundleRelease
 ```
 
 Production Android release signing is intentionally externalized. Configure all of these environment variables before `assembleRelease` when a real upload keystore is available:

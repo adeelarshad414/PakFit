@@ -18,6 +18,10 @@ ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
 ANDROID_BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"
 ANDROID_DATA_EXTRACTION_RULES="$ROOT_DIR/app/src/main/res/xml/data_extraction_rules.xml"
 IOS_PROJECT_FILE="$ROOT_DIR/ios/PakFitIOS/PakFitIOS.xcodeproj/project.pbxproj"
+GRADLEW_FILE="$ROOT_DIR/gradlew"
+GRADLEW_BAT_FILE="$ROOT_DIR/gradlew.bat"
+GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
+GRADLE_WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -132,6 +136,12 @@ file_pattern_status() {
   fi
 }
 
+property_value() {
+  local file="$1"
+  local key="$2"
+  sed -n "s/^$key=//p" "$file" | head -1
+}
+
 xcode_setting_value() {
   local key="$1"
   sed -n "s/.*$key = \\([^;]*\\);.*/\\1/p" "$IOS_PROJECT_FILE" | head -1
@@ -202,6 +212,20 @@ fi
 if [[ -f "$IOS_DEPENDENCY_FILE" ]]; then
   IOS_DEPENDENCY_SHA256="$(sha256_file "$IOS_DEPENDENCY_FILE")"
 fi
+GRADLE_WRAPPER_DISTRIBUTION_URL="$(property_value "$GRADLE_WRAPPER_PROPERTIES" distributionUrl)"
+GRADLE_WRAPPER_DISTRIBUTION_SHA256="$(property_value "$GRADLE_WRAPPER_PROPERTIES" distributionSha256Sum)"
+GRADLE_WRAPPER_JAR_SHA256="missing"
+GRADLEW_SHA256="missing"
+GRADLEW_BAT_SHA256="missing"
+if [[ -f "$GRADLE_WRAPPER_JAR" ]]; then
+  GRADLE_WRAPPER_JAR_SHA256="$(sha256_file "$GRADLE_WRAPPER_JAR")"
+fi
+if [[ -f "$GRADLEW_FILE" ]]; then
+  GRADLEW_SHA256="$(sha256_file "$GRADLEW_FILE")"
+fi
+if [[ -f "$GRADLEW_BAT_FILE" ]]; then
+  GRADLEW_BAT_SHA256="$(sha256_file "$GRADLEW_BAT_FILE")"
+fi
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
@@ -236,6 +260,16 @@ mkdir -p "$REPORT_DIR"
   echo "- Git branch: $GIT_BRANCH"
   echo "- Git SHA: $GIT_SHA"
   echo "- Worktree status: $WORKTREE_STATUS"
+  echo
+  echo "## Build Reproducibility"
+  echo
+  echo "- Gradle Wrapper: present"
+  echo "- Gradle distribution URL: $GRADLE_WRAPPER_DISTRIBUTION_URL"
+  echo "- Gradle distribution SHA-256: $GRADLE_WRAPPER_DISTRIBUTION_SHA256"
+  echo "- Gradle wrapper JAR SHA-256: $GRADLE_WRAPPER_JAR_SHA256"
+  echo "- gradlew SHA-256: $GRADLEW_SHA256"
+  echo "- gradlew.bat SHA-256: $GRADLEW_BAT_SHA256"
+  echo "- Wrapper gate: Gradle 8.14.5 distribution checksum and wrapper JAR checksum checked by scripts/validate-release.sh"
   echo
   echo "## Android APK"
   echo
@@ -305,6 +339,7 @@ mkdir -p "$REPORT_DIR"
   echo "## Validation Gate"
   echo
   echo "- Local command: bash scripts/validate-release.sh"
+  echo "- Build reproducibility: Gradle Wrapper integrity gate"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"

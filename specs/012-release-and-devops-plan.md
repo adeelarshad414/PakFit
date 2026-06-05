@@ -7,7 +7,7 @@ Run tests:
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
-/opt/homebrew/opt/gradle@8/bin/gradle testDebugUnitTest
+./gradlew testDebugUnitTest
 ```
 
 Build debug APK:
@@ -15,7 +15,7 @@ Build debug APK:
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
-/opt/homebrew/opt/gradle@8/bin/gradle assembleDebug
+./gradlew assembleDebug
 ```
 
 Build release APK and Android App Bundle:
@@ -23,7 +23,7 @@ Build release APK and Android App Bundle:
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
-/opt/homebrew/opt/gradle@8/bin/gradle assembleRelease bundleRelease
+./gradlew assembleRelease bundleRelease
 ```
 
 Production Android signing is configured only through external environment variables:
@@ -62,6 +62,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 ## CI
 
 - Run unit tests.
+- Validate Gradle Wrapper distribution checksum and wrapper JAR checksum.
 - Run Android debug and release lint.
 - Generate dependency inventory and fail dynamic/SNAPSHOT dependency declarations.
 - Build debug APK.
@@ -84,6 +85,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Specs updated.
 - Tests passing.
 - Android lint passing.
+- Gradle Wrapper integrity gate passing.
 - Dependency inventory gate passing.
 - Debug APK, release APK, and release AAB build.
 - Release APK uses R8 minification and resource shrinking.
@@ -114,3 +116,10 @@ Given the release validation command runs
 When dependency inventory is generated
 Then dynamic and SNAPSHOT dependencies are blocked
 And Android and Swift dependency inventory files are recorded in release evidence
+
+### Scenario: Gradle Wrapper is pinned and verified
+
+Given the release validation command runs
+When the build starts
+Then the checked-in Gradle Wrapper pins Gradle 8.14.5
+And the wrapper distribution SHA-256 and wrapper JAR SHA-256 are checked

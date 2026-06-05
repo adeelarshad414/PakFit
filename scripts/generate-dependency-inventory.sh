@@ -13,7 +13,9 @@ if [[ -z "${GRADLE_USER_HOME:-}" ]]; then
 fi
 
 if [[ -z "${GRADLE_CMD:-}" ]]; then
-  if [[ -x "/opt/homebrew/opt/gradle@8/bin/gradle" ]]; then
+  if [[ -x "$ROOT_DIR/gradlew" ]]; then
+    GRADLE_CMD="$ROOT_DIR/gradlew"
+  elif [[ -x "/opt/homebrew/opt/gradle@8/bin/gradle" ]]; then
     GRADLE_CMD="/opt/homebrew/opt/gradle@8/bin/gradle"
   else
     GRADLE_CMD="gradle"

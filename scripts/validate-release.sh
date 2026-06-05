@@ -13,7 +13,9 @@ if [[ -z "${GRADLE_USER_HOME:-}" ]]; then
 fi
 
 if [[ -z "${GRADLE_CMD:-}" ]]; then
-  if [[ -x "/opt/homebrew/opt/gradle@8/bin/gradle" ]]; then
+  if [[ -x "$ROOT_DIR/gradlew" ]]; then
+    GRADLE_CMD="$ROOT_DIR/gradlew"
+  elif [[ -x "/opt/homebrew/opt/gradle@8/bin/gradle" ]]; then
     GRADLE_CMD="/opt/homebrew/opt/gradle@8/bin/gradle"
   else
     GRADLE_CMD="gradle"
@@ -22,6 +24,44 @@ fi
 
 if ! command -v "$GRADLE_CMD" >/dev/null 2>&1 && [[ ! -x "$GRADLE_CMD" ]]; then
   echo "Gradle not found. Set GRADLE_CMD or install Gradle 8." >&2
+  exit 1
+fi
+
+sha256_file() {
+  local file="$1"
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  else
+    echo "No SHA-256 tool found." >&2
+    exit 1
+  fi
+}
+
+echo "== Gradle Wrapper integrity gate =="
+WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
+WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
+EXPECTED_WRAPPER_JAR_SHA256="7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172"
+EXPECTED_DISTRIBUTION_SHA256="6f74b601422d6d6fc4e1f9a1ab6522f642c2fdcbc15ae33ebd30ba3d7198e854"
+if [[ ! -x "$ROOT_DIR/gradlew" ]]; then
+  echo "Missing executable Gradle Wrapper: $ROOT_DIR/gradlew" >&2
+  exit 1
+fi
+if [[ ! -f "$WRAPPER_PROPERTIES" || ! -f "$WRAPPER_JAR" ]]; then
+  echo "Missing Gradle Wrapper files." >&2
+  exit 1
+fi
+if ! grep -q "gradle-8.14.5-bin.zip" "$WRAPPER_PROPERTIES"; then
+  echo "Gradle Wrapper must pin Gradle 8.14.5." >&2
+  exit 1
+fi
+if ! grep -q "distributionSha256Sum=$EXPECTED_DISTRIBUTION_SHA256" "$WRAPPER_PROPERTIES"; then
+  echo "Gradle Wrapper distribution SHA-256 does not match expected Gradle 8.14.5 checksum." >&2
+  exit 1
+fi
+if [[ "$(sha256_file "$WRAPPER_JAR")" != "$EXPECTED_WRAPPER_JAR_SHA256" ]]; then
+  echo "Gradle Wrapper JAR checksum does not match the committed expected value." >&2
   exit 1
 fi
 
