@@ -2,26 +2,27 @@
 
 ## Objective
 
-Move PakFit from manual-only validation toward repeatable production release evidence for Android and iOS. The repository must include local validation scripts and CI gates that can prove tests, APK build, Swift/iOS compile, source-language policy, and basic secret hygiene.
+Move PakFit from manual-only validation toward repeatable production release evidence for Android and iOS. The repository must include local validation scripts and CI gates that can prove tests, APK/AAB builds, Swift/iOS compile, source-language policy, and basic secret hygiene.
 
 ## Functional Requirements
 
-- Provide a local release validation script that runs Android unit tests, builds the debug APK, runs the iOS Swift smoke suite, compiles the SwiftUI app target, and checks English-only app source.
-- Provide an APK export script that copies the built debug APK to a versioned destination using build metadata.
-- Add GitHub Actions CI for Android unit tests and debug APK artifact upload.
+- Provide a local release validation script that runs Android unit tests, builds debug APK, release APK, and release AAB artifacts, runs the iOS Swift smoke suite, compiles the SwiftUI app target, and checks English-only app source.
+- Provide export scripts that copy the built debug APK, release APK, and release AAB to versioned destinations using build metadata.
+- Add GitHub Actions CI for Android unit tests plus debug APK, release APK, and release AAB artifact upload.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
 - Add source quality gates for English-only app source and obvious hardcoded secret patterns.
 
 ## Non-Functional Requirements
 
 - CI must not require backend services, production signing secrets, analytics credentials, or cloud health data.
-- Debug APK artifact upload must use generated build output only.
-- Release signing stays out of scope until secure secret storage is configured.
+- Android artifact uploads must use generated build output only.
+- Release signing secrets must stay outside the repository and be injected through secure environment variables only when a production upload keystore exists.
 - iOS App Store archive/signing remains blocked until full Xcode and signing assets are available.
 
 ## Acceptance Evidence
 
 - `scripts/validate-release.sh` passes locally.
 - `scripts/export-android-debug-apk.sh` can export a versioned debug APK after validation.
+- `scripts/export-android-release-artifacts.sh` can export versioned release APK and AAB artifacts after validation.
 - `.github/workflows/pakfit-ci.yml` defines Android, iOS Swift, and source-gate jobs.
 - README and release spec document the repeatable gates.

@@ -63,6 +63,23 @@ export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-h
 
 On a normal developer machine, you can omit `GRADLE_USER_HOME` or point it at your own Gradle cache.
 
+Build local release artifacts:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
+/opt/homebrew/opt/gradle@8/bin/gradle assembleRelease bundleRelease
+```
+
+Production Android release signing is intentionally externalized. Configure all of these environment variables before `assembleRelease` when a real upload keystore is available:
+
+```bash
+export PAKFIT_RELEASE_STORE_FILE=/absolute/path/to/upload-keystore.jks
+export PAKFIT_RELEASE_STORE_PASSWORD=...
+export PAKFIT_RELEASE_KEY_ALIAS=...
+export PAKFIT_RELEASE_KEY_PASSWORD=...
+```
+
 ## iOS Tests
 
 ```bash
@@ -88,10 +105,11 @@ This Codex machine currently has Command Line Tools selected instead of full Xco
 ```bash
 bash scripts/validate-release.sh
 OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-debug-apk.sh
+OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-release-artifacts.sh
 REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/reports bash scripts/generate-release-report.sh
 ```
 
-GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/APK, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
+GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/APK/AAB artifacts, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
 Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` for current local-only UserDefaults state behavior.
 

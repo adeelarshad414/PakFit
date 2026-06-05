@@ -2,25 +2,27 @@
 
 ## Objective
 
-Add a repeatable release evidence report for PakFit so each Android APK and iOS validation pass can be audited with version metadata, checksum, git state, platform privacy status, and known release boundaries.
+Add a repeatable release evidence report for PakFit so each Android debug APK, release APK, release Android App Bundle, and iOS validation pass can be audited with version metadata, checksums, git state, platform privacy status, signing posture, and known release boundaries.
 
 ## Functional Requirements
 
-- Generate a Markdown release report after the debug APK is built.
-- Include Android application ID, variant, version name, version code, APK path, APK size, and APK SHA-256.
+- Generate a Markdown release report after debug and release Android artifacts are built.
+- Include Android application ID, debug/release variants, version name, version code, artifact paths, sizes, and SHA-256 checksums.
+- Include release APK signing verification status when `apksigner` is available.
+- Include release AAB path, size, and SHA-256.
 - Include git branch, git SHA, and worktree status.
 - Include iOS Swift package/Xcode project paths and privacy manifest status.
 - Include the exact release validation command and gates.
-- State release boundaries for debug APK signing, iOS signing, and legal/privacy review.
+- State release boundaries for Android upload-key signing, Play Console validation, iOS signing, and legal/privacy review.
 
 ## Non-Functional Requirements
 
 - The report generator must work without backend credentials, signing secrets, analytics keys, or cloud services.
 - The report should write to ignored output folders by default.
-- CI should upload the report as an artifact when Android build output exists.
+- CI should upload the report as an artifact when Android debug and release build outputs exist.
 
 ## Acceptance Evidence
 
 - `scripts/generate-release-report.sh` creates a report after `scripts/validate-release.sh`.
-- The report includes APK SHA-256 and vended metadata from `output-metadata.json`.
+- The report includes debug APK, release APK, and release AAB SHA-256 values plus vended metadata from `output-metadata.json`.
 - GitHub Actions uploads release evidence reports as artifacts.

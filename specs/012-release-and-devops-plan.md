@@ -18,6 +18,23 @@ export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-h
 /opt/homebrew/opt/gradle@8/bin/gradle assembleDebug
 ```
 
+Build release APK and Android App Bundle:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle
+/opt/homebrew/opt/gradle@8/bin/gradle assembleRelease bundleRelease
+```
+
+Production Android signing is configured only through external environment variables:
+
+```bash
+PAKFIT_RELEASE_STORE_FILE=/absolute/path/to/upload-keystore.jks
+PAKFIT_RELEASE_STORE_PASSWORD=...
+PAKFIT_RELEASE_KEY_ALIAS=...
+PAKFIT_RELEASE_KEY_PASSWORD=...
+```
+
 ## Local Release Gate
 
 ```bash
@@ -30,6 +47,12 @@ Export the built debug APK:
 OUTPUT_DIR=/path/to/output bash scripts/export-android-debug-apk.sh
 ```
 
+Export the built release APK and AAB:
+
+```bash
+OUTPUT_DIR=/path/to/output bash scripts/export-android-release-artifacts.sh
+```
+
 Generate release evidence:
 
 ```bash
@@ -40,7 +63,9 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 
 - Run unit tests.
 - Build debug APK.
+- Build release APK and Android App Bundle.
 - Upload debug APK artifact.
+- Upload release APK and AAB artifacts.
 - Generate and upload release evidence report.
 - Run iOS Swift core smoke tests.
 - Compile the SwiftUI app target.
@@ -48,13 +73,13 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Run basic hardcoded secret-pattern smoke check.
 - Validate iOS privacy manifest format and UserDefaults required-reason declaration.
 - Store APK artifact.
-- Add release signing only after secure secret storage is configured.
+- Keep signing secrets out of source control and inject Android release signing through secure CI/local environment variables.
 
 ## Release Gate
 
 - Specs updated.
 - Tests passing.
-- APK builds.
+- Debug APK, release APK, and release AAB build.
 - APK version metadata updated for meaningful MVP revisions.
 - Health safety reviewed.
 - Privacy/security notes reviewed.
@@ -62,8 +87,8 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 
 ## Acceptance Criteria
 
-### Scenario: Debug release is reproducible
+### Scenario: Android release artifacts are reproducible
 
-Given a developer has Android SDK and Java configured  
-When they run the documented build command  
-Then a debug APK is generated
+Given a developer has Android SDK and Java configured
+When they run the documented release validation command
+Then debug APK, release APK, release AAB, and release evidence report artifacts are generated

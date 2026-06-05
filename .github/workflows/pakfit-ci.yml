@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   android:
-    name: Android tests and debug APK
+    name: Android tests and release artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -33,8 +33,8 @@ jobs:
         with:
           gradle-version: 8.14.5
 
-      - name: Run Android unit tests and assemble debug APK
-        run: gradle testDebugUnitTest assembleDebug
+      - name: Run Android unit tests and assemble APK/AAB artifacts
+        run: gradle testDebugUnitTest assembleDebug assembleRelease bundleRelease
 
       - name: Generate release evidence report
         run: bash scripts/generate-release-report.sh
@@ -44,6 +44,20 @@ jobs:
         with:
           name: PakFit-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PakFit-release-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: PakFit-release-aab
+          path: app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
       - name: Upload release evidence report

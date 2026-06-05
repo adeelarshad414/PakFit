@@ -3,6 +3,21 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val releaseSigningInputs = mapOf(
+    "PAKFIT_RELEASE_STORE_FILE" to System.getenv("PAKFIT_RELEASE_STORE_FILE"),
+    "PAKFIT_RELEASE_STORE_PASSWORD" to System.getenv("PAKFIT_RELEASE_STORE_PASSWORD"),
+    "PAKFIT_RELEASE_KEY_ALIAS" to System.getenv("PAKFIT_RELEASE_KEY_ALIAS"),
+    "PAKFIT_RELEASE_KEY_PASSWORD" to System.getenv("PAKFIT_RELEASE_KEY_PASSWORD"),
+)
+val providedReleaseSigningInputs = releaseSigningInputs.filterValues { !it.isNullOrBlank() }
+val hasReleaseSigning = providedReleaseSigningInputs.size == releaseSigningInputs.size
+
+if (providedReleaseSigningInputs.isNotEmpty() && !hasReleaseSigning) {
+    throw org.gradle.api.GradleException(
+        "Android release signing requires all of: ${releaseSigningInputs.keys.joinToString(", ")}"
+    )
+}
+
 android {
     namespace = "com.pakfit.app"
     compileSdk = 34
@@ -21,6 +36,31 @@ android {
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                val releaseStoreFile = file(releaseSigningInputs.getValue("PAKFIT_RELEASE_STORE_FILE")!!)
+                if (!releaseStoreFile.exists()) {
+                    throw org.gradle.api.GradleException(
+                        "PAKFIT_RELEASE_STORE_FILE does not exist: ${releaseStoreFile.absolutePath}"
+                    )
+                }
+                storeFile = releaseStoreFile
+                storePassword = releaseSigningInputs.getValue("PAKFIT_RELEASE_STORE_PASSWORD")
+                keyAlias = releaseSigningInputs.getValue("PAKFIT_RELEASE_KEY_ALIAS")
+                keyPassword = releaseSigningInputs.getValue("PAKFIT_RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
     }
 
     compileOptions {

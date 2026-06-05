@@ -45,11 +45,11 @@ Given a developer runs unit tests
 When domain tests execute  
 Then they do not require an Android emulator
 
-### Scenario: Build produces debug APK
+### Scenario: Build produces Android release artifacts
 
-Given the repository is configured  
-When the debug build runs  
-Then it produces an installable APK
+Given the repository is configured
+When the release validation command runs
+Then it produces a debug APK, release APK, and release Android App Bundle
 
 ### Scenario: New lifestyle features stay offline-first
 

@@ -4,30 +4,61 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-METADATA_FILE="$ROOT_DIR/app/build/outputs/apk/debug/output-metadata.json"
-APK_FILE="${APK_FILE:-$ROOT_DIR/app/build/outputs/apk/debug/app-debug.apk}"
+DEBUG_METADATA_FILE="$ROOT_DIR/app/build/outputs/apk/debug/output-metadata.json"
+RELEASE_METADATA_FILE="$ROOT_DIR/app/build/outputs/apk/release/output-metadata.json"
+DEBUG_APK_FILE="${DEBUG_APK_FILE:-$ROOT_DIR/app/build/outputs/apk/debug/app-debug.apk}"
+RELEASE_APK_FILE="${RELEASE_APK_FILE:-}"
+RELEASE_AAB_FILE="${RELEASE_AAB_FILE:-$ROOT_DIR/app/build/outputs/bundle/release/app-release.aab}"
 REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/outputs/PakFit/reports}"
 PRIVACY_MANIFEST="$ROOT_DIR/ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy"
 
-if [[ ! -f "$METADATA_FILE" ]]; then
+if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
   exit 1
 fi
 
-if [[ ! -f "$APK_FILE" ]]; then
-  echo "Missing APK file: $APK_FILE. Run scripts/validate-release.sh first." >&2
-  exit 1
-fi
-
 metadata_value() {
-  local key="$1"
-  sed -n "s/.*\"$key\": \"\\([^\"]*\\)\".*/\\1/p" "$METADATA_FILE" | head -1
+  local file="$1"
+  local key="$2"
+  sed -n "s/.*\"$key\": \"\\([^\"]*\\)\".*/\\1/p" "$file" | head -1
 }
 
 metadata_number() {
-  local key="$1"
-  sed -n "s/.*\"$key\": \\([0-9][0-9]*\\).*/\\1/p" "$METADATA_FILE" | head -1
+  local file="$1"
+  local key="$2"
+  sed -n "s/.*\"$key\": \\([0-9][0-9]*\\).*/\\1/p" "$file" | head -1
 }
+
+metadata_output_path() {
+  local file="$1"
+  local output_dir="$2"
+  local output_file
+  output_file="$(metadata_value "$file" outputFile)"
+  if [[ -z "$output_file" ]]; then
+    echo "Could not read outputFile from $file." >&2
+    exit 1
+  fi
+  echo "$output_dir/$output_file"
+}
+
+if [[ -z "$RELEASE_APK_FILE" ]]; then
+  RELEASE_APK_FILE="$(metadata_output_path "$RELEASE_METADATA_FILE" "$ROOT_DIR/app/build/outputs/apk/release")"
+fi
+
+if [[ ! -f "$DEBUG_APK_FILE" ]]; then
+  echo "Missing debug APK file: $DEBUG_APK_FILE. Run scripts/validate-release.sh first." >&2
+  exit 1
+fi
+
+if [[ ! -f "$RELEASE_APK_FILE" ]]; then
+  echo "Missing release APK file: $RELEASE_APK_FILE. Run scripts/validate-release.sh first." >&2
+  exit 1
+fi
+
+if [[ ! -f "$RELEASE_AAB_FILE" ]]; then
+  echo "Missing release AAB file: $RELEASE_AAB_FILE. Run scripts/validate-release.sh first." >&2
+  exit 1
+fi
 
 sha256_file() {
   local file="$1"
@@ -41,22 +72,66 @@ sha256_file() {
   fi
 }
 
-APPLICATION_ID="$(metadata_value applicationId)"
-VARIANT_NAME="$(metadata_value variantName)"
-VERSION_NAME="$(metadata_value versionName)"
-VERSION_CODE="$(metadata_number versionCode)"
+find_apksigner() {
+  if command -v apksigner >/dev/null 2>&1; then
+    command -v apksigner
+    return 0
+  fi
 
-if [[ -z "$VERSION_NAME" || -z "$VERSION_CODE" || -z "$APPLICATION_ID" || -z "$VARIANT_NAME" ]]; then
-  echo "Could not read APK metadata from $METADATA_FILE." >&2
+  local sdk_root
+  for sdk_root in "${ANDROID_HOME:-}" "${ANDROID_SDK_ROOT:-}" "$HOME/Library/Android/sdk" "/opt/homebrew/share/android-commandlinetools"; do
+    if [[ -n "$sdk_root" && -d "$sdk_root/build-tools" ]]; then
+      find "$sdk_root/build-tools" -type f -name apksigner 2>/dev/null | sort | tail -1
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+apk_signature_status() {
+  local apk_file="$1"
+  local apksigner
+  apksigner="$(find_apksigner || true)"
+
+  if [[ -z "$apksigner" ]]; then
+    echo "not verified; apksigner unavailable"
+    return 0
+  fi
+
+  if "$apksigner" verify "$apk_file" >/dev/null 2>&1; then
+    echo "signature verifies with apksigner"
+  else
+    echo "not signed or signature verification failed"
+  fi
+}
+
+APPLICATION_ID="$(metadata_value "$RELEASE_METADATA_FILE" applicationId)"
+DEBUG_VARIANT_NAME="$(metadata_value "$DEBUG_METADATA_FILE" variantName)"
+RELEASE_VARIANT_NAME="$(metadata_value "$RELEASE_METADATA_FILE" variantName)"
+VERSION_NAME="$(metadata_value "$RELEASE_METADATA_FILE" versionName)"
+VERSION_CODE="$(metadata_number "$RELEASE_METADATA_FILE" versionCode)"
+
+if [[ -z "$VERSION_NAME" || -z "$VERSION_CODE" || -z "$APPLICATION_ID" || -z "$DEBUG_VARIANT_NAME" || -z "$RELEASE_VARIANT_NAME" ]]; then
+  echo "Could not read APK metadata from Android output-metadata.json files." >&2
   exit 1
 fi
 
-APK_SHA256="$(sha256_file "$APK_FILE")"
-APK_BYTES="$(wc -c < "$APK_FILE" | tr -d ' ')"
+DEBUG_APK_SHA256="$(sha256_file "$DEBUG_APK_FILE")"
+DEBUG_APK_BYTES="$(wc -c < "$DEBUG_APK_FILE" | tr -d ' ')"
+RELEASE_APK_SHA256="$(sha256_file "$RELEASE_APK_FILE")"
+RELEASE_APK_BYTES="$(wc -c < "$RELEASE_APK_FILE" | tr -d ' ')"
+RELEASE_AAB_SHA256="$(sha256_file "$RELEASE_AAB_FILE")"
+RELEASE_AAB_BYTES="$(wc -c < "$RELEASE_AAB_FILE" | tr -d ' ')"
+RELEASE_APK_SIGNATURE_STATUS="$(apk_signature_status "$RELEASE_APK_FILE")"
+RELEASE_SIGNING_ENV_STATUS="not configured in this run"
+if [[ -n "${PAKFIT_RELEASE_STORE_FILE:-}" && -n "${PAKFIT_RELEASE_STORE_PASSWORD:-}" && -n "${PAKFIT_RELEASE_KEY_ALIAS:-}" && -n "${PAKFIT_RELEASE_KEY_PASSWORD:-}" ]]; then
+  RELEASE_SIGNING_ENV_STATUS="configured from PAKFIT_RELEASE_* environment variables"
+fi
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 REPORT_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-REPORT_FILE="$REPORT_DIR/PakFit-v${VERSION_NAME}-${VARIANT_NAME}-release-report.md"
+REPORT_FILE="$REPORT_DIR/PakFit-v${VERSION_NAME}-release-evidence-report.md"
 
 if [[ ! -f "$PRIVACY_MANIFEST" ]]; then
   PRIVACY_MANIFEST_STATUS="missing"
@@ -89,12 +164,30 @@ mkdir -p "$REPORT_DIR"
   echo "## Android APK"
   echo
   echo "- Application ID: $APPLICATION_ID"
-  echo "- Variant: $VARIANT_NAME"
   echo "- Version name: $VERSION_NAME"
   echo "- Version code: $VERSION_CODE"
-  echo "- APK path: $APK_FILE"
-  echo "- APK bytes: $APK_BYTES"
-  echo "- APK SHA-256: $APK_SHA256"
+  echo
+  echo "### Debug APK"
+  echo
+  echo "- Variant: $DEBUG_VARIANT_NAME"
+  echo "- APK path: $DEBUG_APK_FILE"
+  echo "- APK bytes: $DEBUG_APK_BYTES"
+  echo "- APK SHA-256: $DEBUG_APK_SHA256"
+  echo
+  echo "### Release APK"
+  echo
+  echo "- Variant: $RELEASE_VARIANT_NAME"
+  echo "- APK path: $RELEASE_APK_FILE"
+  echo "- APK bytes: $RELEASE_APK_BYTES"
+  echo "- APK SHA-256: $RELEASE_APK_SHA256"
+  echo "- APK signature status: $RELEASE_APK_SIGNATURE_STATUS"
+  echo "- Release signing environment: $RELEASE_SIGNING_ENV_STATUS"
+  echo
+  echo "### Release Android App Bundle"
+  echo
+  echo "- AAB path: $RELEASE_AAB_FILE"
+  echo "- AAB bytes: $RELEASE_AAB_BYTES"
+  echo "- AAB SHA-256: $RELEASE_AAB_SHA256"
   echo
   echo "## iOS"
   echo
@@ -106,14 +199,16 @@ mkdir -p "$REPORT_DIR"
   echo "## Validation Gate"
   echo
   echo "- Local command: bash scripts/validate-release.sh"
-  echo "- Android: testDebugUnitTest and assembleDebug"
+  echo "- Android: testDebugUnitTest, assembleDebug, assembleRelease, and bundleRelease"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"
   echo "- Source gates: English-only app source and secret-pattern smoke check"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
   echo
   echo "## Release Boundaries"
   echo
-  echo "- Debug APK only; production signing is not configured in this repository."
+  echo "- Android release signing is configured only through external PAKFIT_RELEASE_* environment variables; signing secrets must not be committed."
+  echo "- Unsigned release APKs and locally generated AABs are build evidence, not store-submission proof."
+  echo "- Play Console submission still requires upload-key signing verification and store track validation."
   echo "- iOS simulator/archive/signing still requires full Xcode.app and signing assets."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
