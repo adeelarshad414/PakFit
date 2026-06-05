@@ -30,11 +30,18 @@ Export the built debug APK:
 OUTPUT_DIR=/path/to/output bash scripts/export-android-debug-apk.sh
 ```
 
+Generate release evidence:
+
+```bash
+REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
+```
+
 ## CI
 
 - Run unit tests.
 - Build debug APK.
 - Upload debug APK artifact.
+- Generate and upload release evidence report.
 - Run iOS Swift core smoke tests.
 - Compile the SwiftUI app target.
 - Run English-only source check.

@@ -87,6 +87,7 @@ This Codex machine currently has Command Line Tools selected instead of full Xco
 ```bash
 bash scripts/validate-release.sh
 OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-debug-apk.sh
+REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/reports bash scripts/generate-release-report.sh
 ```
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/APK, iOS Swift validation, English-only source checks, and basic secret-pattern checks.

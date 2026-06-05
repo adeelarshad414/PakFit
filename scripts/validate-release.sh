@@ -74,4 +74,7 @@ else
   exit 1
 fi
 
+echo "== Release evidence report =="
+bash scripts/generate-release-report.sh
+
 echo "PakFit release validation passed."
