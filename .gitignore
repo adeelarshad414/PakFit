@@ -1,7 +1,9 @@
 .gradle/
+.gradle-user-home/
 build/
 app/build/
 ios/PakFitIOS/.build/
+outputs/
 local.properties
 *.iml
 .idea/

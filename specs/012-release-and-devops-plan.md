@@ -18,12 +18,27 @@ export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-h
 /opt/homebrew/opt/gradle@8/bin/gradle assembleDebug
 ```
 
-## Future CI
+## Local Release Gate
+
+```bash
+bash scripts/validate-release.sh
+```
+
+Export the built debug APK:
+
+```bash
+OUTPUT_DIR=/path/to/output bash scripts/export-android-debug-apk.sh
+```
+
+## CI
 
 - Run unit tests.
-- Run lint.
 - Build debug APK.
-- Run dependency vulnerability scan.
+- Upload debug APK artifact.
+- Run iOS Swift core smoke tests.
+- Compile the SwiftUI app target.
+- Run English-only source check.
+- Run basic hardcoded secret-pattern smoke check.
 - Store APK artifact.
 - Add release signing only after secure secret storage is configured.
 

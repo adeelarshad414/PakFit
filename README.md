@@ -82,6 +82,15 @@ Open `ios/PakFitIOS/PakFitIOS.xcodeproj` in Xcode, select the `PakFitIOS` target
 
 This Codex machine currently has Command Line Tools selected instead of full Xcode, so simulator builds require installing/selecting Xcode.app first.
 
+## Release Validation
+
+```bash
+bash scripts/validate-release.sh
+OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-debug-apk.sh
+```
+
+GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/APK, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
+
 ## Development Rule
 
 Every new feature should start in `specs/`, then become a failing domain test, then move into implementation and UI. This keeps the agent loop measurable and prevents the app from becoming generic fitness advice.
