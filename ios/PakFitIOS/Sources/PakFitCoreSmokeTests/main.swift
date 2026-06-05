@@ -129,13 +129,24 @@ func runPakFitCoreSmokeTests() throws {
             panicOrSevereDistress: true
         ),
         clinicalRiskFactors: [.familyHistoryDiabetes, .highSaltIntake],
+        consentState: ConsentState(
+            acceptedAtIso: "2026-06-05T16:00:00Z",
+            healthDataStorageAccepted: true,
+            medicalDisclaimerAccepted: true,
+            mentalHealthCrisisAccepted: true,
+            photoEstimateLimitAccepted: true,
+            localOnlyStorageAccepted: true
+        ),
         manualFoodItems: [manual]
     )
     let snapshotCodec = PakFitSnapshotCodec()
     let payload = try snapshotCodec.encode(snapshot)
     let decoded = try snapshotCodec.decode(payload)
     let summary = snapshotCodec.summary(decoded)
+    let consentGate = ConsentGovernanceEngine().buildGate(consent: decoded.consentState)
     try expect(decoded == snapshot, "snapshot should round-trip through Codable JSON")
+    try expect(consentGate.canSaveHealthSnapshot, "complete consent should allow local health snapshot storage")
+    try expect(!consentGate.canEnableAnalytics, "analytics should remain off without explicit opt-in")
     try expect(summary.mealEntries == 3, "snapshot summary should count meal entries")
     try expect(summary.manualFoodItems == 1, "snapshot summary should count manual food")
     try expect(summary.healthMarkerValues == 11, "snapshot summary should count health marker values")

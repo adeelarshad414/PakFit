@@ -77,6 +77,14 @@ class PakFitSnapshotCodecTest {
                 ClinicalRiskFactor.FAMILY_HISTORY_DIABETES,
                 ClinicalRiskFactor.HIGH_SALT_INTAKE
             ),
+            consentState = ConsentState(
+                acceptedAtIso = "2026-06-05T16:00:00Z",
+                healthDataStorageAccepted = true,
+                medicalDisclaimerAccepted = true,
+                mentalHealthCrisisAccepted = true,
+                photoEstimateLimitAccepted = true,
+                localOnlyStorageAccepted = true
+            ),
             manualFoodItems = listOf(manualFood)
         )
 
@@ -84,6 +92,8 @@ class PakFitSnapshotCodecTest {
         val decoded = codec.decode(payload)
 
         assertEquals(snapshot, decoded)
+        assertTrue(decoded.consentState.requiredAccepted)
+        assertEquals("pakfit-consent-v1", decoded.consentState.consentVersion)
         assertTrue(payload.contains("pakfit", ignoreCase = true))
         assertFalse(payload.contains("bitmap", ignoreCase = true))
         assertFalse(payload.contains("imageBytes", ignoreCase = true))

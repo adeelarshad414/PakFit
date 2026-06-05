@@ -155,6 +155,14 @@ final class PakFitCoreTests: XCTestCase {
             lifestyleRecord: DailyLifestyleRecord(waterLiters: 2.4, steps: 7_200, sleepHours: 6.8, workoutMinutes: 35, stressLevel: 2),
             mentalWellnessInput: MentalWellnessInput(phq9Score: 8, gad7Score: 6, supportFlags: [.panicOrSevereDistress]),
             clinicalRiskFactors: [.familyHistoryDiabetes, .highSaltIntake],
+            consentState: ConsentState(
+                acceptedAtIso: "2026-06-05T16:00:00Z",
+                healthDataStorageAccepted: true,
+                medicalDisclaimerAccepted: true,
+                mentalHealthCrisisAccepted: true,
+                photoEstimateLimitAccepted: true,
+                localOnlyStorageAccepted: true
+            ),
             manualFoodItems: [manual]
         )
 
@@ -164,8 +172,26 @@ final class PakFitCoreTests: XCTestCase {
         let summary = codec.summary(decoded)
 
         XCTAssertEqual(decoded, snapshot)
+        XCTAssertTrue(decoded.consentState.requiredAccepted)
         XCTAssertEqual(summary.manualFoodItems, 1)
         XCTAssertEqual(summary.supportFlagCount, 1)
         XCTAssertFalse(payload.localizedCaseInsensitiveContains("imageBytes"))
+    }
+
+    func testConsentGateBlocksStorageUntilRequiredAcknowledgementsAreComplete() {
+        let incomplete = ConsentGovernanceEngine().buildGate(consent: ConsentState(medicalDisclaimerAccepted: true))
+        let complete = ConsentGovernanceEngine().buildGate(consent: ConsentState(
+            healthDataStorageAccepted: true,
+            medicalDisclaimerAccepted: true,
+            mentalHealthCrisisAccepted: true,
+            photoEstimateLimitAccepted: true,
+            localOnlyStorageAccepted: true,
+            analyticsOptIn: false
+        ))
+
+        XCTAssertFalse(incomplete.canSaveHealthSnapshot)
+        XCTAssertEqual(incomplete.pendingRequiredCount, 4)
+        XCTAssertTrue(complete.canSaveHealthSnapshot)
+        XCTAssertFalse(complete.canEnableAnalytics)
     }
 }

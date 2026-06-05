@@ -79,6 +79,7 @@ final class PakFitViewModel: ObservableObject {
     @Published var gad7Score = 4
     @Published var mentalSupportFlags: Set<MentalSupportFlag> = []
     @Published var clinicalRiskFactors: Set<ClinicalRiskFactor> = [.familyHistoryDiabetes, .highSaltIntake]
+    @Published var consentState = ConsentState()
     @Published var manualFoodName = "Homemade chicken salan"
     @Published var manualCategory = "Desi dish"
     @Published var manualServing = "1 bowl"
@@ -95,6 +96,7 @@ final class PakFitViewModel: ObservableObject {
     private let searchEngine = FoodSearchEngine()
     private let photoEstimator = FoodPhotoEstimator()
     private let snapshotCodec = PakFitSnapshotCodec()
+    private let consentEngine = ConsentGovernanceEngine()
     private let snapshotKey = "pakfit.localSnapshot"
     private let isoFormatter = ISO8601DateFormatter()
 
@@ -158,6 +160,10 @@ final class PakFitViewModel: ObservableObject {
         snapshotCodec.summary(buildSnapshot(savedAtIso: "Draft"))
     }
 
+    var consentGate: ConsentGate {
+        consentEngine.buildGate(consent: consentState)
+    }
+
     var searchURL: URL? {
         URL(string: searchEngine.buildCalorieSearchUrl(query: foodSearchQuery))
     }
@@ -201,6 +207,10 @@ final class PakFitViewModel: ObservableObject {
     }
 
     func saveLocalSnapshot() {
+        guard consentGate.canSaveHealthSnapshot else {
+            localDataStatus = "Complete required consent before saving sensitive local health data."
+            return
+        }
         let snapshot = buildSnapshot(savedAtIso: isoFormatter.string(from: Date()))
         do {
             UserDefaults.standard.set(try snapshotCodec.encode(snapshot), forKey: snapshotKey)
@@ -222,6 +232,10 @@ final class PakFitViewModel: ObservableObject {
     }
 
     func exportLocalSnapshotPreview() {
+        guard consentGate.canSaveHealthSnapshot else {
+            localDataStatus = "Complete required consent before exporting sensitive local health data."
+            return
+        }
         do {
             let snapshot = buildSnapshot(savedAtIso: isoFormatter.string(from: Date()))
             let payload = try snapshotCodec.encode(snapshot)
@@ -238,6 +252,32 @@ final class PakFitViewModel: ObservableObject {
         localExportPreview = ""
     }
 
+    func updateConsent(key: String, accepted: Bool) {
+        var updated = consentState
+        switch key {
+        case "healthDataStorage":
+            updated.healthDataStorageAccepted = accepted
+        case "medicalDisclaimer":
+            updated.medicalDisclaimerAccepted = accepted
+        case "mentalHealthCrisis":
+            updated.mentalHealthCrisisAccepted = accepted
+        case "photoEstimateLimit":
+            updated.photoEstimateLimitAccepted = accepted
+        case "localOnlyStorage":
+            updated.localOnlyStorageAccepted = accepted
+        case "analytics":
+            updated.analyticsOptIn = accepted
+        default:
+            break
+        }
+        if updated.requiredAccepted && updated.acceptedAtIso == nil {
+            updated.acceptedAtIso = isoFormatter.string(from: Date())
+        } else if !updated.requiredAccepted {
+            updated.acceptedAtIso = nil
+        }
+        consentState = updated
+    }
+
     private func restoreSnapshotFromDefaults() -> PakFitUserSnapshot? {
         guard let payload = UserDefaults.standard.string(forKey: snapshotKey) else { return nil }
         return try? snapshotCodec.decode(payload)
@@ -252,6 +292,7 @@ final class PakFitViewModel: ObservableObject {
             lifestyleRecord: lifestyleRecord,
             mentalWellnessInput: mentalWellnessInput,
             clinicalRiskFactors: clinicalRiskFactors,
+            consentState: consentState,
             manualFoodItems: catalog.filter { $0.category == .manual || $0.customCategory != nil }
         )
     }
@@ -269,6 +310,7 @@ final class PakFitViewModel: ObservableObject {
         gad7Score = snapshot.mentalWellnessInput.gad7Score ?? 4
         mentalSupportFlags = snapshot.mentalWellnessInput.supportFlags
         clinicalRiskFactors = snapshot.clinicalRiskFactors
+        consentState = snapshot.consentState
         catalog = snapshot.manualFoodItems.reduce(foodEngine.defaultCatalog()) { current, item in
             foodEngine.addManualFoodItem(catalog: current, item: item)
         }
@@ -688,6 +730,30 @@ struct LocalDataPanel: View {
                 Text("Snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. It stays local unless you export it.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("\(model.consentGate.statusTitle): \(model.consentGate.statusMessage)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(model.consentGate.canSaveHealthSnapshot ? .teal : .red)
+
+                    ForEach(model.consentGate.requirements) { requirement in
+                        Toggle(isOn: Binding(
+                            get: { requirement.accepted },
+                            set: { model.updateConsent(key: requirement.key, accepted: $0) }
+                        )) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(requirement.required ? "\(requirement.title) *" : requirement.title)
+                                    .font(.footnote.weight(.semibold))
+                                if requirement.required && !requirement.accepted {
+                                    Text(requirement.message)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .toggleStyle(.switch)
+                    }
+                }
 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     Button {

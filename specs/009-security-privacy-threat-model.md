@@ -2,7 +2,7 @@
 
 ## Current Data
 
-The current app stores no user data and sends no data to a backend. Profile values exist only in memory.
+The current app stores user data only in an explicit local snapshot after required consent acknowledgements are complete. It sends no data to a backend.
 
 ## Sensitive Data Classes
 
@@ -10,7 +10,8 @@ The current app stores no user data and sends no data to a backend. Profile valu
 - Medical cautions
 - Weight, height, age, gender
 - Goals and progress history
-- Future analytics events
+- Food logs, custom foods, calories, lifestyle inputs, health markers, mental wellness inputs, clinical risk factors, and consent state
+- Future analytics events if a later explicit opt-in and schema are implemented
 
 ## Threats
 
@@ -25,6 +26,8 @@ The current app stores no user data and sends no data to a backend. Profile valu
 - Do not log profile or medical caution values.
 - Do not add secrets to the repository.
 - Keep analytics off until consent and schema specs exist.
+- Block local save/export until the required consent and clinical-boundary acknowledgements are complete.
+- Keep food photo image bytes out of the local snapshot.
 - Keep recommendation rules deterministic and testable for the current slice.
 - Add backend auth and storage threat model before introducing APIs.
 
@@ -33,6 +36,7 @@ The current app stores no user data and sends no data to a backend. Profile valu
 ### Scenario: No backend data leakage in current MVP
 
 Given the current app runs  
-When a user changes profile inputs  
+When a user changes profile inputs, health markers, food logs, or mental wellness inputs  
 Then no network call is made  
-And no sensitive values are logged by app code
+And no sensitive values are logged by app code  
+And local save/export remains blocked until required consent is complete

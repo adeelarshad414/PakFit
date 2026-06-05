@@ -68,6 +68,10 @@ import com.pakfit.app.domain.ClinicalRiskLevel
 import com.pakfit.app.domain.CoachReview
 import com.pakfit.app.domain.CoachReviewEngine
 import com.pakfit.app.domain.CoachingAction
+import com.pakfit.app.domain.ConsentGate
+import com.pakfit.app.domain.ConsentGovernanceEngine
+import com.pakfit.app.domain.ConsentRequirement
+import com.pakfit.app.domain.ConsentState
 import com.pakfit.app.domain.DailyCalorieTracker
 import com.pakfit.app.domain.DailyFoodRecord
 import com.pakfit.app.domain.DailyLifestyleRecord
@@ -212,6 +216,7 @@ fun PakFitApp(
     val clinicalIntelligenceEngine = remember { ClinicalIntelligenceEngine() }
     val mentalWellnessEngine = remember { MentalWellnessEngine() }
     val coachReviewEngine = remember { CoachReviewEngine(foodRecordEngine) }
+    val consentGovernanceEngine = remember { ConsentGovernanceEngine() }
     var goal by remember { mutableStateOf(restoredSnapshot?.profile?.goal ?: Goal.FAT_LOSS) }
     var activity by remember { mutableStateOf(restoredSnapshot?.profile?.activityLevel ?: ActivityLevel.LIGHT) }
     var diet by remember { mutableStateOf(restoredSnapshot?.profile?.dietPattern ?: DietPattern.HALAL_OMNIVORE) }
@@ -266,6 +271,9 @@ fun PakFitApp(
     }
     var mentalSupportFlags by remember {
         mutableStateOf(restoredSnapshot?.mentalWellnessInput?.supportFlags ?: emptySet())
+    }
+    var consentState by remember {
+        mutableStateOf(restoredSnapshot?.consentState ?: ConsentState())
     }
     var catalog by remember {
         mutableStateOf(
@@ -386,6 +394,7 @@ fun PakFitApp(
         healthReport = healthReport,
         proteinGramsLogged = estimateProteinLogged(mealEntries)
     )
+    val consentGate = consentGovernanceEngine.buildGate(consentState)
 
     fun manualFoodsForSnapshot(): List<FoodItem> {
         return catalog
@@ -406,6 +415,7 @@ fun PakFitApp(
                 supportFlags = mentalSupportFlags
             ),
             clinicalRiskFactors = clinicalRiskFactors,
+            consentState = consentState,
             manualFoodItems = manualFoodsForSnapshot()
         )
     }
@@ -447,6 +457,7 @@ fun PakFitApp(
         sleepHours = snapshot.lifestyleRecord.sleepHours.toFloat()
         workoutMinutes = snapshot.lifestyleRecord.workoutMinutes.toFloat()
         stressLevel = snapshot.lifestyleRecord.stressLevel.toFloat()
+        consentState = snapshot.consentState
         selectedFoodId = catalog.firstOrNull()?.id ?: "roti-medium"
         selectedCategory = catalog.firstOrNull()?.category ?: FoodCategory.ROTI_RICE_BREAD
     }
@@ -693,14 +704,21 @@ fun PakFitApp(
                         onStressLevelChange = { stressLevel = it }
                     )
                     LocalDataCard(
+                        consentState = consentState,
+                        consentGate = consentGate,
                         summary = snapshotCodec.summary(buildCurrentSnapshot()),
                         status = localDataStatus,
                         exportPreview = localExportPreview,
+                        onConsentChange = { consentState = it },
                         onSave = {
-                            val snapshot = buildCurrentSnapshot()
-                            localSnapshotStore.save(snapshot)
-                            localDataStatus = "Saved local snapshot at ${snapshot.savedAtIso}."
-                            localExportPreview = ""
+                            if (!consentGate.canSaveHealthSnapshot) {
+                                localDataStatus = "Complete required consent before saving sensitive local health data."
+                            } else {
+                                val snapshot = buildCurrentSnapshot()
+                                localSnapshotStore.save(snapshot)
+                                localDataStatus = "Saved local snapshot at ${snapshot.savedAtIso}."
+                                localExportPreview = ""
+                            }
                         },
                         onRestore = {
                             val snapshot = localSnapshotStore.restoreOrNull()
@@ -713,10 +731,14 @@ fun PakFitApp(
                             }
                         },
                         onExportPreview = {
-                            val snapshot = buildCurrentSnapshot()
-                            val payload = localSnapshotStore.export(snapshot)
-                            localExportPreview = payload.lines().take(12).joinToString("\n")
-                            localDataStatus = "Export preview generated locally. Food photo image bytes are not included."
+                            if (!consentGate.canSaveHealthSnapshot) {
+                                localDataStatus = "Complete required consent before exporting sensitive local health data."
+                            } else {
+                                val snapshot = buildCurrentSnapshot()
+                                val payload = localSnapshotStore.export(snapshot)
+                                localExportPreview = payload.lines().take(12).joinToString("\n")
+                                localDataStatus = "Export preview generated locally. Food photo image bytes are not included."
+                            }
                         },
                         onClear = {
                             localSnapshotStore.clear()
@@ -925,9 +947,12 @@ private fun ControlCard(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LocalDataCard(
+    consentState: ConsentState,
     summary: PakFitSnapshotSummary,
+    consentGate: ConsentGate,
     status: String,
     exportPreview: String,
+    onConsentChange: (ConsentState) -> Unit,
     onSave: () -> Unit,
     onRestore: () -> Unit,
     onExportPreview: () -> Unit,
@@ -937,6 +962,20 @@ private fun LocalDataCard(
         Text(
             text = "Snapshot covers profile, food logs, health markers, lifestyle inputs, mental wellness inputs, and custom foods. It stays local unless you export it.",
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "${consentGate.statusTitle}: ${consentGate.statusMessage}",
+            fontWeight = FontWeight.SemiBold,
+            color = if (consentGate.canSaveHealthSnapshot) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.error
+            }
+        )
+        ConsentRequirementChips(
+            consentState = consentState,
+            requirements = consentGate.requirements,
+            onConsentChange = onConsentChange
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -992,6 +1031,73 @@ private fun LocalDataCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun ConsentRequirementChips(
+    consentState: ConsentState,
+    requirements: List<ConsentRequirement>,
+    onConsentChange: (ConsentState) -> Unit
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        requirements.forEach { requirement ->
+            FilterChip(
+                selected = requirement.accepted,
+                onClick = {
+                    onConsentChange(
+                        updateConsentRequirement(
+                            consent = consentState,
+                            key = requirement.key,
+                            accepted = !requirement.accepted
+                        )
+                    )
+                },
+                label = {
+                    Text(
+                        text = if (requirement.required) {
+                            "${requirement.title} *"
+                        } else {
+                            requirement.title
+                        }
+                    )
+                }
+            )
+        }
+    }
+    requirements.filter { it.required && !it.accepted }.forEach { requirement ->
+        Text(
+            text = "${requirement.title}: ${requirement.message}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+private fun updateConsentRequirement(
+    consent: ConsentState,
+    key: String,
+    accepted: Boolean
+): ConsentState {
+    val updated = when (key) {
+        "healthDataStorage" -> consent.copy(healthDataStorageAccepted = accepted)
+        "medicalDisclaimer" -> consent.copy(medicalDisclaimerAccepted = accepted)
+        "mentalHealthCrisis" -> consent.copy(mentalHealthCrisisAccepted = accepted)
+        "photoEstimateLimit" -> consent.copy(photoEstimateLimitAccepted = accepted)
+        "localOnlyStorage" -> consent.copy(localOnlyStorageAccepted = accepted)
+        "analytics" -> consent.copy(analyticsOptIn = accepted)
+        else -> consent
+    }
+    return if (updated.requiredAccepted && updated.acceptedAtIso == null) {
+        updated.copy(acceptedAtIso = Instant.now().toString())
+    } else if (!updated.requiredAccepted) {
+        updated.copy(acceptedAtIso = null)
+    } else {
+        updated
     }
 }
 

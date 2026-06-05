@@ -31,9 +31,10 @@
 
 ## Privacy
 
-- Current lifestyle and medical-caution data remains in memory only.
-- Current health marker values and meal records remain in memory only.
-- No analytics are emitted until consent and privacy specs are implemented.
+- Sensitive health data remains local to the device.
+- Local save/export requires consent and clinical-boundary acknowledgements.
+- Food photo image bytes are not saved in the local snapshot.
+- No analytics are emitted; optional analytics remains future-gated by explicit opt-in, schema, and privacy notice.
 
 ## Acceptance Criteria
 
@@ -58,8 +59,9 @@ Then the app does not require a backend call
 ### Scenario: Health and meal records stay local
 
 Given a user enters lab values or food records  
-When the MVP calculates reports  
-Then no backend, analytics, or external storage is required
+When the MVP calculates reports or saves a local snapshot  
+Then no backend, analytics, or external storage is required  
+And local save/export is allowed only after required consent is complete
 
 ### Scenario: Charts stay local
 

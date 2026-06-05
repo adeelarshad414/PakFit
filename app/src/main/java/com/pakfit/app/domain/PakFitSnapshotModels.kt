@@ -13,6 +13,7 @@ data class PakFitUserSnapshot(
     val lifestyleRecord: DailyLifestyleRecord,
     val mentalWellnessInput: MentalWellnessInput,
     val clinicalRiskFactors: Set<ClinicalRiskFactor>,
+    val consentState: ConsentState = ConsentState(),
     val manualFoodItems: List<FoodItem>
 )
 
@@ -36,6 +37,7 @@ class PakFitSnapshotCodec {
         writeLifestyle(properties, snapshot.lifestyleRecord)
         writeMentalInput(properties, snapshot.mentalWellnessInput)
         properties.setProperty("clinicalRiskFactors", writeEnumSet(snapshot.clinicalRiskFactors))
+        writeConsent(properties, snapshot.consentState)
 
         properties.setProperty("manualFood.count", snapshot.manualFoodItems.size.toString())
         snapshot.manualFoodItems.forEachIndexed { index, food ->
@@ -63,6 +65,7 @@ class PakFitSnapshotCodec {
             lifestyleRecord = readLifestyle(properties),
             mentalWellnessInput = readMentalInput(properties),
             clinicalRiskFactors = properties.enumSet("clinicalRiskFactors", ClinicalRiskFactor.values()),
+            consentState = readConsent(properties),
             manualFoodItems = readFoodItems(properties, "manualFood")
         )
     }
@@ -220,6 +223,30 @@ class PakFitSnapshotCodec {
             suicidalIdeation = properties.boolean("mental.suicidalIdeation", false),
             panicOrSevereDistress = properties.boolean("mental.panicOrSevereDistress", false),
             cannotStaySafe = properties.boolean("mental.cannotStaySafe", false)
+        )
+    }
+
+    private fun writeConsent(properties: Properties, consent: ConsentState) {
+        properties.setProperty("consent.version", consent.consentVersion)
+        properties.setOptionalString("consent.acceptedAtIso", consent.acceptedAtIso)
+        properties.setProperty("consent.healthDataStorageAccepted", consent.healthDataStorageAccepted.toString())
+        properties.setProperty("consent.medicalDisclaimerAccepted", consent.medicalDisclaimerAccepted.toString())
+        properties.setProperty("consent.mentalHealthCrisisAccepted", consent.mentalHealthCrisisAccepted.toString())
+        properties.setProperty("consent.photoEstimateLimitAccepted", consent.photoEstimateLimitAccepted.toString())
+        properties.setProperty("consent.localOnlyStorageAccepted", consent.localOnlyStorageAccepted.toString())
+        properties.setProperty("consent.analyticsOptIn", consent.analyticsOptIn.toString())
+    }
+
+    private fun readConsent(properties: Properties): ConsentState {
+        return ConsentState(
+            consentVersion = properties.getProperty("consent.version", ConsentState.CONSENT_VERSION),
+            acceptedAtIso = properties.optionalString("consent.acceptedAtIso"),
+            healthDataStorageAccepted = properties.boolean("consent.healthDataStorageAccepted", false),
+            medicalDisclaimerAccepted = properties.boolean("consent.medicalDisclaimerAccepted", false),
+            mentalHealthCrisisAccepted = properties.boolean("consent.mentalHealthCrisisAccepted", false),
+            photoEstimateLimitAccepted = properties.boolean("consent.photoEstimateLimitAccepted", false),
+            localOnlyStorageAccepted = properties.boolean("consent.localOnlyStorageAccepted", false),
+            analyticsOptIn = properties.boolean("consent.analyticsOptIn", false)
         )
     }
 

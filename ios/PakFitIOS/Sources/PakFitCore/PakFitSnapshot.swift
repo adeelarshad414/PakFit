@@ -64,6 +64,128 @@ public enum ClinicalRiskFactor: String, CaseIterable, Hashable, Codable {
     case smokingOrTobacco = "Smoking or tobacco"
 }
 
+public struct ConsentState: Equatable, Codable {
+    public static let currentConsentVersion = "pakfit-consent-v1"
+
+    public var consentVersion: String
+    public var acceptedAtIso: String?
+    public var healthDataStorageAccepted: Bool
+    public var medicalDisclaimerAccepted: Bool
+    public var mentalHealthCrisisAccepted: Bool
+    public var photoEstimateLimitAccepted: Bool
+    public var localOnlyStorageAccepted: Bool
+    public var analyticsOptIn: Bool
+
+    public var requiredAccepted: Bool {
+        healthDataStorageAccepted
+            && medicalDisclaimerAccepted
+            && mentalHealthCrisisAccepted
+            && photoEstimateLimitAccepted
+            && localOnlyStorageAccepted
+    }
+
+    public init(
+        consentVersion: String = Self.currentConsentVersion,
+        acceptedAtIso: String? = nil,
+        healthDataStorageAccepted: Bool = false,
+        medicalDisclaimerAccepted: Bool = false,
+        mentalHealthCrisisAccepted: Bool = false,
+        photoEstimateLimitAccepted: Bool = false,
+        localOnlyStorageAccepted: Bool = false,
+        analyticsOptIn: Bool = false
+    ) {
+        self.consentVersion = consentVersion
+        self.acceptedAtIso = acceptedAtIso
+        self.healthDataStorageAccepted = healthDataStorageAccepted
+        self.medicalDisclaimerAccepted = medicalDisclaimerAccepted
+        self.mentalHealthCrisisAccepted = mentalHealthCrisisAccepted
+        self.photoEstimateLimitAccepted = photoEstimateLimitAccepted
+        self.localOnlyStorageAccepted = localOnlyStorageAccepted
+        self.analyticsOptIn = analyticsOptIn
+    }
+}
+
+public struct ConsentRequirement: Equatable, Identifiable {
+    public let key: String
+    public let title: String
+    public let message: String
+    public let accepted: Bool
+    public let required: Bool
+
+    public var id: String { key }
+}
+
+public struct ConsentGate: Equatable {
+    public let canSaveHealthSnapshot: Bool
+    public let canEnableAnalytics: Bool
+    public let pendingRequiredCount: Int
+    public let requirements: [ConsentRequirement]
+    public let statusTitle: String
+    public let statusMessage: String
+}
+
+public final class ConsentGovernanceEngine {
+    public init() {}
+
+    public func buildGate(consent: ConsentState) -> ConsentGate {
+        let requirements = [
+            ConsentRequirement(
+                key: "healthDataStorage",
+                title: "Sensitive health data storage",
+                message: "Profile, labs, food logs, lifestyle inputs, mental wellness inputs, and custom foods can be stored locally on this device.",
+                accepted: consent.healthDataStorageAccepted,
+                required: true
+            ),
+            ConsentRequirement(
+                key: "medicalDisclaimer",
+                title: "Screening, not diagnosis",
+                message: "PakFit gives education and coaching support only. It does not diagnose, treat disease, prescribe therapy, or replace a clinician.",
+                accepted: consent.medicalDisclaimerAccepted,
+                required: true
+            ),
+            ConsentRequirement(
+                key: "mentalHealthCrisis",
+                title: "Crisis safety boundary",
+                message: "Mental wellness screeners are not emergency care. If safety is at risk, contact emergency support or a qualified professional now.",
+                accepted: consent.mentalHealthCrisisAccepted,
+                required: true
+            ),
+            ConsentRequirement(
+                key: "photoEstimateLimit",
+                title: "Photo calorie estimate limit",
+                message: "Food photo calories are estimates from hints, catalog matches, and portions until a real reviewed vision model is integrated.",
+                accepted: consent.photoEstimateLimitAccepted,
+                required: true
+            ),
+            ConsentRequirement(
+                key: "localOnlyStorage",
+                title: "Local-only storage",
+                message: "This build has no cloud sync or account backend. Backups are user-controlled export previews only.",
+                accepted: consent.localOnlyStorageAccepted,
+                required: true
+            ),
+            ConsentRequirement(
+                key: "analytics",
+                title: "Optional analytics",
+                message: "Analytics stay off unless a future schema, privacy notice, and explicit opt-in are implemented.",
+                accepted: consent.analyticsOptIn,
+                required: false
+            )
+        ]
+        let pendingRequired = requirements.filter { $0.required && !$0.accepted }.count
+        return ConsentGate(
+            canSaveHealthSnapshot: pendingRequired == 0,
+            canEnableAnalytics: consent.analyticsOptIn && pendingRequired == 0,
+            pendingRequiredCount: pendingRequired,
+            requirements: requirements,
+            statusTitle: pendingRequired == 0 ? "Consent complete" : "Consent needed",
+            statusMessage: pendingRequired == 0
+                ? "Local health snapshot actions are enabled. Analytics remain \(consent.analyticsOptIn ? "opted in for future use" : "off")."
+                : "\(pendingRequired) required acknowledgement\(pendingRequired == 1 ? "" : "s") remaining before saving sensitive local health data."
+        )
+    }
+}
+
 public struct PakFitUserSnapshot: Equatable, Codable {
     public static let currentSchemaVersion = 1
 
@@ -75,6 +197,7 @@ public struct PakFitUserSnapshot: Equatable, Codable {
     public var lifestyleRecord: DailyLifestyleRecord
     public var mentalWellnessInput: MentalWellnessInput
     public var clinicalRiskFactors: Set<ClinicalRiskFactor>
+    public var consentState: ConsentState
     public var manualFoodItems: [FoodItem]
 
     public init(
@@ -86,6 +209,7 @@ public struct PakFitUserSnapshot: Equatable, Codable {
         lifestyleRecord: DailyLifestyleRecord,
         mentalWellnessInput: MentalWellnessInput,
         clinicalRiskFactors: Set<ClinicalRiskFactor>,
+        consentState: ConsentState = ConsentState(),
         manualFoodItems: [FoodItem]
     ) {
         self.schemaVersion = schemaVersion
@@ -96,6 +220,7 @@ public struct PakFitUserSnapshot: Equatable, Codable {
         self.lifestyleRecord = lifestyleRecord
         self.mentalWellnessInput = mentalWellnessInput
         self.clinicalRiskFactors = clinicalRiskFactors
+        self.consentState = consentState
         self.manualFoodItems = manualFoodItems
     }
 }
