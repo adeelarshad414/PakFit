@@ -12,7 +12,7 @@ Add an iOS application path for PakFit so the product is no longer Android-only.
 - Include the default Pakistani food catalog for roti, rice, daal, protein, sabzi, dairy, desi dishes, desserts, drinks, and snacks.
 - Support manual food item entry with custom category, serving, and calories.
 - Provide online calorie search using Pakistani food context.
-- Provide a photo-estimate workflow that accepts a food hint and portion size, returns calories, and labels confidence.
+- Provide a photo-estimate workflow that lets the user choose or capture a food photo, accepts a visible-food hint and portion size, returns calories, and labels confidence.
 - Calculate BMI with South Asian screening cutoffs.
 - Flag lipid profile, uric acid, fasting blood sugar, HbA1c, hemoglobin, diabetes status, and blood pressure concerns.
 - Include a light, dark, and system theme selector.

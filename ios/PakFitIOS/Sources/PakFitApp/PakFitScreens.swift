@@ -1,8 +1,13 @@
 import Foundation
+import PhotosUI
 import SwiftUI
 
 #if os(macOS)
 import AppKit
+#endif
+
+#if os(iOS)
+import UIKit
 #endif
 
 #if canImport(PakFitCore)
@@ -225,6 +230,13 @@ struct DashboardScreen: View {
 struct TrackerScreen: View {
     @ObservedObject var model: PakFitViewModel
     @Environment(\.openURL) private var openURL
+    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var selectedPhotoStatus = "No food photo selected"
+
+    #if os(iOS)
+    @State private var isCameraPresented = false
+    @State private var capturedImage: UIImage?
+    #endif
 
     var body: some View {
         NavigationStack {
@@ -298,6 +310,50 @@ struct TrackerScreen: View {
 
                     Panel(title: "Food Photo Estimate") {
                         VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 10) {
+                                PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                                    Label("Choose Photo", systemImage: "photo.on.rectangle")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+
+                                #if os(iOS)
+                                Button {
+                                    isCameraPresented = true
+                                } label: {
+                                    Label("Capture", systemImage: "camera.fill")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+                                #endif
+                            }
+
+                            Text(selectedPhotoStatus)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                            #if os(iOS)
+                            if let capturedImage {
+                                Image(uiImage: capturedImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 160)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .overlay(alignment: .bottomLeading) {
+                                        Label("Captured food photo", systemImage: "checkmark.circle.fill")
+                                            .font(.caption.weight(.semibold))
+                                            .padding(8)
+                                            .background(.thinMaterial, in: Capsule())
+                                            .padding(8)
+                                    }
+                            }
+                            #else
+                            Text("Open on an iPhone simulator or device to use camera capture.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            #endif
+
                             TextField("Food visible in photo", text: $model.photoFoodHint)
                                 .textFieldStyle(.roundedBorder)
                             Picker("Portion", selection: $model.photoPortion) {
@@ -338,6 +394,15 @@ struct TrackerScreen: View {
             }
             .background(AppBackground())
             .navigationTitle("Tracker")
+            .onChange(of: selectedPhotoItem == nil) { isEmpty in
+                selectedPhotoStatus = isEmpty ? "No food photo selected" : "Food photo selected. Add the visible food name and estimate calories."
+            }
+            #if os(iOS)
+            .sheet(isPresented: $isCameraPresented) {
+                CameraCaptureView(image: $capturedImage, status: $selectedPhotoStatus)
+                    .ignoresSafeArea()
+            }
+            #endif
         }
     }
 }
@@ -731,3 +796,46 @@ struct AppBackground: View {
         #endif
     }
 }
+
+#if os(iOS)
+struct CameraCaptureView: UIViewControllerRepresentable {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var image: UIImage?
+    @Binding var status: String
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
+        picker.allowsEditing = false
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    final class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+        let parent: CameraCaptureView
+
+        init(parent: CameraCaptureView) {
+            self.parent = parent
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            parent.image = info[.originalImage] as? UIImage
+            parent.status = "Food photo captured. Add the visible food name and estimate calories."
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+#endif
