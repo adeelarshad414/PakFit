@@ -1,10 +1,11 @@
-# PakFit Android
+# PakFit
 
-PakFit is a spec-first Android MVP for Pakistani health, fitness, workout, and nutrition coaching.
+PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coaching product with Android and iOS application paths.
 
 ## Current Slice
 
 - Kotlin Android app with Jetpack Compose
+- SwiftUI iOS app path under `ios/PakFitIOS` with a shared Swift core and tests
 - Pakistani recommendation engine for calories, protein, meal guidance, workouts, habits, and safety warnings
 - Safety-aware onboarding inputs for age, gender, height, weight, goals, routine, diet, training place, and medical cautions
 - Structured medical review warnings for pregnancy, diabetes medication, heart symptoms, kidney disease, eating disorder history, and recent surgery
@@ -36,10 +37,11 @@ PakFit is a spec-first Android MVP for Pakistani health, fitness, workout, and n
 - Online calorie search from the Tracker workflow using encoded food queries and Pakistani food context
 - Camera capture and food photo preview with portion-based calorie estimate, confidence label, and online verification path
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
+- iOS parity spec and Swift tests for calorie targets, food tracking, BMI, lab markers, online search, and photo estimates
 - Unit tests driven from the MVP and safety specs
 - Offline-friendly Gradle setup for the local Codex workspace
 
-## Run Tests
+## Android Tests
 
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
@@ -47,7 +49,7 @@ export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-h
 /opt/homebrew/opt/gradle@8/bin/gradle testDebugUnitTest
 ```
 
-## Build
+## Android Build
 
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
@@ -56,6 +58,26 @@ export GRADLE_USER_HOME=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-h
 ```
 
 On a normal developer machine, you can omit `GRADLE_USER_HOME` or point it at your own Gradle cache.
+
+## iOS Tests
+
+```bash
+cd ios/PakFitIOS
+swift test
+```
+
+If the machine only has Apple Command Line Tools and `XCTest` is unavailable, run:
+
+```bash
+cd ios/PakFitIOS
+swift run PakFitCoreSmokeTests
+```
+
+## iOS App
+
+Open `ios/PakFitIOS/PakFitIOS.xcodeproj` in Xcode, select the `PakFitIOS` target, and run on an iPhone simulator or device.
+
+This Codex machine currently has Command Line Tools selected instead of full Xcode, so simulator builds require installing/selecting Xcode.app first.
 
 ## Development Rule
 

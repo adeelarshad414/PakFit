@@ -1,6 +1,7 @@
 .gradle/
 build/
 app/build/
+ios/PakFitIOS/.build/
 local.properties
 *.iml
 .idea/
