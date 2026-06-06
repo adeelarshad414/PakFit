@@ -219,6 +219,10 @@ if [[ -f "$STORE_SCREENSHOT_CONTACT_SHEET" ]]; then
   STORE_SCREENSHOT_CONTACT_SHA256="$(sha256_file "$STORE_SCREENSHOT_CONTACT_SHEET")"
 fi
 RELEASE_APK_SIGNATURE_STATUS="$(apk_signature_status "$RELEASE_APK_FILE")"
+ANDROID_RELEASE_SIGNING_HYGIENE_STATUS="not checked"
+if bash scripts/validate-android-release-signing.sh >/dev/null 2>&1; then
+  ANDROID_RELEASE_SIGNING_HYGIENE_STATUS="passed"
+fi
 RELEASE_SIGNING_ENV_STATUS="not configured in this run"
 if [[ -n "${PAKFIT_RELEASE_STORE_FILE:-}" && -n "${PAKFIT_RELEASE_STORE_PASSWORD:-}" && -n "${PAKFIT_RELEASE_KEY_ALIAS:-}" && -n "${PAKFIT_RELEASE_KEY_PASSWORD:-}" ]]; then
   RELEASE_SIGNING_ENV_STATUS="configured from PAKFIT_RELEASE_* environment variables"
@@ -508,6 +512,8 @@ mkdir -p "$REPORT_DIR"
   echo "- APK SHA-256: $RELEASE_APK_SHA256"
   echo "- APK signature status: $RELEASE_APK_SIGNATURE_STATUS"
   echo "- Release signing environment: $RELEASE_SIGNING_ENV_STATUS"
+  echo "- Android release signing hygiene gate: $ANDROID_RELEASE_SIGNING_HYGIENE_STATUS"
+  echo "- Android release signing policy: signing material ignored, not tracked, not repo-local, and production signing requires complete external PAKFIT_RELEASE_* inputs"
   echo "- R8 minification: $RELEASE_MINIFY_STATUS"
   echo "- Resource shrinking: $RELEASE_RESOURCE_SHRINK_STATUS"
   echo "- ProGuard/R8 rules: $RELEASE_PROGUARD_STATUS"
@@ -603,6 +609,7 @@ mkdir -p "$REPORT_DIR"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Platform compatibility: Android compile/target SDK and iOS deployment/Swift settings checked"
   echo "- Android build toolchain: AGP compileSdk 35 support checked without suppressing warnings"
+  echo "- Android release signing hygiene: signing material exclusions, no repo-local signing files, no hardcoded signing passwords, and complete external signing env shape checked"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"

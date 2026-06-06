@@ -103,6 +103,9 @@ bash scripts/validate-platform-compatibility.sh
 echo "== Android build toolchain gate =="
 bash scripts/validate-android-build-toolchain.sh
 
+echo "== Android release signing hygiene gate =="
+bash scripts/validate-android-release-signing.sh
+
 echo "== Android unit tests, lint, debug APK, release APK, and release AAB =="
 "$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 

@@ -46,6 +46,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Android network security gate disabling cleartext traffic and blocking runtime `http://` URL literals
 - Platform compatibility gate with Android compile/target SDK 35 and iOS deployment/Swift settings evidence
 - Android build toolchain gate with AGP 8.6.x support for compileSdk 35
+- Android release signing hygiene gate keeping upload keystores and signing passwords outside source control
 - Store listing and release notes gate for app identity, current version, privacy boundaries, English-only copy, and unsafe medical-claim scanning
 - Store screenshot asset gate for generated English-only workflow previews, PNG dimensions, contact sheet, and nonblank output
 - Cross-platform app icon assets with Android adaptive launcher icons and iOS AppIcon catalog validation
@@ -130,7 +131,7 @@ REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
-Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
 
 Store screenshot previews can be rendered and validated with `bash scripts/validate-store-screenshots.sh`. Set `PAKFIT_SCREENSHOT_DIR=/absolute/output/path` to write them outside the ignored repo output folder.
 

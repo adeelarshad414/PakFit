@@ -8,3 +8,9 @@ local.properties
 *.iml
 .idea/
 .DS_Store
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
