@@ -111,6 +111,9 @@ jobs:
           grep -q "NSPrivacyAccessedAPICategoryUserDefaults" ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy
           grep -q "CA92.1" ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy
 
+      - name: Validate iOS permission privacy posture
+        run: bash scripts/validate-ios-permission-privacy.sh
+
       - name: Validate iOS network security posture
         run: bash scripts/validate-ios-network-security.sh
 

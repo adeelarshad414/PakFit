@@ -15,6 +15,7 @@ The product now needs online food search and a camera-based food calorie workflo
 - Add Android internet and camera permissions.
 - Add a food calorie web search feature from the tracker workflow.
 - Add camera capture for a food photo preview.
+- Keep iOS camera/photo library purpose strings scoped to food-photo calorie estimation.
 - Add food hint and portion selector for photo-assisted calorie estimate.
 - Add domain tests for URL generation and calorie estimation.
 - Add release validation that fails if food photo bytes are persisted or uploaded before a reviewed vision/backend design exists.
@@ -43,6 +44,7 @@ The URL must safely encode spaces and punctuation.
 
 The app must let the user capture a food photo and show the preview in the Tracker workflow.
 The current release must keep captured food photos ephemeral and preview-only.
+iOS camera/photo library purpose strings must explain the food-photo calorie-estimation purpose without broad collection claims.
 
 ### Photo Calorie Estimate
 

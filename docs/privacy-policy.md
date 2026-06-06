@@ -22,7 +22,7 @@ The current app has no account backend, no cloud sync, no remote analytics, and 
 
 ## Camera And Photos
 
-Camera/photo features are used for user-selected food photo workflows. Current calorie estimates are based on user food hints, selected portion, and the PakFit catalog. The app does not claim diagnostic image recognition or a reviewed vision model in this slice.
+Camera/photo features are used for user-selected food photo workflows. On iOS, camera and photo library purpose strings are scoped to food-photo calorie estimation. Current calorie estimates are based on user food hints, selected portion, and the PakFit catalog. The app does not claim diagnostic image recognition or a reviewed vision model in this slice.
 
 ## Health And Clinical Boundaries
 

@@ -43,6 +43,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Android permission privacy gate limiting declared permissions to internet and optional camera for current online search/photo workflows
 - Android exported surface gate limiting exported components to the launcher activity
 - Android network security gate disabling cleartext traffic and blocking runtime `http://` URL literals
+- iOS permission privacy gate keeping camera/photo purpose strings food-photo scoped
 - iOS network security gate keeping Swift runtime URLs HTTPS-only and blocking ATS cleartext opt-outs
 - Food photo privacy gate proving preview-only capture and blocking image-byte persistence/upload patterns in this local-first build
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots

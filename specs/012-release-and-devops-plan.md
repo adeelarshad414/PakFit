@@ -78,6 +78,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Run English-only source check.
 - Run basic hardcoded secret-pattern smoke check.
 - Validate iOS privacy manifest format and UserDefaults required-reason declaration.
+- Validate iOS camera/photo purpose strings and unreviewed permission-sensitive API posture.
 - Validate Android Auto Backup is disabled and sensitive snapshot backup/data-extraction exclusions exist.
 - Validate Android permissions are limited to the approved online search and food photo capture surface.
 - Validate Android exported components are limited to the launcher activity.
@@ -98,6 +99,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Strict Gradle dependency verification gate passing.
 - Dependency inventory gate passing.
 - Android permission privacy gate passing.
+- iOS permission privacy gate passing.
 - Android exported surface gate passing.
 - Android network security gate passing.
 - iOS network security gate passing.
@@ -160,6 +162,13 @@ Given the release validation command runs
 When the Android manifest is inspected
 Then only INTERNET and CAMERA permissions are allowed
 And camera hardware remains optional for install compatibility
+
+### Scenario: iOS permission purpose strings stay scoped
+
+Given the release validation command runs
+When iOS project metadata and app/core Swift sources are inspected
+Then camera and photo library purpose strings are present and food-photo scoped
+And unreviewed permission-sensitive APIs fail the gate
 
 ### Scenario: Food photos stay ephemeral
 

@@ -9,8 +9,10 @@ Add platform privacy artifacts that align with PakFit's current local-first heal
 - Add an iOS privacy manifest to the app target.
 - Declare `UserDefaults` required-reason API usage for app-only local state and migration markers.
 - Declare no tracking domains and no collected data types for the current no-backend/no-analytics build.
+- Keep iOS camera/photo library purpose strings scoped to user-selected food photos for visible calorie estimation.
 - Add draft privacy policy, Google Play Data safety mapping, and App Store privacy mapping.
 - Add release validation checks for the privacy manifest.
+- Add release validation checks for iOS permission purpose-string posture.
 
 ## Non-Functional Requirements
 
@@ -23,5 +25,6 @@ Add platform privacy artifacts that align with PakFit's current local-first heal
 
 - `PrivacyInfo.xcprivacy` exists and passes plist validation.
 - Xcode project includes the privacy manifest in app resources.
+- iOS camera/photo purpose strings exist in Debug and Release build settings and pass the permission privacy gate.
 - Local release validation passes.
 - Store privacy docs exist under `docs/`.

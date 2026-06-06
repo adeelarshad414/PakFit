@@ -19,6 +19,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include Android declared permission count, permission policy, and camera hardware feature posture.
 - Include Android exported component count, exported component policy, and exported surface gate status.
 - Include Android cleartext traffic status and network security gate status.
+- Include iOS camera/photo purpose-string status and permission privacy gate status.
 - Include iOS runtime URL policy and network security gate status.
 - Include food photo capture mode and photo privacy gate status.
 - Include dependency inventory report path, checksums, and dynamic/SNAPSHOT dependency gate status.
@@ -44,6 +45,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes Android permission privacy status.
 - The report includes Android exported surface status.
 - The report includes Android network security status.
+- The report includes iOS permission privacy status.
 - The report includes iOS network security status.
 - The report includes food photo privacy status.
 - The report includes dependency inventory status and checksums.

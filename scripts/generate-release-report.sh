@@ -233,6 +233,20 @@ IOS_NETWORK_SECURITY_STATUS="not checked"
 if bash scripts/validate-ios-network-security.sh >/dev/null 2>&1; then
   IOS_NETWORK_SECURITY_STATUS="passed"
 fi
+IOS_CAMERA_PURPOSE_COUNT="$(grep -c 'INFOPLIST_KEY_NSCameraUsageDescription' "$IOS_PROJECT_FILE" | tr -d ' ')"
+IOS_PHOTO_PURPOSE_COUNT="$(grep -c 'INFOPLIST_KEY_NSPhotoLibraryUsageDescription' "$IOS_PROJECT_FILE" | tr -d ' ')"
+IOS_CAMERA_PURPOSE_STATUS="missing"
+if [[ "$IOS_CAMERA_PURPOSE_COUNT" -gt 0 ]] && grep -q 'INFOPLIST_KEY_NSCameraUsageDescription = "PakFit can use a food photo' "$IOS_PROJECT_FILE"; then
+  IOS_CAMERA_PURPOSE_STATUS="present and food-photo scoped ($IOS_CAMERA_PURPOSE_COUNT build configs)"
+fi
+IOS_PHOTO_PURPOSE_STATUS="missing"
+if [[ "$IOS_PHOTO_PURPOSE_COUNT" -gt 0 ]] && grep -q 'INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PakFit can use a food photo' "$IOS_PROJECT_FILE"; then
+  IOS_PHOTO_PURPOSE_STATUS="present and food-photo scoped ($IOS_PHOTO_PURPOSE_COUNT build configs)"
+fi
+IOS_PERMISSION_PRIVACY_STATUS="not checked"
+if bash scripts/validate-ios-permission-privacy.sh >/dev/null 2>&1; then
+  IOS_PERMISSION_PRIVACY_STATUS="passed"
+fi
 ANDROID_PHOTO_CAPTURE_STATUS="not detected"
 if grep -q "ActivityResultContracts.TakePicturePreview" "$ROOT_DIR/app/src/main/java/com/pakfit/app/ui/PakFitApp.kt"; then
   ANDROID_PHOTO_CAPTURE_STATUS="preview-only ActivityResultContracts.TakePicturePreview"
@@ -425,6 +439,9 @@ mkdir -p "$REPORT_DIR"
   echo "- Build version: ${IOS_BUILD_VERSION:-not detected}"
   echo "- Privacy manifest: $PRIVACY_MANIFEST_STATUS"
   echo "- Required reason API declared: NSPrivacyAccessedAPICategoryUserDefaults / CA92.1"
+  echo "- Camera purpose string: $IOS_CAMERA_PURPOSE_STATUS"
+  echo "- Photo library purpose string: $IOS_PHOTO_PURPOSE_STATUS"
+  echo "- iOS permission privacy gate: $IOS_PERMISSION_PRIVACY_STATUS"
   echo "- iOS runtime URL policy: $IOS_RUNTIME_URL_POLICY"
   echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
   echo
@@ -439,6 +456,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"
   echo "- Source gates: English-only app source and secret-pattern smoke check"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
+  echo "- iOS permission privacy gate: camera/photo purpose strings food-photo scoped and no unreviewed permission APIs"
   echo "- Android backup privacy gate: Auto Backup disabled and sensitive snapshot exclusions checked"
   echo "- Android permission privacy gate: declared permissions limited to INTERNET and CAMERA with camera hardware optional"
   echo "- Android exported surface gate: only launcher MainActivity may be exported"

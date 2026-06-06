@@ -124,6 +124,9 @@ if ! grep -q "CA92.1" "$PRIVACY_MANIFEST"; then
   exit 1
 fi
 
+echo "== iOS permission privacy gate =="
+bash scripts/validate-ios-permission-privacy.sh
+
 echo "== iOS network security gate =="
 bash scripts/validate-ios-network-security.sh
 

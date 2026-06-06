@@ -10,6 +10,7 @@ This draft maps current PakFit behavior to App Store privacy and privacy manifes
 - No advertising or tracking.
 - Sensitive health and fitness information stays local to the user's device unless the user chooses an export preview.
 - The sensitive iOS snapshot payload is stored in Keychain. UserDefaults is used only for non-sensitive local state and migration markers.
+- Camera and photo library purpose strings are scoped to user-selected food photos for visible calorie estimation.
 - iOS online calorie search uses an HTTPS user-controlled web search handoff, and the current build does not define ATS cleartext opt-outs.
 - Food photo image bytes are not saved in snapshots and are not uploaded by this build.
 
