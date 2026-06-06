@@ -29,6 +29,8 @@ GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
 GRADLE_WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 GRADLE_VERIFICATION_METADATA="$ROOT_DIR/gradle/verification-metadata.xml"
 DEPENDABOT_CONFIG="$ROOT_DIR/.github/dependabot.yml"
+SECURITY_POLICY_FILE="$ROOT_DIR/SECURITY.md"
+CODEOWNERS_FILE="$ROOT_DIR/.github/CODEOWNERS"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -387,6 +389,22 @@ fi
 if bash scripts/validate-dependency-advisory-config.sh >/dev/null 2>&1; then
   DEPENDENCY_ADVISORY_CONFIG_STATUS="passed"
 fi
+SECURITY_GOVERNANCE_STATUS="not checked"
+if bash scripts/validate-security-governance.sh >/dev/null 2>&1; then
+  SECURITY_GOVERNANCE_STATUS="passed"
+fi
+SECURITY_POLICY_STATUS="missing"
+SECURITY_POLICY_SHA256=""
+CODEOWNERS_STATUS="missing"
+CODEOWNERS_SHA256=""
+if [[ -f "$SECURITY_POLICY_FILE" ]]; then
+  SECURITY_POLICY_STATUS="$SECURITY_POLICY_FILE"
+  SECURITY_POLICY_SHA256="$(sha256_file "$SECURITY_POLICY_FILE")"
+fi
+if [[ -f "$CODEOWNERS_FILE" ]]; then
+  CODEOWNERS_STATUS="$CODEOWNERS_FILE"
+  CODEOWNERS_SHA256="$(sha256_file "$CODEOWNERS_FILE")"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -506,6 +524,16 @@ mkdir -p "$REPORT_DIR"
   echo "- Dependency advisory configuration gate: $DEPENDENCY_ADVISORY_CONFIG_STATUS"
   echo "- Advisory monitoring policy: Gradle, Swift Package Manager, and GitHub Actions updates are configured for hosted Dependabot monitoring"
   echo "- Advisory result boundary: live CVE/GHSA status still requires GitHub-hosted dependency scanning or another network-enabled scanner after push"
+  echo
+  echo "## Security Governance"
+  echo
+  echo "- Security policy: $SECURITY_POLICY_STATUS"
+  echo "- Security policy SHA-256: ${SECURITY_POLICY_SHA256:-missing}"
+  echo "- CODEOWNERS: $CODEOWNERS_STATUS"
+  echo "- CODEOWNERS SHA-256: ${CODEOWNERS_SHA256:-missing}"
+  echo "- Security governance gate: $SECURITY_GOVERNANCE_STATUS"
+  echo "- Security governance policy: supported versions, sensitive vulnerability reporting boundary, CODEOWNERS coverage, read-only CI permissions, and clinical safety reporting scope checked"
+  echo "- Security governance boundary: hosted private vulnerability reporting, branch protection, and public security contact review remain external repository settings"
   echo
   echo "## Android APK"
   echo
@@ -656,6 +684,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Build reproducibility: Gradle Wrapper integrity gate"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
   echo "- Dependency advisory monitoring: Dependabot coverage for Gradle, Swift Package Manager, and GitHub Actions checked"
+  echo "- Security governance: SECURITY.md, CODEOWNERS coverage, vulnerability reporting boundaries, and low-risk CI permissions checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -686,6 +715,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Play Console submission still requires upload-key signing verification and store track validation."
   echo "- iOS simulator/archive/signing still requires full Xcode.app, Xcode 26+ SDK tooling for App Store upload, and signing assets."
   echo "- Dependabot advisory monitoring is configured, but live vulnerability/advisory results still require the pushed repository and GitHub-hosted dependency scanning or another network-enabled scanner."
+  echo "- Hosted private vulnerability reporting, branch protection, and public security-contact review remain external repository settings."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

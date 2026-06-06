@@ -85,6 +85,9 @@ fi
 echo "== Dependency advisory configuration gate =="
 bash scripts/validate-dependency-advisory-config.sh
 
+echo "== Security governance gate =="
+bash scripts/validate-security-governance.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 

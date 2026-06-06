@@ -52,6 +52,9 @@ jobs:
       - name: Validate dependency advisory configuration
         run: bash scripts/validate-dependency-advisory-config.sh
 
+      - name: Validate security governance
+        run: bash scripts/validate-security-governance.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -187,3 +190,6 @@ jobs:
 
       - name: Validate dependency advisory configuration
         run: bash scripts/validate-dependency-advisory-config.sh
+
+      - name: Validate security governance
+        run: bash scripts/validate-security-governance.sh
