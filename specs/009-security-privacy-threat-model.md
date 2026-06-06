@@ -28,6 +28,7 @@ The current app stores user data only in an explicit local snapshot after requir
 - Keep analytics off until consent and schema specs exist.
 - Block local save/export until the required consent and clinical-boundary acknowledgements are complete.
 - Protect saved local snapshots at rest using Android Keystore-backed encryption on Android and Keychain-backed storage on iOS.
+- Keep Android and iOS app identity metadata stable so package/bundle changes require explicit release-channel review.
 - Disable Android Auto Backup and exclude sensitive local snapshot storage from Android backup/data-extraction rules.
 - Limit Android manifest permissions to the current online search and food photo workflows, and keep camera hardware optional.
 - Limit exported Android components to the launcher activity until a reviewed deep-link/service/provider design exists.

@@ -39,6 +39,7 @@
 - Existing Pakistani food, vegetarian, home workout, and goal behavior tests remain passing.
 - Android lintDebug and lintRelease pass before APK/AAB artifacts are accepted.
 - Cross-platform version alignment gate passes before APK/AAB artifacts are accepted.
+- App identity metadata gate passes before APK/AAB artifacts and iOS release evidence are accepted.
 - App icon asset gate passes before APK/AAB artifacts and iOS release evidence are accepted.
 - Gradle Wrapper integrity gate passes before APK/AAB artifacts are accepted.
 - Strict Gradle dependency verification passes before APK/AAB artifacts are accepted.

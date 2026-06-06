@@ -9,6 +9,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Generate a Markdown release report after debug and release Android artifacts are built.
 - Include Android application ID, debug/release variants, version name, version code, artifact paths, sizes, and SHA-256 checksums.
 - Include Android source version, iOS project version, built APK metadata, and version alignment gate status.
+- Include Android source application ID, Android namespace/display name, iOS bundle ID/display name, target device family, and app identity gate status.
 - Include Android adaptive launcher icon status, iOS AppIcon asset status, and app icon gate status.
 - Include release APK signing verification status when `apksigner` is available.
 - Include release minification, resource shrinking, ProGuard/R8 rules, and mapping file checksum evidence.
@@ -39,6 +40,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - `scripts/generate-release-report.sh` creates a report after `scripts/validate-release.sh`.
 - The report includes debug APK, release APK, and release AAB SHA-256 values plus vended metadata from `output-metadata.json`.
 - The report includes Android/iOS version alignment status.
+- The report includes app identity metadata status.
 - The report includes app icon asset status.
 - The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - The report includes Gradle Wrapper reproducibility evidence.

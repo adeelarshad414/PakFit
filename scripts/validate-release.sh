@@ -85,6 +85,9 @@ fi
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 
+echo "== App identity metadata gate =="
+bash scripts/validate-app-identity.sh
+
 echo "== App icon asset gate =="
 bash scripts/validate-app-icons.sh
 

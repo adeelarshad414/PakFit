@@ -320,11 +320,25 @@ if [[ -f "$GRADLE_VERIFICATION_METADATA" ]]; then
 fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
+ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
+ANDROID_NAMESPACE="$(
+  sed -n 's/.*namespace = "\([^"]*\)".*/\1/p' "$ANDROID_BUILD_FILE" | head -1
+)"
+ANDROID_DISPLAY_NAME="$(
+  sed -n 's/.*<string name="app_name">\([^<]*\)<\/string>.*/\1/p' "$ROOT_DIR/app/src/main/res/values/strings.xml" | head -1
+)"
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
+IOS_BUNDLE_ID="$(xcode_setting_value PRODUCT_BUNDLE_IDENTIFIER)"
+IOS_DISPLAY_NAME="$(xcode_setting_value INFOPLIST_KEY_CFBundleDisplayName)"
+IOS_TARGETED_DEVICE_FAMILY="$(xcode_setting_value TARGETED_DEVICE_FAMILY)"
 VERSION_ALIGNMENT_STATUS="failed"
 if bash scripts/validate-version-alignment.sh --include-built-metadata >/dev/null 2>&1; then
   VERSION_ALIGNMENT_STATUS="passed"
+fi
+APP_IDENTITY_STATUS="not checked"
+if bash scripts/validate-app-identity.sh >/dev/null 2>&1; then
+  APP_IDENTITY_STATUS="passed"
 fi
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
@@ -380,6 +394,9 @@ mkdir -p "$REPORT_DIR"
   echo "## Android APK"
   echo
   echo "- Application ID: $APPLICATION_ID"
+  echo "- Android source application ID: ${ANDROID_SOURCE_APPLICATION_ID:-not detected}"
+  echo "- Android namespace: ${ANDROID_NAMESPACE:-not detected}"
+  echo "- Android display name: ${ANDROID_DISPLAY_NAME:-not detected}"
   echo "- Version name: $VERSION_NAME"
   echo "- Version code: $VERSION_CODE"
   echo "- Android source version name: ${ANDROID_SOURCE_VERSION_NAME:-not detected}"
@@ -456,6 +473,10 @@ mkdir -p "$REPORT_DIR"
   echo "- Xcode project: ios/PakFitIOS/PakFitIOS.xcodeproj"
   echo "- Marketing version: ${IOS_MARKETING_VERSION:-not detected}"
   echo "- Build version: ${IOS_BUILD_VERSION:-not detected}"
+  echo "- Bundle identifier: ${IOS_BUNDLE_ID:-not detected}"
+  echo "- Display name: ${IOS_DISPLAY_NAME:-not detected}"
+  echo "- Target device family: ${IOS_TARGETED_DEVICE_FAMILY:-not detected}"
+  echo "- App identity gate: $APP_IDENTITY_STATUS"
   echo "- Privacy manifest: $PRIVACY_MANIFEST_STATUS"
   echo "- Required reason API declared: NSPrivacyAccessedAPICategoryUserDefaults / CA92.1"
   echo "- iOS app icon assets: $IOS_APP_ICON_STATUS"
@@ -472,6 +493,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Build reproducibility: Gradle Wrapper integrity gate"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
+  echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"

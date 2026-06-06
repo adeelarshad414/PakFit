@@ -40,6 +40,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Local save/restore/export preview for profile, food logs, health markers, lifestyle inputs, mental wellness inputs, clinical risk factors, and manual foods
 - Data-at-rest protection for local snapshots using Android Keystore-backed encryption and iOS Keychain storage
 - Android Auto Backup disabled with explicit backup/data-extraction exclusions for sensitive local snapshot storage
+- Cross-platform app identity gate for Android application ID/display name and iOS bundle ID/display name
 - Android permission privacy gate limiting declared permissions to internet and optional camera for current online search/photo workflows
 - Android exported surface gate limiting exported components to the launcher activity
 - Android network security gate disabling cleartext traffic and blocking runtime `http://` URL literals
@@ -125,7 +126,7 @@ REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
-Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging.
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`.
 
 ## Development Rule
 

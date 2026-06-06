@@ -8,6 +8,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 
 - Provide a local release validation script that runs Android unit tests, Android debug/release lint, builds debug APK, release APK, and release AAB artifacts, runs the iOS Swift smoke suite, compiles the SwiftUI app target, and checks English-only app source.
 - Validate Android and iOS source version metadata alignment before release builds run.
+- Validate Android and iOS app identity metadata before release evidence is accepted.
 - Validate Android and iOS app icon assets before release evidence is accepted.
 - Validate Gradle Wrapper integrity before Android release tasks run.
 - Validate resolved Gradle dependency artifacts against committed SHA-256 verification metadata.
@@ -36,6 +37,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - `scripts/validate-release.sh` passes locally.
 - Gradle Wrapper integrity is part of the required validation path.
 - Android/iOS version alignment is part of the required validation path.
+- App identity metadata validation is part of the required validation path.
 - App icon asset validation is part of the required validation path.
 - Strict Gradle dependency verification is part of the required validation path.
 - `lintDebug` and `lintRelease` are part of the required validation path.

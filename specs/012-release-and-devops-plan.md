@@ -63,6 +63,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 
 - Run unit tests.
 - Validate Android/iOS source version metadata alignment before building release artifacts.
+- Validate Android application ID/display name and iOS bundle ID/display name before building release artifacts.
 - Validate Android adaptive launcher icons and iOS AppIcon asset catalog before building release artifacts.
 - Validate Gradle Wrapper distribution checksum and wrapper JAR checksum.
 - Validate resolved Gradle dependency artifacts with strict SHA-256 dependency verification metadata.
@@ -95,6 +96,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Specs updated.
 - Tests passing.
 - Cross-platform version alignment gate passing.
+- App identity metadata gate passing.
 - App icon asset gate passing.
 - Android lint passing.
 - Gradle Wrapper integrity gate passing.
@@ -129,6 +131,15 @@ When Android and iOS version metadata is inspected
 Then Android versionName matches iOS MARKETING_VERSION
 And Android versionCode matches iOS CURRENT_PROJECT_VERSION
 And built Android APK metadata matches source version metadata
+
+### Scenario: App identity metadata stays stable
+
+Given the release validation command runs
+When Android and iOS app identity metadata is inspected
+Then Android application ID and namespace remain `com.pakfit.app`
+And Android display name remains `PakFit`
+And iOS bundle identifier remains `com.pakfit.ios`
+And iOS display name remains `PakFit`
 
 ### Scenario: App icons are packaged for both mobile platforms
 
