@@ -220,6 +220,14 @@ ANDROID_EXPORTED_SURFACE_STATUS="not checked"
 if bash scripts/validate-android-exported-surface.sh >/dev/null 2>&1; then
   ANDROID_EXPORTED_SURFACE_STATUS="passed"
 fi
+ANDROID_CLEARTEXT_STATUS="not disabled"
+if grep -q 'android:usesCleartextTraffic="false"' "$ANDROID_MANIFEST"; then
+  ANDROID_CLEARTEXT_STATUS="disabled"
+fi
+ANDROID_NETWORK_SECURITY_STATUS="not checked"
+if bash scripts/validate-android-network-security.sh >/dev/null 2>&1; then
+  ANDROID_NETWORK_SECURITY_STATUS="passed"
+fi
 ANDROID_PHOTO_CAPTURE_STATUS="not detected"
 if grep -q "ActivityResultContracts.TakePicturePreview" "$ROOT_DIR/app/src/main/java/com/pakfit/app/ui/PakFitApp.kt"; then
   ANDROID_PHOTO_CAPTURE_STATUS="preview-only ActivityResultContracts.TakePicturePreview"
@@ -356,6 +364,8 @@ mkdir -p "$REPORT_DIR"
   echo "- Exported component count: $ANDROID_EXPORTED_TRUE_COUNT"
   echo "- Exported component policy: only launcher MainActivity may be exported"
   echo "- Android exported surface gate: $ANDROID_EXPORTED_SURFACE_STATUS"
+  echo "- Cleartext traffic: $ANDROID_CLEARTEXT_STATUS"
+  echo "- Android network security gate: $ANDROID_NETWORK_SECURITY_STATUS"
   echo "- Food photo capture mode: $ANDROID_PHOTO_CAPTURE_STATUS"
   echo "- Food photo privacy gate: $PHOTO_PRIVACY_STATUS"
   echo
@@ -425,6 +435,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Android backup privacy gate: Auto Backup disabled and sensitive snapshot exclusions checked"
   echo "- Android permission privacy gate: declared permissions limited to INTERNET and CAMERA with camera hardware optional"
   echo "- Android exported surface gate: only launcher MainActivity may be exported"
+  echo "- Android network security gate: cleartext traffic disabled and runtime URLs HTTPS-only"
   echo "- Food photo privacy gate: preview-only capture with no image-byte persistence/upload patterns"
   echo
   echo "## Release Boundaries"

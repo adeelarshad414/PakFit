@@ -18,7 +18,7 @@ Food photo image bytes are not saved in the local snapshot, written to app files
 
 ## Network Use
 
-The current app has no account backend, no cloud sync, no remote analytics, and no remote health data upload. Online calorie search opens a user-controlled web search query for food calorie verification.
+The current app has no account backend, no cloud sync, no remote analytics, and no remote health data upload. Online calorie search opens a user-controlled HTTPS web search query for food calorie verification, and Android cleartext traffic is disabled.
 
 ## Camera And Photos
 

@@ -18,6 +18,7 @@ The product now needs online food search and a camera-based food calorie workflo
 - Add food hint and portion selector for photo-assisted calorie estimate.
 - Add domain tests for URL generation and calorie estimation.
 - Add release validation that fails if food photo bytes are persisted or uploaded before a reviewed vision/backend design exists.
+- Keep online calorie search on HTTPS and fail release validation if Android runtime app source/resources contain cleartext URLs.
 
 ## Out of Scope
 
