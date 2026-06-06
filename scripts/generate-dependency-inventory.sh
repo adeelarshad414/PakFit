@@ -27,6 +27,8 @@ if ! command -v "$GRADLE_CMD" >/dev/null 2>&1 && [[ ! -x "$GRADLE_CMD" ]]; then
   exit 1
 fi
 
+GRADLE_VERIFICATION_ARGS=(--dependency-verification strict)
+
 REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/outputs/PakFit/reports}"
 DEPENDENCY_DIR="${DEPENDENCY_DIR:-$REPORT_DIR/dependencies}"
 ANDROID_BUILD_FILE="$ROOT_DIR/app/build.gradle.kts"
@@ -82,9 +84,9 @@ fi
 grep -nE '^[[:space:]]*(implementation|debugImplementation|testImplementation)\("' "$ANDROID_BUILD_FILE" \
   | sed 's/^[[:space:]]*//' > "$ANDROID_DECLARED_FILE"
 
-"$GRADLE_CMD" :app:dependencies --configuration releaseRuntimeClasspath > "$ANDROID_RELEASE_TREE_FILE"
-"$GRADLE_CMD" :app:dependencies --configuration debugRuntimeClasspath > "$ANDROID_DEBUG_TREE_FILE"
-"$GRADLE_CMD" :app:dependencies --configuration debugUnitTestRuntimeClasspath > "$ANDROID_TEST_TREE_FILE"
+"$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" :app:dependencies --configuration releaseRuntimeClasspath > "$ANDROID_RELEASE_TREE_FILE"
+"$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" :app:dependencies --configuration debugRuntimeClasspath > "$ANDROID_DEBUG_TREE_FILE"
+"$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" :app:dependencies --configuration debugUnitTestRuntimeClasspath > "$ANDROID_TEST_TREE_FILE"
 
 if grep -q '\.package(' "$IOS_PACKAGE_FILE"; then
   grep -n '\.package(' "$IOS_PACKAGE_FILE" > "$IOS_DEPENDENCY_FILE"
@@ -105,6 +107,7 @@ REPORT_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   echo "- Generated UTC: $REPORT_TIME_UTC"
   echo "- Version name: $VERSION_NAME"
   echo "- Dynamic/SNAPSHOT dependency gate: passed"
+  echo "- Gradle dependency verification mode: strict"
   echo "- Android declared dependency count: $ANDROID_DECLARED_COUNT"
   echo "- Android declared dependency file: $ANDROID_DECLARED_FILE"
   echo "- Android release runtime classpath: $ANDROID_RELEASE_TREE_FILE"

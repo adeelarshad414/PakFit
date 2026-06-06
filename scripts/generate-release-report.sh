@@ -22,6 +22,7 @@ GRADLEW_FILE="$ROOT_DIR/gradlew"
 GRADLEW_BAT_FILE="$ROOT_DIR/gradlew.bat"
 GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
 GRADLE_WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
+GRADLE_VERIFICATION_METADATA="$ROOT_DIR/gradle/verification-metadata.xml"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -226,6 +227,18 @@ fi
 if [[ -f "$GRADLEW_BAT_FILE" ]]; then
   GRADLEW_BAT_SHA256="$(sha256_file "$GRADLEW_BAT_FILE")"
 fi
+GRADLE_VERIFICATION_STATUS="missing"
+GRADLE_VERIFICATION_BYTES=""
+GRADLE_VERIFICATION_SHA256=""
+GRADLE_VERIFICATION_COMPONENTS=""
+GRADLE_VERIFICATION_CHECKSUMS=""
+if [[ -f "$GRADLE_VERIFICATION_METADATA" ]]; then
+  GRADLE_VERIFICATION_STATUS="$GRADLE_VERIFICATION_METADATA"
+  GRADLE_VERIFICATION_BYTES="$(wc -c < "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
+  GRADLE_VERIFICATION_SHA256="$(sha256_file "$GRADLE_VERIFICATION_METADATA")"
+  GRADLE_VERIFICATION_COMPONENTS="$(grep -c "<component " "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
+  GRADLE_VERIFICATION_CHECKSUMS="$(grep -c "<sha256 " "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
+fi
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
@@ -270,6 +283,14 @@ mkdir -p "$REPORT_DIR"
   echo "- gradlew SHA-256: $GRADLEW_SHA256"
   echo "- gradlew.bat SHA-256: $GRADLEW_BAT_SHA256"
   echo "- Wrapper gate: Gradle 8.14.5 distribution checksum and wrapper JAR checksum checked by scripts/validate-release.sh"
+  echo "- Dependency verification metadata: $GRADLE_VERIFICATION_STATUS"
+  if [[ -n "$GRADLE_VERIFICATION_BYTES" ]]; then
+    echo "- Dependency verification metadata bytes: $GRADLE_VERIFICATION_BYTES"
+    echo "- Dependency verification metadata SHA-256: $GRADLE_VERIFICATION_SHA256"
+    echo "- Dependency verification component count: $GRADLE_VERIFICATION_COMPONENTS"
+    echo "- Dependency verification checksum count: $GRADLE_VERIFICATION_CHECKSUMS"
+  fi
+  echo "- Dependency verification mode: strict"
   echo
   echo "## Android APK"
   echo
@@ -340,6 +361,7 @@ mkdir -p "$REPORT_DIR"
   echo
   echo "- Local command: bash scripts/validate-release.sh"
   echo "- Build reproducibility: Gradle Wrapper integrity gate"
+  echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"

@@ -39,6 +39,7 @@
 - Existing Pakistani food, vegetarian, home workout, and goal behavior tests remain passing.
 - Android lintDebug and lintRelease pass before APK/AAB artifacts are accepted.
 - Gradle Wrapper integrity gate passes before APK/AAB artifacts are accepted.
+- Strict Gradle dependency verification passes before APK/AAB artifacts are accepted.
 - Release builds keep R8 minification and resource shrinking enabled.
 - Dynamic and SNAPSHOT dependency declarations fail the dependency inventory gate.
 

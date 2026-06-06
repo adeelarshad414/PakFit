@@ -13,6 +13,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include release AAB path, size, and SHA-256.
 - Include git branch, git SHA, and worktree status.
 - Include Gradle Wrapper distribution URL, distribution SHA-256, wrapper JAR SHA-256, and script checksums.
+- Include Gradle dependency verification metadata path, checksum, component count, checksum count, and strict mode status.
 - Include Android Auto Backup and backup/data-extraction sensitive snapshot exclusion status.
 - Include dependency inventory report path, checksums, and dynamic/SNAPSHOT dependency gate status.
 - Include iOS Swift package/Xcode project paths and privacy manifest status.
@@ -31,6 +32,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes debug APK, release APK, and release AAB SHA-256 values plus vended metadata from `output-metadata.json`.
 - The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - The report includes Gradle Wrapper reproducibility evidence.
+- The report includes Gradle dependency verification evidence.
 - The report includes Android backup privacy status.
 - The report includes dependency inventory status and checksums.
 - GitHub Actions uploads release evidence reports as artifacts.

@@ -27,6 +27,8 @@ if ! command -v "$GRADLE_CMD" >/dev/null 2>&1 && [[ ! -x "$GRADLE_CMD" ]]; then
   exit 1
 fi
 
+GRADLE_VERIFICATION_ARGS=(--dependency-verification strict)
+
 sha256_file() {
   local file="$1"
   if command -v shasum >/dev/null 2>&1; then
@@ -65,8 +67,23 @@ if [[ "$(sha256_file "$WRAPPER_JAR")" != "$EXPECTED_WRAPPER_JAR_SHA256" ]]; then
   exit 1
 fi
 
+echo "== Gradle dependency verification gate =="
+VERIFICATION_METADATA="$ROOT_DIR/gradle/verification-metadata.xml"
+if [[ ! -f "$VERIFICATION_METADATA" ]]; then
+  echo "Missing Gradle dependency verification metadata: $VERIFICATION_METADATA" >&2
+  exit 1
+fi
+if ! grep -q "<verify-metadata>true</verify-metadata>" "$VERIFICATION_METADATA"; then
+  echo "Gradle dependency verification must verify metadata artifacts." >&2
+  exit 1
+fi
+if ! grep -q "<sha256 " "$VERIFICATION_METADATA"; then
+  echo "Gradle dependency verification metadata must include SHA-256 checksums." >&2
+  exit 1
+fi
+
 echo "== Android unit tests, lint, debug APK, release APK, and release AAB =="
-"$GRADLE_CMD" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
+"$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 
 echo "== Dependency inventory gate =="
 GRADLE_CMD="$GRADLE_CMD" bash scripts/generate-dependency-inventory.sh

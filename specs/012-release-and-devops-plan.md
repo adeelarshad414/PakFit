@@ -63,6 +63,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 
 - Run unit tests.
 - Validate Gradle Wrapper distribution checksum and wrapper JAR checksum.
+- Validate resolved Gradle dependency artifacts with strict SHA-256 dependency verification metadata.
 - Run Android debug and release lint.
 - Generate dependency inventory and fail dynamic/SNAPSHOT dependency declarations.
 - Build debug APK.
@@ -86,6 +87,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Tests passing.
 - Android lint passing.
 - Gradle Wrapper integrity gate passing.
+- Strict Gradle dependency verification gate passing.
 - Dependency inventory gate passing.
 - Debug APK, release APK, and release AAB build.
 - Release APK uses R8 minification and resource shrinking.
@@ -123,3 +125,10 @@ Given the release validation command runs
 When the build starts
 Then the checked-in Gradle Wrapper pins Gradle 8.14.5
 And the wrapper distribution SHA-256 and wrapper JAR SHA-256 are checked
+
+### Scenario: Gradle dependencies are verified
+
+Given the release validation command runs
+When Gradle resolves Android/plugin artifacts
+Then strict dependency verification checks committed SHA-256 metadata
+And missing or changed resolved artifacts fail the release gate
