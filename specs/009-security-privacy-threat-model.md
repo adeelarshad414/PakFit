@@ -32,6 +32,7 @@ The current app stores user data only in an explicit local snapshot after requir
 - Limit Android manifest permissions to the current online search and food photo workflows, and keep camera hardware optional.
 - Limit exported Android components to the launcher activity until a reviewed deep-link/service/provider design exists.
 - Disable Android cleartext traffic and block runtime `http://` URL literals in app source/resources.
+- Keep iOS Swift runtime URLs HTTPS-only and block ATS cleartext opt-outs until a reviewed transport security spec exists.
 - Keep food photo capture preview-only and block image-byte persistence/upload patterns until a reviewed vision/backend design exists.
 - Pin the Gradle Wrapper distribution and verify wrapper JAR/distribution checksums in release validation.
 - Check resolved Gradle dependency artifacts against committed SHA-256 verification metadata in strict mode.

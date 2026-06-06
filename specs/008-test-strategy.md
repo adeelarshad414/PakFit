@@ -44,6 +44,7 @@
 - Android permission privacy gate passes before APK/AAB artifacts are accepted.
 - Android exported component surface gate passes before APK/AAB artifacts are accepted.
 - Android network security gate passes before APK/AAB artifacts are accepted.
+- iOS network security gate passes before APK/AAB artifacts and iOS release evidence are accepted.
 - Food photo privacy gate passes before APK/AAB artifacts are accepted.
 - Release builds keep R8 minification and resource shrinking enabled.
 - Dynamic and SNAPSHOT dependency declarations fail the dependency inventory gate.

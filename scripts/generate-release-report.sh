@@ -228,6 +228,11 @@ ANDROID_NETWORK_SECURITY_STATUS="not checked"
 if bash scripts/validate-android-network-security.sh >/dev/null 2>&1; then
   ANDROID_NETWORK_SECURITY_STATUS="passed"
 fi
+IOS_RUNTIME_URL_POLICY="HTTPS-only Swift runtime URLs"
+IOS_NETWORK_SECURITY_STATUS="not checked"
+if bash scripts/validate-ios-network-security.sh >/dev/null 2>&1; then
+  IOS_NETWORK_SECURITY_STATUS="passed"
+fi
 ANDROID_PHOTO_CAPTURE_STATUS="not detected"
 if grep -q "ActivityResultContracts.TakePicturePreview" "$ROOT_DIR/app/src/main/java/com/pakfit/app/ui/PakFitApp.kt"; then
   ANDROID_PHOTO_CAPTURE_STATUS="preview-only ActivityResultContracts.TakePicturePreview"
@@ -420,6 +425,8 @@ mkdir -p "$REPORT_DIR"
   echo "- Build version: ${IOS_BUILD_VERSION:-not detected}"
   echo "- Privacy manifest: $PRIVACY_MANIFEST_STATUS"
   echo "- Required reason API declared: NSPrivacyAccessedAPICategoryUserDefaults / CA92.1"
+  echo "- iOS runtime URL policy: $IOS_RUNTIME_URL_POLICY"
+  echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
   echo
   echo "## Validation Gate"
   echo
@@ -436,6 +443,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Android permission privacy gate: declared permissions limited to INTERNET and CAMERA with camera hardware optional"
   echo "- Android exported surface gate: only launcher MainActivity may be exported"
   echo "- Android network security gate: cleartext traffic disabled and runtime URLs HTTPS-only"
+  echo "- iOS network security gate: Swift runtime URLs HTTPS-only and no ATS cleartext opt-outs"
   echo "- Food photo privacy gate: preview-only capture with no image-byte persistence/upload patterns"
   echo
   echo "## Release Boundaries"

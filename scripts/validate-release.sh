@@ -124,6 +124,9 @@ if ! grep -q "CA92.1" "$PRIVACY_MANIFEST"; then
   exit 1
 fi
 
+echo "== iOS network security gate =="
+bash scripts/validate-ios-network-security.sh
+
 echo "== Android backup privacy gate =="
 ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
 BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"

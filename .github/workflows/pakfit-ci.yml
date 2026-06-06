@@ -111,6 +111,9 @@ jobs:
           grep -q "NSPrivacyAccessedAPICategoryUserDefaults" ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy
           grep -q "CA92.1" ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy
 
+      - name: Validate iOS network security posture
+        run: bash scripts/validate-ios-network-security.sh
+
   source-gates:
     name: Source quality gates
     runs-on: ubuntu-latest

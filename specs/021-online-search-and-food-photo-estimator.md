@@ -18,7 +18,7 @@ The product now needs online food search and a camera-based food calorie workflo
 - Add food hint and portion selector for photo-assisted calorie estimate.
 - Add domain tests for URL generation and calorie estimation.
 - Add release validation that fails if food photo bytes are persisted or uploaded before a reviewed vision/backend design exists.
-- Keep online calorie search on HTTPS and fail release validation if Android runtime app source/resources contain cleartext URLs.
+- Keep online calorie search on HTTPS and fail release validation if Android runtime app source/resources or iOS Swift runtime app/core sources contain cleartext URLs.
 
 ## Out of Scope
 
@@ -88,3 +88,10 @@ Given the release validation command runs
 When the app source is inspected
 Then photo capture remains preview-only
 And app code does not persist or upload food photo image bytes
+
+### Scenario: Online calorie search stays HTTPS-only
+
+Given the release validation command runs
+When Android and iOS runtime search code is inspected
+Then online calorie search URLs use HTTPS
+And cleartext runtime URL literals fail the platform network gates

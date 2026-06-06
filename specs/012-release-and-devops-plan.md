@@ -82,6 +82,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Validate Android permissions are limited to the approved online search and food photo capture surface.
 - Validate Android exported components are limited to the launcher activity.
 - Validate Android cleartext traffic is disabled and runtime app URLs stay HTTPS-only.
+- Validate iOS Swift runtime URLs stay HTTPS-only and ATS cleartext opt-outs are not introduced.
 - Validate food photo capture stays preview-only and image bytes are not persisted or uploaded by app code.
 - Store APK artifact.
 - Keep Android release minification and resource shrinking enabled.
@@ -99,6 +100,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Android permission privacy gate passing.
 - Android exported surface gate passing.
 - Android network security gate passing.
+- iOS network security gate passing.
 - Food photo privacy gate passing.
 - Debug APK, release APK, and release AAB build.
 - Release APK uses R8 minification and resource shrinking.
@@ -179,3 +181,11 @@ Given the release validation command runs
 When the Android manifest and runtime app sources are inspected
 Then cleartext traffic is disabled
 And runtime app source/resources do not contain `http://` URLs
+
+### Scenario: iOS runtime network traffic avoids cleartext URLs
+
+Given the release validation command runs
+When iOS Swift runtime app/core sources and project metadata are inspected
+Then Swift runtime sources do not contain `http://` URLs
+And ATS cleartext opt-outs are absent
+And the online calorie search remains HTTPS-based
