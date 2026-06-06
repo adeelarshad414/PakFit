@@ -7,7 +7,7 @@ Harden PakFit's internet-enabled Android build by explicitly disabling cleartext
 ## Requirements
 
 - Android manifest must set `android:usesCleartextTraffic="false"`.
-- Android runtime source/resources must not contain `http://` URL literals.
+- Android runtime source/resources must not contain `http://` URL literals, excluding required Android XML namespace declarations.
 - Android online calorie search must continue using an HTTPS search URL.
 - CI and local release validation must run the same Android network security gate.
 - Release evidence must record cleartext traffic status and network security gate status.
@@ -32,4 +32,5 @@ Then `android:usesCleartextTraffic` is explicitly `false`.
 Given the release validation command runs
 When Android runtime source/resources are inspected
 Then cleartext `http://` URL literals fail the gate
+And required Android XML namespace declarations do not count as runtime network URLs
 And the online calorie search remains HTTPS-based.

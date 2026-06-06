@@ -7,6 +7,7 @@ PakFit iOS is the SwiftUI application path for the Pakistani health, fitness, wo
 - SwiftUI app with Dashboard, Tracker, Health, and Plan tabs.
 - Tracker photo controls for choosing a food photo and capturing from camera on iPhone.
 - Camera and photo library purpose strings scoped to food-photo calorie estimation.
+- `Assets.xcassets/AppIcon.appiconset` for branded iOS app icon packaging.
 - Local save, restore, clear, and export-preview actions backed by Keychain, UserDefaults metadata, and Codable snapshots.
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots.
 - Shared `PakFitCore` Swift module for calorie targets, Pakistani food catalog, food records, BMI, lab marker flags, online search URL generation, and food photo calorie estimates.
@@ -36,4 +37,4 @@ This Codex environment currently has Apple Command Line Tools selected instead o
 
 ## Release Gates
 
-The iOS path is checked by `scripts/validate-release.sh`, including Swift smoke tests, SwiftUI target compile, privacy manifest validation, permission purpose-string validation, network security validation, and food photo privacy validation.
+The iOS path is checked by `scripts/validate-release.sh`, including Swift smoke tests, SwiftUI target compile, AppIcon validation, privacy manifest validation, permission purpose-string validation, network security validation, and food photo privacy validation.

@@ -18,6 +18,7 @@ ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
 ANDROID_BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"
 ANDROID_DATA_EXTRACTION_RULES="$ROOT_DIR/app/src/main/res/xml/data_extraction_rules.xml"
 IOS_PROJECT_FILE="$ROOT_DIR/ios/PakFitIOS/PakFitIOS.xcodeproj/project.pbxproj"
+IOS_APP_ICON_SET="$ROOT_DIR/ios/PakFitIOS/Assets.xcassets/AppIcon.appiconset"
 GRADLEW_FILE="$ROOT_DIR/gradlew"
 GRADLEW_BAT_FILE="$ROOT_DIR/gradlew.bat"
 GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
@@ -228,6 +229,23 @@ ANDROID_NETWORK_SECURITY_STATUS="not checked"
 if bash scripts/validate-android-network-security.sh >/dev/null 2>&1; then
   ANDROID_NETWORK_SECURITY_STATUS="passed"
 fi
+ANDROID_APP_ICON_STATUS="not checked"
+if grep -q 'android:icon="@mipmap/ic_launcher"' "$ANDROID_MANIFEST" \
+  && grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' "$ANDROID_MANIFEST"; then
+  ANDROID_APP_ICON_STATUS="adaptive icon and round icon configured"
+fi
+IOS_APP_ICON_IMAGE_COUNT="0"
+if [[ -d "$IOS_APP_ICON_SET" ]]; then
+  IOS_APP_ICON_IMAGE_COUNT="$(find "$IOS_APP_ICON_SET" -type f -name '*.png' | wc -l | tr -d ' ')"
+fi
+IOS_APP_ICON_STATUS="missing"
+if grep -q 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;' "$IOS_PROJECT_FILE" && [[ "$IOS_APP_ICON_IMAGE_COUNT" -ge 18 ]]; then
+  IOS_APP_ICON_STATUS="AppIcon asset catalog configured ($IOS_APP_ICON_IMAGE_COUNT PNGs)"
+fi
+APP_ICON_GATE_STATUS="not checked"
+if bash scripts/validate-app-icons.sh >/dev/null 2>&1; then
+  APP_ICON_GATE_STATUS="passed"
+fi
 IOS_RUNTIME_URL_POLICY="HTTPS-only Swift runtime URLs"
 IOS_NETWORK_SECURITY_STATUS="not checked"
 if bash scripts/validate-ios-network-security.sh >/dev/null 2>&1; then
@@ -385,6 +403,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Android exported surface gate: $ANDROID_EXPORTED_SURFACE_STATUS"
   echo "- Cleartext traffic: $ANDROID_CLEARTEXT_STATUS"
   echo "- Android network security gate: $ANDROID_NETWORK_SECURITY_STATUS"
+  echo "- Android app icon assets: $ANDROID_APP_ICON_STATUS"
   echo "- Food photo capture mode: $ANDROID_PHOTO_CAPTURE_STATUS"
   echo "- Food photo privacy gate: $PHOTO_PRIVACY_STATUS"
   echo
@@ -439,11 +458,13 @@ mkdir -p "$REPORT_DIR"
   echo "- Build version: ${IOS_BUILD_VERSION:-not detected}"
   echo "- Privacy manifest: $PRIVACY_MANIFEST_STATUS"
   echo "- Required reason API declared: NSPrivacyAccessedAPICategoryUserDefaults / CA92.1"
+  echo "- iOS app icon assets: $IOS_APP_ICON_STATUS"
   echo "- Camera purpose string: $IOS_CAMERA_PURPOSE_STATUS"
   echo "- Photo library purpose string: $IOS_PHOTO_PURPOSE_STATUS"
   echo "- iOS permission privacy gate: $IOS_PERMISSION_PRIVACY_STATUS"
   echo "- iOS runtime URL policy: $IOS_RUNTIME_URL_POLICY"
   echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
+  echo "- App icon asset gate: $APP_ICON_GATE_STATUS"
   echo
   echo "## Validation Gate"
   echo
@@ -451,6 +472,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Build reproducibility: Gradle Wrapper integrity gate"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
+  echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"

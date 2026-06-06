@@ -85,6 +85,9 @@ fi
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 
+echo "== App icon asset gate =="
+bash scripts/validate-app-icons.sh
+
 echo "== Android unit tests, lint, debug APK, release APK, and release AAB =="
 "$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 

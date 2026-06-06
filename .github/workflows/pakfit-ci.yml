@@ -34,6 +34,9 @@ jobs:
       - name: Validate cross-platform version alignment
         run: bash scripts/validate-version-alignment.sh
 
+      - name: Validate app icon assets
+        run: bash scripts/validate-app-icons.sh
+
       - name: Run Android unit tests, lint, and assemble APK/AAB artifacts
         run: ./gradlew --dependency-verification strict testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 

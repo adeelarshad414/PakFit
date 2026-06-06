@@ -22,7 +22,9 @@ if ! grep -q 'android:usesCleartextTraffic="false"' "$ANDROID_MANIFEST"; then
   exit 1
 fi
 
-if rg -n 'http://' "$ANDROID_SOURCE_DIR" "$ANDROID_RES_DIR"; then
+ANDROID_CLEARTEXT_MATCHES="$(rg -n 'http://' "$ANDROID_SOURCE_DIR" "$ANDROID_RES_DIR" | grep -v 'http://schemas.android.com/apk/res/android' || true)"
+if [[ -n "$ANDROID_CLEARTEXT_MATCHES" ]]; then
+  echo "$ANDROID_CLEARTEXT_MATCHES"
   echo "Android network security gate failed: runtime app source/resources must not contain cleartext http:// URLs." >&2
   exit 1
 fi
