@@ -194,6 +194,17 @@ ANDROID_BACKUP_SNAPSHOT_EXCLUSION="$(file_pattern_status "$ANDROID_BACKUP_RULES"
 ANDROID_EXTRACTION_SNAPSHOT_EXCLUSION="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" 'pakfit_local_snapshot.xml')"
 ANDROID_CLOUD_BACKUP_RULE="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" '<cloud-backup')"
 ANDROID_DEVICE_TRANSFER_RULE="$(file_pattern_status "$ANDROID_DATA_EXTRACTION_RULES" '<device-transfer>')"
+ANDROID_DECLARED_PERMISSIONS="$(
+  sed -n 's/.*<uses-permission[^>]*android:name="\([^"]*\)".*/\1/p' "$ANDROID_MANIFEST" \
+    | awk 'BEGIN { permissions = "" } { permissions = permissions (permissions == "" ? "" : ", ") $0 } END { print (permissions == "" ? "none" : permissions) }'
+)"
+ANDROID_DECLARED_PERMISSION_COUNT="$(
+  sed -n 's/.*<uses-permission[^>]*android:name="\([^"]*\)".*/\1/p' "$ANDROID_MANIFEST" | wc -l | tr -d ' '
+)"
+ANDROID_CAMERA_FEATURE_STATUS="not detected"
+if grep -q 'android:name="android.hardware.camera"' "$ANDROID_MANIFEST" && grep -q 'android:required="false"' "$ANDROID_MANIFEST"; then
+  ANDROID_CAMERA_FEATURE_STATUS="declared optional"
+fi
 DEPENDENCY_REPORT_FILE="$REPORT_DIR/PakFit-v${VERSION_NAME}-dependency-inventory.md"
 ANDROID_RELEASE_DEPENDENCY_TREE="$DEPENDENCY_DIR/PakFit-v${VERSION_NAME}-android-releaseRuntimeClasspath.txt"
 IOS_DEPENDENCY_FILE="$DEPENDENCY_DIR/PakFit-v${VERSION_NAME}-ios-swift-package-dependencies.txt"
@@ -304,6 +315,10 @@ mkdir -p "$REPORT_DIR"
   echo "- Sensitive snapshot data-extraction exclusion: $ANDROID_EXTRACTION_SNAPSHOT_EXCLUSION"
   echo "- Cloud backup rule block: $ANDROID_CLOUD_BACKUP_RULE"
   echo "- Device transfer rule block: $ANDROID_DEVICE_TRANSFER_RULE"
+  echo "- Declared permissions: $ANDROID_DECLARED_PERMISSIONS"
+  echo "- Declared permission count: $ANDROID_DECLARED_PERMISSION_COUNT"
+  echo "- Permission policy: only INTERNET and CAMERA are allowed for current online search and food photo workflows"
+  echo "- Camera hardware feature: $ANDROID_CAMERA_FEATURE_STATUS"
   echo
   echo "### Debug APK"
   echo
@@ -368,6 +383,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Source gates: English-only app source and secret-pattern smoke check"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
   echo "- Android backup privacy gate: Auto Backup disabled and sensitive snapshot exclusions checked"
+  echo "- Android permission privacy gate: declared permissions limited to INTERNET and CAMERA with camera hardware optional"
   echo
   echo "## Release Boundaries"
   echo

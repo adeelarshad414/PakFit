@@ -29,6 +29,7 @@ The current app stores user data only in an explicit local snapshot after requir
 - Block local save/export until the required consent and clinical-boundary acknowledgements are complete.
 - Protect saved local snapshots at rest using Android Keystore-backed encryption on Android and Keychain-backed storage on iOS.
 - Disable Android Auto Backup and exclude sensitive local snapshot storage from Android backup/data-extraction rules.
+- Limit Android manifest permissions to the current online search and food photo workflows, and keep camera hardware optional.
 - Pin the Gradle Wrapper distribution and verify wrapper JAR/distribution checksums in release validation.
 - Check resolved Gradle dependency artifacts against committed SHA-256 verification metadata in strict mode.
 - Generate an offline dependency inventory and block dynamic/SNAPSHOT dependencies in release validation.

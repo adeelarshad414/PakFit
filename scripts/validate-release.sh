@@ -153,6 +153,9 @@ if ! grep -q '<device-transfer>' "$DATA_EXTRACTION_RULES"; then
   exit 1
 fi
 
+echo "== Android permission privacy gate =="
+bash scripts/validate-android-permissions.sh
+
 echo "== English-only app source check =="
 if command -v rg >/dev/null 2>&1; then
   if rg -n "Urdu|اردو|[\u0600-\u06FF]" README.md app/src ios; then

@@ -40,6 +40,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Local save/restore/export preview for profile, food logs, health markers, lifestyle inputs, mental wellness inputs, clinical risk factors, and manual foods
 - Data-at-rest protection for local snapshots using Android Keystore-backed encryption and iOS Keychain storage
 - Android Auto Backup disabled with explicit backup/data-extraction exclusions for sensitive local snapshot storage
+- Android permission privacy gate limiting declared permissions to internet and optional camera for current online search/photo workflows
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
 - Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate

@@ -77,6 +77,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Run basic hardcoded secret-pattern smoke check.
 - Validate iOS privacy manifest format and UserDefaults required-reason declaration.
 - Validate Android Auto Backup is disabled and sensitive snapshot backup/data-extraction exclusions exist.
+- Validate Android permissions are limited to the approved online search and food photo capture surface.
 - Store APK artifact.
 - Keep Android release minification and resource shrinking enabled.
 - Keep signing secrets out of source control and inject Android release signing through secure CI/local environment variables.
@@ -89,6 +90,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Gradle Wrapper integrity gate passing.
 - Strict Gradle dependency verification gate passing.
 - Dependency inventory gate passing.
+- Android permission privacy gate passing.
 - Debug APK, release APK, and release AAB build.
 - Release APK uses R8 minification and resource shrinking.
 - APK version metadata updated for meaningful MVP revisions.
@@ -132,3 +134,10 @@ Given the release validation command runs
 When Gradle resolves Android/plugin artifacts
 Then strict dependency verification checks committed SHA-256 metadata
 And missing or changed resolved artifacts fail the release gate
+
+### Scenario: Android permissions are minimized
+
+Given the release validation command runs
+When the Android manifest is inspected
+Then only INTERNET and CAMERA permissions are allowed
+And camera hardware remains optional for install compatibility

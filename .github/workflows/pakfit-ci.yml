@@ -34,6 +34,9 @@ jobs:
       - name: Run Android unit tests, lint, and assemble APK/AAB artifacts
         run: ./gradlew --dependency-verification strict testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 
+      - name: Validate Android permission privacy posture
+        run: bash scripts/validate-android-permissions.sh
+
       - name: Generate dependency inventory
         run: bash scripts/generate-dependency-inventory.sh
 
