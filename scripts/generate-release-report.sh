@@ -22,6 +22,7 @@ IOS_PROJECT_FILE="$ROOT_DIR/ios/PakFitIOS/PakFitIOS.xcodeproj/project.pbxproj"
 IOS_APP_ICON_SET="$ROOT_DIR/ios/PakFitIOS/Assets.xcassets/AppIcon.appiconset"
 STORE_LISTING_FILE="$ROOT_DIR/docs/store-listing.md"
 STORE_RELEASE_NOTES_DIR="$ROOT_DIR/docs/release-notes"
+STORE_SCREENSHOT_DIR="${PAKFIT_SCREENSHOT_DIR:-$ROOT_DIR/outputs/PakFit/screens}"
 GRADLEW_FILE="$ROOT_DIR/gradlew"
 GRADLEW_BAT_FILE="$ROOT_DIR/gradlew.bat"
 GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
@@ -168,6 +169,7 @@ RELEASE_VARIANT_NAME="$(metadata_value "$RELEASE_METADATA_FILE" variantName)"
 VERSION_NAME="$(metadata_value "$RELEASE_METADATA_FILE" versionName)"
 VERSION_CODE="$(metadata_number "$RELEASE_METADATA_FILE" versionCode)"
 STORE_RELEASE_NOTES_FILE="$STORE_RELEASE_NOTES_DIR/PakFit-v${VERSION_NAME}.md"
+STORE_SCREENSHOT_CONTACT_SHEET="$STORE_SCREENSHOT_DIR/00-pakfit-screen-contact-sheet.png"
 
 if [[ -z "$VERSION_NAME" || -z "$VERSION_CODE" || -z "$APPLICATION_ID" || -z "$DEBUG_VARIANT_NAME" || -z "$RELEASE_VARIANT_NAME" ]]; then
   echo "Could not read APK metadata from Android output-metadata.json files." >&2
@@ -199,6 +201,22 @@ if [[ -f "$STORE_RELEASE_NOTES_FILE" ]]; then
   STORE_RELEASE_NOTES_STATUS="$STORE_RELEASE_NOTES_FILE"
   STORE_RELEASE_NOTES_BYTES="$(wc -c < "$STORE_RELEASE_NOTES_FILE" | tr -d ' ')"
   STORE_RELEASE_NOTES_SHA256="$(sha256_file "$STORE_RELEASE_NOTES_FILE")"
+fi
+STORE_SCREENSHOT_STATUS="not checked"
+if bash scripts/validate-store-screenshots.sh >/dev/null 2>&1; then
+  STORE_SCREENSHOT_STATUS="passed"
+fi
+STORE_SCREENSHOT_COUNT="0"
+if [[ -d "$STORE_SCREENSHOT_DIR" ]]; then
+  STORE_SCREENSHOT_COUNT="$(find "$STORE_SCREENSHOT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l | tr -d ' ')"
+fi
+STORE_SCREENSHOT_CONTACT_STATUS="missing"
+STORE_SCREENSHOT_CONTACT_BYTES=""
+STORE_SCREENSHOT_CONTACT_SHA256=""
+if [[ -f "$STORE_SCREENSHOT_CONTACT_SHEET" ]]; then
+  STORE_SCREENSHOT_CONTACT_STATUS="$STORE_SCREENSHOT_CONTACT_SHEET"
+  STORE_SCREENSHOT_CONTACT_BYTES="$(wc -c < "$STORE_SCREENSHOT_CONTACT_SHEET" | tr -d ' ')"
+  STORE_SCREENSHOT_CONTACT_SHA256="$(sha256_file "$STORE_SCREENSHOT_CONTACT_SHEET")"
 fi
 RELEASE_APK_SIGNATURE_STATUS="$(apk_signature_status "$RELEASE_APK_FILE")"
 RELEASE_SIGNING_ENV_STATUS="not configured in this run"
@@ -522,6 +540,19 @@ mkdir -p "$REPORT_DIR"
   echo "- Public privacy policy URL: TBD public hosted URL before public store submission"
   echo "- Store submission boundary: final screenshots, ratings forms, public privacy-policy hosting, account ownership, and legal/privacy review remain external"
   echo
+  echo "## Store Screenshot Assets"
+  echo
+  echo "- Screenshot output directory: $STORE_SCREENSHOT_DIR"
+  echo "- Screenshot PNG count: $STORE_SCREENSHOT_COUNT"
+  echo "- Screenshot contact sheet: $STORE_SCREENSHOT_CONTACT_STATUS"
+  if [[ -n "$STORE_SCREENSHOT_CONTACT_BYTES" ]]; then
+    echo "- Screenshot contact sheet bytes: $STORE_SCREENSHOT_CONTACT_BYTES"
+    echo "- Screenshot contact sheet SHA-256: $STORE_SCREENSHOT_CONTACT_SHA256"
+  fi
+  echo "- Store screenshot gate: $STORE_SCREENSHOT_STATUS"
+  echo "- Store screenshot policy: English-only renderer source, six 1080x1920 workflow PNGs, one 1120x1450 contact sheet, and nonblank output checked"
+  echo "- Store screenshot boundary: final store screenshots still need signed-binary/device review against Play Console and App Store Connect requirements"
+  echo
   echo "## Dependency Inventory"
   echo
   echo "- Inventory report: $DEPENDENCY_REPORT_STATUS"
@@ -568,6 +599,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
+  echo "- Store screenshots: generated English-only workflow previews, PNG dimensions, contact sheet, and nonblank output checked"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Platform compatibility: Android compile/target SDK and iOS deployment/Swift settings checked"
   echo "- Android build toolchain: AGP compileSdk 35 support checked without suppressing warnings"

@@ -91,6 +91,9 @@ bash scripts/validate-app-identity.sh
 echo "== Store listing and release notes gate =="
 bash scripts/validate-store-listing.sh
 
+echo "== Store screenshot asset gate =="
+bash scripts/validate-store-screenshots.sh
+
 echo "== App icon asset gate =="
 bash scripts/validate-app-icons.sh
 

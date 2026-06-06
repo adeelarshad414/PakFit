@@ -14,6 +14,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include Android compile/target/min SDK, iOS deployment target, Swift version, and platform compatibility gate status.
 - Include Android Gradle Plugin version and build toolchain gate status.
 - Include store listing, versioned release notes, checksum, and store-listing gate status.
+- Include generated store screenshot count, contact sheet checksum, and screenshot gate status.
 - Include release APK signing verification status when `apksigner` is available.
 - Include release minification, resource shrinking, ProGuard/R8 rules, and mapping file checksum evidence.
 - Include release AAB path, size, and SHA-256.
@@ -48,6 +49,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes platform compatibility status.
 - The report includes Android build toolchain status.
 - The report includes store listing and release notes status.
+- The report includes generated store screenshot status.
 - The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - The report includes Gradle Wrapper reproducibility evidence.
 - The report includes Gradle dependency verification evidence.

@@ -19,8 +19,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install source gate tools
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
+      - name: Install source and screenshot gate tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep python3-pip
+          python3 -m pip install Pillow==12.2.0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -45,6 +48,9 @@ jobs:
 
       - name: Validate store listing and release notes
         run: bash scripts/validate-store-listing.sh
+
+      - name: Validate store screenshot assets
+        run: bash scripts/validate-store-screenshots.sh
 
       - name: Validate app icon assets
         run: bash scripts/validate-app-icons.sh

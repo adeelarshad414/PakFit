@@ -1,10 +1,10 @@
+import os
 from pathlib import Path
-from textwrap import wrap
 
 from PIL import Image, ImageDraw, ImageFont
 
 
-OUT_DIR = Path("/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/screens")
+OUT_DIR = Path(os.environ.get("PAKFIT_SCREENSHOT_DIR", "outputs/PakFit/screens"))
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 W, H = 1080, 1920
@@ -22,12 +22,29 @@ PALE_GREEN = "#EAF3EC"
 PALE_BLUE = "#E8F1F5"
 PALE_ORANGE = "#FFF6E8"
 
-FONT_REG = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
-FONT_BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+FONT_REGULAR_CANDIDATES = [
+    "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+    "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+]
+FONT_BOLD_CANDIDATES = [
+    "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+]
+
+
+def font_path(bold=False):
+    for candidate in FONT_BOLD_CANDIDATES if bold else FONT_REGULAR_CANDIDATES:
+        if Path(candidate).exists():
+            return candidate
+    return None
 
 
 def font(size, bold=False):
-    return ImageFont.truetype(FONT_BOLD if bold else FONT_REG, size)
+    path = font_path(bold)
+    if path:
+        return ImageFont.truetype(path, size)
+    return ImageFont.load_default(size=size)
 
 
 def new_canvas():
@@ -38,7 +55,7 @@ def round_rect(draw, box, radius, fill, outline=None, width=1):
     draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
 
 
-def text(draw, xy, value, size=34, fill=TEXT, bold=False, max_width=920, line_gap=10, rtl=False):
+def text(draw, xy, value, size=34, fill=TEXT, bold=False, max_width=920, line_gap=10):
     x, y = xy
     f = font(size, bold)
     words = value.split(" ")
@@ -57,11 +74,7 @@ def text(draw, xy, value, size=34, fill=TEXT, bold=False, max_width=920, line_ga
     if not lines:
         lines = [value]
     for line in lines:
-        kwargs = {"font": f, "fill": fill}
-        if rtl:
-            draw.text((x + max_width, y), line, anchor="ra", **kwargs)
-        else:
-            draw.text((x, y), line, **kwargs)
+        draw.text((x, y), line, font=f, fill=fill)
         y += size + line_gap
     return y
 
@@ -206,8 +219,7 @@ def screen_health():
     text(draw, (x, y), "BMI 28.4 - Obesity class 1", size=34, bold=True, max_width=880)
     y += 58
     y = text(draw, (x, y), "BMI uses South Asian screening cutoffs and is not a diagnosis. Review it with waist, labs, symptoms, and clinician advice.", size=26, fill=MUTED, max_width=870)
-    y = text(draw, (x, y + 6), "یہ معلومات طبی مشورہ نہیں ہے۔ ہمیشہ اپنے ڈاکٹر سے رجوع کریں۔", size=28, bold=True, max_width=870, rtl=True)
-    y += 18
+    y += 12
     y = bullets(draw, x, y, [
         "Lipid profile review: cholesterol, LDL, HDL, or triglycerides outside screening targets.",
         "Blood pressure review: repeated high readings should be reviewed with a doctor.",
@@ -232,20 +244,19 @@ def screen_clinical():
 
     x, y, _ = card(draw, 590, "Risk Insight Report", 1060)
     y = text(draw, (x, y), "Screening insight only. This is not a diagnosis or treatment plan.", size=26, fill=MUTED, max_width=870)
-    y = text(draw, (x, y + 4), "یہ معلومات طبی مشورہ نہیں ہے۔ ہمیشہ اپنے ڈاکٹر سے رجوع کریں۔", size=27, bold=True, max_width=870, rtl=True)
-    y += 30
-    for title, level, score, color, urdu, steps in [
-        ("Diabetes risk screening", "High", 0.82, WARN, "ٹائپ 2 ذیابیطس کا خطر بڑھا ہوا لگتا ہے؛ یہ تشخیص نہیں ہے۔", ["Review HbA1c and fasting glucose with your doctor.", "Use protein, sabzi, measured roti/rice, and a walk after meals."]),
-        ("Blood pressure risk screening", "High", 0.72, WARN, "بلڈ پریشر کے اعداد اور عادات سے خطر بڑھا ہوا لگتا ہے۔", ["Recheck BP calmly on different days.", "Reduce added salt, achar, and packaged snacks."]),
-        ("Heart health risk screening", "Moderate", 0.58, SECONDARY, "کولیسٹرول، بلڈ پریشر، شوگر، عمر، وزن یا خاندانی تاریخ دل کے خطرے کو بڑھا سکتے ہیں۔", ["Book clinician review for cholesterol, BP, and glucose together."]),
-        ("Vitamin D risk screening", "Moderate", 0.50, TERTIARY, "کم دھوپ یا زیادہ وزن سے وٹامن ڈی کی کمی کا خطر بڑھ سکتا ہے۔", ["Ask about vitamin D lab testing when symptoms or repeated deficiency are concerns."]),
-        ("Iron and anemia risk screening", "Low", 0.22, PRIMARY, "آئرن والی غذا کم ہونا انیمیا کا خطر بڑھا سکتا ہے۔", ["Use iron-rich foods such as saag, daal, chana, lobia, eggs, fish, or beef when suitable."]),
+    y += 28
+    for title, level, score, color, explanation, steps in [
+        ("Diabetes risk screening", "High", 0.82, WARN, "Risk looks elevated from South Asian BMI, family history, and glucose markers. This is not a diagnosis.", ["Review HbA1c and fasting glucose with your doctor.", "Use protein, sabzi, measured roti/rice, and a walk after meals."]),
+        ("Blood pressure risk screening", "High", 0.72, WARN, "Readings and salt routine suggest higher screening risk that deserves follow-up.", ["Recheck BP calmly on different days.", "Reduce added salt, achar, and packaged snacks."]),
+        ("Heart health risk screening", "Moderate", 0.58, SECONDARY, "Cholesterol, BP, sugar, age, weight, tobacco, or family history can stack into higher risk.", ["Book clinician review for cholesterol, BP, and glucose together."]),
+        ("Vitamin D risk screening", "Moderate", 0.50, TERTIARY, "Low sun exposure and higher BMI can increase vitamin D deficiency risk.", ["Ask about vitamin D lab testing when symptoms or repeated deficiency are concerns."]),
+        ("Iron and anemia risk screening", "Low", 0.22, PRIMARY, "Low iron intake can raise anemia risk and should be reviewed with symptoms or low hemoglobin.", ["Use iron-rich foods such as saag, daal, chana, lobia, eggs, fish, or beef when suitable."]),
     ]:
         text(draw, (x, y), f"{title}: {level}", size=29, bold=True, max_width=720)
         draw.text((x + 870, y), f"{int(score*10)}/10", font=font(28, True), fill=color, anchor="ra")
         round_rect(draw, (x, y + 45, x + 870, y + 59), 7, LINE)
         round_rect(draw, (x, y + 45, x + int(870 * score), y + 59), 7, color)
-        y = text(draw, (x, y + 76), urdu, size=25, bold=True, max_width=870, rtl=True)
+        y = text(draw, (x, y + 76), explanation, size=24, fill=MUTED, max_width=870)
         y = bullets(draw, x, y + 2, steps, size=23)
         y += 18
     img.save(OUT_DIR / "03-clinical-intelligence.png")
@@ -267,8 +278,7 @@ def screen_mental():
     x, y, _ = card(draw, 790, "Crisis Support", 850, fill="#FFF4F2")
     text(draw, (x, y), "Crisis support needed", size=36, bold=True, fill=DANGER)
     y = text(draw, (x, y + 58), "If you may hurt yourself, cannot stay safe, or feel out of control, stay near a trusted person and contact emergency or crisis support now.", size=27, max_width=870)
-    y = text(draw, (x, y + 4), "اگر خود کو نقصان پہنچانے کا خطرہ ہو یا آپ محفوظ نہ رہ سکیں تو فوری طور پر کسی قابل اعتماد فرد کے پاس رہیں اور ایمرجنسی مدد لیں۔", size=27, bold=True, max_width=870, rtl=True)
-    y += 24
+    y += 18
     for name, phone, desc in [
         ("Rescue 1122", "1122 / 112 from mobile phones", "Ambulance and emergency response in Pakistan."),
         ("Police emergency", "15", "Use when immediate personal safety is threatened."),
@@ -356,12 +366,12 @@ def screen_food():
 
 
 def contact_sheet():
-    files = sorted(OUT_DIR.glob("0*.png"))
+    files = sorted(path for path in OUT_DIR.glob("0*.png") if not path.name.startswith("00-"))
     thumb_w, thumb_h = 324, 576
-    sheet = Image.new("RGB", (1120, 1260), BG)
+    sheet = Image.new("RGB", (1120, 1450), BG)
     draw = ImageDraw.Draw(sheet)
     text(draw, (44, 34), "PakFit App Screens", size=48, bold=True)
-    text(draw, (44, 94), "Generated visual previews from the implemented Android MVP.", size=25, fill=MUTED)
+    text(draw, (44, 94), "Generated visual previews from the implemented mobile MVP.", size=25, fill=MUTED)
     positions = [(44, 160), (398, 160), (752, 160), (44, 780), (398, 780), (752, 780)]
     for path, (x, y) in zip(files, positions):
         img = Image.open(path).resize((thumb_w, thumb_h))

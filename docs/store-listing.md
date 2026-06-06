@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.31.0
+Listing version: 0.32.0
 
 ## App Identity
 
