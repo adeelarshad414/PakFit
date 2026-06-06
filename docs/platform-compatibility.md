@@ -9,6 +9,7 @@ This document records the current platform SDK posture used by PakFit release va
 - `compileSdk`: 35
 - `targetSdk`: 35
 - `minSdk`: 26
+- Android Gradle Plugin: 8.6.1
 - Local validation requires the Android API 35 platform to be installed.
 - GitHub Actions installs `platforms;android-35` and `build-tools;35.0.0` before running release gates.
 
@@ -16,7 +17,11 @@ The Google Play target API requirement currently says new apps and app updates s
 
 https://developer.android.com/google/play/requirements/target-sdk
 
-Known local tooling follow-up: the current Android Gradle Plugin version builds successfully with API 35 but emits a tested-through-API-34 warning. The next toolchain-hardening slice should upgrade AGP and refresh dependency verification metadata instead of suppressing the warning.
+The Android build toolchain gate requires an Android Gradle Plugin line that supports API 35 and blocks `android.suppressUnsupportedCompileSdk`, so build warnings are fixed through toolchain upgrades rather than hidden.
+
+Android Gradle Plugin 8.6 release notes state that AGP 8.6 supports API level 35:
+
+https://developer.android.com/build/releases/agp-8-6-0-release-notes
 
 ## iOS
 

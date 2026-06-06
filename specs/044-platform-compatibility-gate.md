@@ -26,7 +26,7 @@ Keep PakFit's Android and iOS platform metadata aligned with current store-readi
 - This gate proves source/build metadata and local Android SDK readiness.
 - This gate does not prove Play Console upload acceptance, App Store archive signing, App Store Connect upload, or legal/store review completion.
 - Full App Store archive validation remains blocked until Xcode.app, signing assets, and App Store Connect access are available.
-- The current Android Gradle Plugin builds API 35 artifacts but emits a tested-through-API-34 warning; a later toolchain-hardening slice should upgrade AGP and dependency verification metadata rather than suppressing the warning.
+- Android Gradle Plugin support for API 35 is covered by `specs/045-android-build-toolchain-gate.md`.
 
 ## Acceptance Criteria
 

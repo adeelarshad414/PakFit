@@ -45,6 +45,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Android exported surface gate limiting exported components to the launcher activity
 - Android network security gate disabling cleartext traffic and blocking runtime `http://` URL literals
 - Platform compatibility gate with Android compile/target SDK 35 and iOS deployment/Swift settings evidence
+- Android build toolchain gate with AGP 8.6.x support for compileSdk 35
 - Cross-platform app icon assets with Android adaptive launcher icons and iOS AppIcon catalog validation
 - iOS permission privacy gate keeping camera/photo purpose strings food-photo scoped
 - iOS network security gate keeping Swift runtime URLs HTTPS-only and blocking ATS cleartext opt-outs

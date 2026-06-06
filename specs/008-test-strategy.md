@@ -42,6 +42,7 @@
 - App identity metadata gate passes before APK/AAB artifacts and iOS release evidence are accepted.
 - App icon asset gate passes before APK/AAB artifacts and iOS release evidence are accepted.
 - Platform compatibility gate passes before APK/AAB artifacts and iOS release evidence are accepted.
+- Android build toolchain gate passes before APK/AAB artifacts are accepted.
 - Gradle Wrapper integrity gate passes before APK/AAB artifacts are accepted.
 - Strict Gradle dependency verification passes before APK/AAB artifacts are accepted.
 - Android permission privacy gate passes before APK/AAB artifacts are accepted.

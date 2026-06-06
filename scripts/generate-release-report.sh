@@ -14,6 +14,7 @@ REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/outputs/PakFit/reports}"
 DEPENDENCY_DIR="${DEPENDENCY_DIR:-$REPORT_DIR/dependencies}"
 PRIVACY_MANIFEST="$ROOT_DIR/ios/PakFitIOS/Sources/PakFitApp/PrivacyInfo.xcprivacy"
 ANDROID_BUILD_FILE="$ROOT_DIR/app/build.gradle.kts"
+ROOT_BUILD_FILE="$ROOT_DIR/build.gradle.kts"
 ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
 ANDROID_BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"
 ANDROID_DATA_EXTRACTION_RULES="$ROOT_DIR/app/src/main/res/xml/data_extraction_rules.xml"
@@ -324,6 +325,9 @@ ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
 ANDROID_COMPILE_SDK="$(
   sed -n 's/.*compileSdk = \([0-9][0-9]*\).*/\1/p' "$ANDROID_BUILD_FILE" | head -1
 )"
+ANDROID_GRADLE_PLUGIN_VERSION="$(
+  sed -n 's/.*id("com.android.application") version "\([^"]*\)".*/\1/p' "$ROOT_BUILD_FILE" | head -1
+)"
 ANDROID_TARGET_SDK="$(
   sed -n 's/.*targetSdk = \([0-9][0-9]*\).*/\1/p' "$ANDROID_BUILD_FILE" | head -1
 )"
@@ -354,6 +358,10 @@ fi
 PLATFORM_COMPATIBILITY_STATUS="not checked"
 if bash scripts/validate-platform-compatibility.sh >/dev/null 2>&1; then
   PLATFORM_COMPATIBILITY_STATUS="passed"
+fi
+ANDROID_BUILD_TOOLCHAIN_STATUS="not checked"
+if bash scripts/validate-android-build-toolchain.sh >/dev/null 2>&1; then
+  ANDROID_BUILD_TOOLCHAIN_STATUS="passed"
 fi
 APPLE_UPLOAD_SDK_BOUNDARY="App Store Connect upload still requires Xcode 26 or later with an iOS/iPadOS 26 SDK; this local SwiftPM validation does not create a signed App Store archive."
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
@@ -418,6 +426,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Android compile SDK: ${ANDROID_COMPILE_SDK:-not detected}"
   echo "- Android target SDK: ${ANDROID_TARGET_SDK:-not detected}"
   echo "- Android minimum SDK: ${ANDROID_MIN_SDK:-not detected}"
+  echo "- Android Gradle Plugin: ${ANDROID_GRADLE_PLUGIN_VERSION:-not detected}"
   echo "- Android source version name: ${ANDROID_SOURCE_VERSION_NAME:-not detected}"
   echo "- Android source version code: ${ANDROID_SOURCE_VERSION_CODE:-not detected}"
   echo "- iOS marketing version: ${IOS_MARKETING_VERSION:-not detected}"
@@ -508,6 +517,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
   echo "- App icon asset gate: $APP_ICON_GATE_STATUS"
   echo "- Platform compatibility gate: $PLATFORM_COMPATIBILITY_STATUS"
+  echo "- Android build toolchain gate: $ANDROID_BUILD_TOOLCHAIN_STATUS"
   echo "- Apple upload SDK boundary: $APPLE_UPLOAD_SDK_BOUNDARY"
   echo
   echo "## Validation Gate"
@@ -519,6 +529,7 @@ mkdir -p "$REPORT_DIR"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Platform compatibility: Android compile/target SDK and iOS deployment/Swift settings checked"
+  echo "- Android build toolchain: AGP compileSdk 35 support checked without suppressing warnings"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"

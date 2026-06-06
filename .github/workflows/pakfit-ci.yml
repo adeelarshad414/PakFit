@@ -46,6 +46,9 @@ jobs:
       - name: Validate platform compatibility metadata
         run: bash scripts/validate-platform-compatibility.sh
 
+      - name: Validate Android build toolchain
+        run: bash scripts/validate-android-build-toolchain.sh
+
       - name: Run Android unit tests, lint, and assemble APK/AAB artifacts
         run: ./gradlew --dependency-verification strict testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
 
