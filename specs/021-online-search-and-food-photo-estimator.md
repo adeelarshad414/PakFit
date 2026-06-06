@@ -17,6 +17,7 @@ The product now needs online food search and a camera-based food calorie workflo
 - Add camera capture for a food photo preview.
 - Add food hint and portion selector for photo-assisted calorie estimate.
 - Add domain tests for URL generation and calorie estimation.
+- Add release validation that fails if food photo bytes are persisted or uploaded before a reviewed vision/backend design exists.
 
 ## Out of Scope
 
@@ -40,6 +41,7 @@ The URL must safely encode spaces and punctuation.
 ### Food Photo Capture
 
 The app must let the user capture a food photo and show the preview in the Tracker workflow.
+The current release must keep captured food photos ephemeral and preview-only.
 
 ### Photo Calorie Estimate
 
@@ -78,3 +80,10 @@ Given the food hint does not match the catalog
 When the photo estimate is generated  
 Then confidence is low  
 And the app provides an online verification query
+
+### Scenario: Food photo privacy stays local
+
+Given the release validation command runs
+When the app source is inspected
+Then photo capture remains preview-only
+And app code does not persist or upload food photo image bytes

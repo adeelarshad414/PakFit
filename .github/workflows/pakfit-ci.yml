@@ -37,6 +37,9 @@ jobs:
       - name: Validate Android permission privacy posture
         run: bash scripts/validate-android-permissions.sh
 
+      - name: Validate food photo privacy posture
+        run: bash scripts/validate-photo-privacy.sh
+
       - name: Generate dependency inventory
         run: bash scripts/generate-dependency-inventory.sh
 

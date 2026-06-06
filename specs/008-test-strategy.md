@@ -41,6 +41,7 @@
 - Gradle Wrapper integrity gate passes before APK/AAB artifacts are accepted.
 - Strict Gradle dependency verification passes before APK/AAB artifacts are accepted.
 - Android permission privacy gate passes before APK/AAB artifacts are accepted.
+- Food photo privacy gate passes before APK/AAB artifacts are accepted.
 - Release builds keep R8 minification and resource shrinking enabled.
 - Dynamic and SNAPSHOT dependency declarations fail the dependency inventory gate.
 

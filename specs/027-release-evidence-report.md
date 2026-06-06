@@ -16,6 +16,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include Gradle dependency verification metadata path, checksum, component count, checksum count, and strict mode status.
 - Include Android Auto Backup and backup/data-extraction sensitive snapshot exclusion status.
 - Include Android declared permission count, permission policy, and camera hardware feature posture.
+- Include food photo capture mode and photo privacy gate status.
 - Include dependency inventory report path, checksums, and dynamic/SNAPSHOT dependency gate status.
 - Include iOS Swift package/Xcode project paths and privacy manifest status.
 - Include the exact release validation command and gates.
@@ -36,5 +37,6 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes Gradle dependency verification evidence.
 - The report includes Android backup privacy status.
 - The report includes Android permission privacy status.
+- The report includes food photo privacy status.
 - The report includes dependency inventory status and checksums.
 - GitHub Actions uploads release evidence reports as artifacts.

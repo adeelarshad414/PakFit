@@ -14,7 +14,7 @@ The current app stores sensitive data only on the user's device after required c
 
 Saved local snapshots are protected at rest with platform storage controls: Android uses an Android Keystore-backed encrypted payload, and iOS stores the sensitive snapshot payload in Keychain. Android Auto Backup is disabled for the app, and Android backup/data-extraction rules explicitly exclude the sensitive local snapshot preference.
 
-Food photo image bytes are not saved in the local snapshot.
+Food photo image bytes are not saved in the local snapshot, written to app files, or uploaded by app code in this build.
 
 ## Network Use
 

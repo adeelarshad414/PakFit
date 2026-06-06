@@ -205,6 +205,14 @@ ANDROID_CAMERA_FEATURE_STATUS="not detected"
 if grep -q 'android:name="android.hardware.camera"' "$ANDROID_MANIFEST" && grep -q 'android:required="false"' "$ANDROID_MANIFEST"; then
   ANDROID_CAMERA_FEATURE_STATUS="declared optional"
 fi
+ANDROID_PHOTO_CAPTURE_STATUS="not detected"
+if grep -q "ActivityResultContracts.TakePicturePreview" "$ROOT_DIR/app/src/main/java/com/pakfit/app/ui/PakFitApp.kt"; then
+  ANDROID_PHOTO_CAPTURE_STATUS="preview-only ActivityResultContracts.TakePicturePreview"
+fi
+PHOTO_PRIVACY_STATUS="not checked"
+if bash scripts/validate-photo-privacy.sh >/dev/null 2>&1; then
+  PHOTO_PRIVACY_STATUS="passed"
+fi
 DEPENDENCY_REPORT_FILE="$REPORT_DIR/PakFit-v${VERSION_NAME}-dependency-inventory.md"
 ANDROID_RELEASE_DEPENDENCY_TREE="$DEPENDENCY_DIR/PakFit-v${VERSION_NAME}-android-releaseRuntimeClasspath.txt"
 IOS_DEPENDENCY_FILE="$DEPENDENCY_DIR/PakFit-v${VERSION_NAME}-ios-swift-package-dependencies.txt"
@@ -319,6 +327,8 @@ mkdir -p "$REPORT_DIR"
   echo "- Declared permission count: $ANDROID_DECLARED_PERMISSION_COUNT"
   echo "- Permission policy: only INTERNET and CAMERA are allowed for current online search and food photo workflows"
   echo "- Camera hardware feature: $ANDROID_CAMERA_FEATURE_STATUS"
+  echo "- Food photo capture mode: $ANDROID_PHOTO_CAPTURE_STATUS"
+  echo "- Food photo privacy gate: $PHOTO_PRIVACY_STATUS"
   echo
   echo "### Debug APK"
   echo
@@ -384,6 +394,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
   echo "- Android backup privacy gate: Auto Backup disabled and sensitive snapshot exclusions checked"
   echo "- Android permission privacy gate: declared permissions limited to INTERNET and CAMERA with camera hardware optional"
+  echo "- Food photo privacy gate: preview-only capture with no image-byte persistence/upload patterns"
   echo
   echo "## Release Boundaries"
   echo
