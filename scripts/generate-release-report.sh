@@ -321,6 +321,15 @@ fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
+ANDROID_COMPILE_SDK="$(
+  sed -n 's/.*compileSdk = \([0-9][0-9]*\).*/\1/p' "$ANDROID_BUILD_FILE" | head -1
+)"
+ANDROID_TARGET_SDK="$(
+  sed -n 's/.*targetSdk = \([0-9][0-9]*\).*/\1/p' "$ANDROID_BUILD_FILE" | head -1
+)"
+ANDROID_MIN_SDK="$(
+  sed -n 's/.*minSdk = \([0-9][0-9]*\).*/\1/p' "$ANDROID_BUILD_FILE" | head -1
+)"
 ANDROID_NAMESPACE="$(
   sed -n 's/.*namespace = "\([^"]*\)".*/\1/p' "$ANDROID_BUILD_FILE" | head -1
 )"
@@ -329,6 +338,8 @@ ANDROID_DISPLAY_NAME="$(
 )"
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
+IOS_DEPLOYMENT_TARGET="$(xcode_setting_value IPHONEOS_DEPLOYMENT_TARGET)"
+IOS_SWIFT_VERSION="$(xcode_setting_value SWIFT_VERSION)"
 IOS_BUNDLE_ID="$(xcode_setting_value PRODUCT_BUNDLE_IDENTIFIER)"
 IOS_DISPLAY_NAME="$(xcode_setting_value INFOPLIST_KEY_CFBundleDisplayName)"
 IOS_TARGETED_DEVICE_FAMILY="$(xcode_setting_value TARGETED_DEVICE_FAMILY)"
@@ -340,6 +351,11 @@ APP_IDENTITY_STATUS="not checked"
 if bash scripts/validate-app-identity.sh >/dev/null 2>&1; then
   APP_IDENTITY_STATUS="passed"
 fi
+PLATFORM_COMPATIBILITY_STATUS="not checked"
+if bash scripts/validate-platform-compatibility.sh >/dev/null 2>&1; then
+  PLATFORM_COMPATIBILITY_STATUS="passed"
+fi
+APPLE_UPLOAD_SDK_BOUNDARY="App Store Connect upload still requires Xcode 26 or later with an iOS/iPadOS 26 SDK; this local SwiftPM validation does not create a signed App Store archive."
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 REPORT_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -399,6 +415,9 @@ mkdir -p "$REPORT_DIR"
   echo "- Android display name: ${ANDROID_DISPLAY_NAME:-not detected}"
   echo "- Version name: $VERSION_NAME"
   echo "- Version code: $VERSION_CODE"
+  echo "- Android compile SDK: ${ANDROID_COMPILE_SDK:-not detected}"
+  echo "- Android target SDK: ${ANDROID_TARGET_SDK:-not detected}"
+  echo "- Android minimum SDK: ${ANDROID_MIN_SDK:-not detected}"
   echo "- Android source version name: ${ANDROID_SOURCE_VERSION_NAME:-not detected}"
   echo "- Android source version code: ${ANDROID_SOURCE_VERSION_CODE:-not detected}"
   echo "- iOS marketing version: ${IOS_MARKETING_VERSION:-not detected}"
@@ -473,6 +492,8 @@ mkdir -p "$REPORT_DIR"
   echo "- Xcode project: ios/PakFitIOS/PakFitIOS.xcodeproj"
   echo "- Marketing version: ${IOS_MARKETING_VERSION:-not detected}"
   echo "- Build version: ${IOS_BUILD_VERSION:-not detected}"
+  echo "- iOS deployment target: ${IOS_DEPLOYMENT_TARGET:-not detected}"
+  echo "- iOS Swift version setting: ${IOS_SWIFT_VERSION:-not detected}"
   echo "- Bundle identifier: ${IOS_BUNDLE_ID:-not detected}"
   echo "- Display name: ${IOS_DISPLAY_NAME:-not detected}"
   echo "- Target device family: ${IOS_TARGETED_DEVICE_FAMILY:-not detected}"
@@ -486,6 +507,8 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS runtime URL policy: $IOS_RUNTIME_URL_POLICY"
   echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
   echo "- App icon asset gate: $APP_ICON_GATE_STATUS"
+  echo "- Platform compatibility gate: $PLATFORM_COMPATIBILITY_STATUS"
+  echo "- Apple upload SDK boundary: $APPLE_UPLOAD_SDK_BOUNDARY"
   echo
   echo "## Validation Gate"
   echo
@@ -495,6 +518,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
+  echo "- Platform compatibility: Android compile/target SDK and iOS deployment/Swift settings checked"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"
@@ -513,7 +537,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Android release signing is configured only through external PAKFIT_RELEASE_* environment variables; signing secrets must not be committed."
   echo "- Unsigned release APKs and locally generated AABs are build evidence, not store-submission proof."
   echo "- Play Console submission still requires upload-key signing verification and store track validation."
-  echo "- iOS simulator/archive/signing still requires full Xcode.app and signing assets."
+  echo "- iOS simulator/archive/signing still requires full Xcode.app, Xcode 26+ SDK tooling for App Store upload, and signing assets."
   echo "- Live vulnerability advisory scanning still requires a network-enabled scanner or dependency review service."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"

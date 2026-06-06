@@ -28,6 +28,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android API 35 platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
@@ -39,6 +42,9 @@ jobs:
 
       - name: Validate app icon assets
         run: bash scripts/validate-app-icons.sh
+
+      - name: Validate platform compatibility metadata
+        run: bash scripts/validate-platform-compatibility.sh
 
       - name: Run Android unit tests, lint, and assemble APK/AAB artifacts
         run: ./gradlew --dependency-verification strict testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease

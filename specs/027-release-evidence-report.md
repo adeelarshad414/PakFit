@@ -11,6 +11,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include Android source version, iOS project version, built APK metadata, and version alignment gate status.
 - Include Android source application ID, Android namespace/display name, iOS bundle ID/display name, target device family, and app identity gate status.
 - Include Android adaptive launcher icon status, iOS AppIcon asset status, and app icon gate status.
+- Include Android compile/target/min SDK, iOS deployment target, Swift version, and platform compatibility gate status.
 - Include release APK signing verification status when `apksigner` is available.
 - Include release minification, resource shrinking, ProGuard/R8 rules, and mapping file checksum evidence.
 - Include release AAB path, size, and SHA-256.
@@ -42,6 +43,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes Android/iOS version alignment status.
 - The report includes app identity metadata status.
 - The report includes app icon asset status.
+- The report includes platform compatibility status.
 - The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - The report includes Gradle Wrapper reproducibility evidence.
 - The report includes Gradle dependency verification evidence.

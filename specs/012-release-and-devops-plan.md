@@ -65,6 +65,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Validate Android/iOS source version metadata alignment before building release artifacts.
 - Validate Android application ID/display name and iOS bundle ID/display name before building release artifacts.
 - Validate Android adaptive launcher icons and iOS AppIcon asset catalog before building release artifacts.
+- Validate Android compile/target SDK and iOS deployment/Swift settings before building release artifacts.
 - Validate Gradle Wrapper distribution checksum and wrapper JAR checksum.
 - Validate resolved Gradle dependency artifacts with strict SHA-256 dependency verification metadata.
 - Run Android debug and release lint.
@@ -98,6 +99,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Cross-platform version alignment gate passing.
 - App identity metadata gate passing.
 - App icon asset gate passing.
+- Platform compatibility gate passing.
 - Android lint passing.
 - Gradle Wrapper integrity gate passing.
 - Strict Gradle dependency verification gate passing.
@@ -147,6 +149,14 @@ Given the release validation command runs
 When Android launcher resources and iOS Xcode asset metadata are inspected
 Then Android adaptive launcher icons are referenced by the manifest
 And the iOS AppIcon catalog contains iPhone, iPad, and marketing icon PNGs
+
+### Scenario: Platform SDK posture is current
+
+Given the release validation command runs
+When Android Gradle settings and iOS Xcode settings are inspected
+Then Android compileSdk and targetSdk are at least 35
+And iOS deployment target remains at least 16.0
+And Swift version remains at least 5.0
 
 ### Scenario: Release hardening is enforced
 
