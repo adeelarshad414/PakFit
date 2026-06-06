@@ -49,6 +49,9 @@ jobs:
       - name: Validate store listing and release notes
         run: bash scripts/validate-store-listing.sh
 
+      - name: Validate dependency advisory configuration
+        run: bash scripts/validate-dependency-advisory-config.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -181,3 +184,6 @@ jobs:
 
       - name: Validate store listing and release notes
         run: bash scripts/validate-store-listing.sh
+
+      - name: Validate dependency advisory configuration
+        run: bash scripts/validate-dependency-advisory-config.sh

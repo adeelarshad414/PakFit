@@ -82,6 +82,9 @@ if ! grep -q "<sha256 " "$VERIFICATION_METADATA"; then
   exit 1
 fi
 
+echo "== Dependency advisory configuration gate =="
+bash scripts/validate-dependency-advisory-config.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 

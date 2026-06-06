@@ -28,6 +28,7 @@ GRADLEW_BAT_FILE="$ROOT_DIR/gradlew.bat"
 GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
 GRADLE_WRAPPER_PROPERTIES="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 GRADLE_VERIFICATION_METADATA="$ROOT_DIR/gradle/verification-metadata.xml"
+DEPENDABOT_CONFIG="$ROOT_DIR/.github/dependabot.yml"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -372,6 +373,20 @@ if [[ -f "$GRADLE_VERIFICATION_METADATA" ]]; then
   GRADLE_VERIFICATION_COMPONENTS="$(grep -c "<component " "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
   GRADLE_VERIFICATION_CHECKSUMS="$(grep -c "<sha256 " "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
 fi
+DEPENDABOT_STATUS="missing"
+DEPENDABOT_BYTES=""
+DEPENDABOT_SHA256=""
+DEPENDABOT_ECOSYSTEM_COUNT=""
+DEPENDENCY_ADVISORY_CONFIG_STATUS="not checked"
+if [[ -f "$DEPENDABOT_CONFIG" ]]; then
+  DEPENDABOT_STATUS="$DEPENDABOT_CONFIG"
+  DEPENDABOT_BYTES="$(wc -c < "$DEPENDABOT_CONFIG" | tr -d ' ')"
+  DEPENDABOT_SHA256="$(sha256_file "$DEPENDABOT_CONFIG")"
+  DEPENDABOT_ECOSYSTEM_COUNT="$(grep -c 'package-ecosystem:' "$DEPENDABOT_CONFIG" | tr -d ' ')"
+fi
+if bash scripts/validate-dependency-advisory-config.sh >/dev/null 2>&1; then
+  DEPENDENCY_ADVISORY_CONFIG_STATUS="passed"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -479,6 +494,18 @@ mkdir -p "$REPORT_DIR"
     echo "- Dependency verification checksum count: $GRADLE_VERIFICATION_CHECKSUMS"
   fi
   echo "- Dependency verification mode: strict"
+  echo
+  echo "## Dependency Advisory Monitoring"
+  echo
+  echo "- Dependabot config: $DEPENDABOT_STATUS"
+  if [[ -n "$DEPENDABOT_BYTES" ]]; then
+    echo "- Dependabot config bytes: $DEPENDABOT_BYTES"
+    echo "- Dependabot config SHA-256: $DEPENDABOT_SHA256"
+    echo "- Dependabot ecosystem count: $DEPENDABOT_ECOSYSTEM_COUNT"
+  fi
+  echo "- Dependency advisory configuration gate: $DEPENDENCY_ADVISORY_CONFIG_STATUS"
+  echo "- Advisory monitoring policy: Gradle, Swift Package Manager, and GitHub Actions updates are configured for hosted Dependabot monitoring"
+  echo "- Advisory result boundary: live CVE/GHSA status still requires GitHub-hosted dependency scanning or another network-enabled scanner after push"
   echo
   echo "## Android APK"
   echo
@@ -628,6 +655,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Local command: bash scripts/validate-release.sh"
   echo "- Build reproducibility: Gradle Wrapper integrity gate"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
+  echo "- Dependency advisory monitoring: Dependabot coverage for Gradle, Swift Package Manager, and GitHub Actions checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -657,7 +685,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Unsigned release APKs and locally generated AABs are build evidence, not store-submission proof."
   echo "- Play Console submission still requires upload-key signing verification and store track validation."
   echo "- iOS simulator/archive/signing still requires full Xcode.app, Xcode 26+ SDK tooling for App Store upload, and signing assets."
-  echo "- Live vulnerability advisory scanning still requires a network-enabled scanner or dependency review service."
+  echo "- Dependabot advisory monitoring is configured, but live vulnerability/advisory results still require the pushed repository and GitHub-hosted dependency scanning or another network-enabled scanner."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

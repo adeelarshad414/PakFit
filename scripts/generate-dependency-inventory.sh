@@ -134,7 +134,7 @@ REPORT_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   echo "## Boundary"
   echo
   echo "- This is an offline dependency inventory and reproducibility gate."
-  echo "- Public vulnerability advisory checks still require a network-enabled scanner or dependency review service."
+  echo "- Dependabot advisory monitoring is configured in .github/dependabot.yml, but live vulnerability/advisory results still require a pushed repository and GitHub-hosted dependency scanning or another network-enabled scanner."
 } > "$REPORT_FILE"
 
 echo "$REPORT_FILE"

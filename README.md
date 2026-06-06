@@ -61,6 +61,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate
 - Strict Gradle dependency verification metadata with SHA-256 checksums for resolved Android artifacts
 - Offline dependency inventory with dynamic/SNAPSHOT dependency gate for Android and Swift package posture
+- Dependency advisory monitoring gate with Dependabot coverage for Gradle, Swift Package Manager, and GitHub Actions
 - Production-readiness audit covering UI/UX, frontend architecture, backend gaps, privacy, security, and clinical governance
 - iOS parity spec and Swift tests for calorie targets, food tracking, BMI, lab markers, online search, and photo estimates
 - Unit tests driven from the MVP and safety specs
@@ -133,7 +134,7 @@ REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
-Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, dependency advisory monitoring is documented in `docs/dependency-advisory-monitoring.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
 
 Store screenshot previews can be rendered and validated with `bash scripts/validate-store-screenshots.sh`. Set `PAKFIT_SCREENSHOT_DIR=/absolute/output/path` to write them outside the ignored repo output folder.
 
