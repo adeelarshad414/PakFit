@@ -130,8 +130,16 @@ final class PakFitViewModel: ObservableObject {
         }
     }
 
+    var recommendation: PlanRecommendation {
+        planEngine.buildRecommendation(profile: profile)
+    }
+
     var plan: FitnessPlan {
-        planEngine.buildPlan(profile: profile)
+        recommendation.plan
+    }
+
+    var safetyWarnings: [SafetyWarning] {
+        recommendation.warnings
     }
 
     var healthReport: HealthReport {
@@ -651,6 +659,16 @@ struct PlanScreen: View {
                         StatGrid(summary: model.tracker.summary, target: model.plan.nutritionTargets.calories)
                     }
 
+                    if !model.safetyWarnings.isEmpty {
+                        Panel(title: "Safety Review") {
+                            VStack(alignment: .leading, spacing: 12) {
+                                ForEach(model.safetyWarnings) { warning in
+                                    SafetyWarningRow(warning: warning)
+                                }
+                            }
+                        }
+                    }
+
                     Panel(title: model.plan.workout.title) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("\(model.plan.workout.daysPerWeek) days per week")
@@ -932,6 +950,25 @@ struct TodoRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(text)
+    }
+}
+
+struct SafetyWarningRow: View {
+    let warning: SafetyWarning
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(warning.title, systemImage: warning.action == .modifyPlan ? "checkmark.shield.fill" : "exclamationmark.triangle.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(warning.action == .modifyPlan ? .teal : .orange)
+            Text(warning.message)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            Text(warning.action.rawValue)
+                .font(.caption.weight(.semibold))
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(warning.title). \(warning.message). \(warning.action.rawValue)")
     }
 }
 

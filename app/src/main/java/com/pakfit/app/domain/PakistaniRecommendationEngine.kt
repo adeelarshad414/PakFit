@@ -45,7 +45,18 @@ class PakistaniRecommendationEngine {
     }
 
     private fun buildSafetyWarnings(profile: UserProfile): List<SafetyWarning> {
-        return profile.medicalCautions.map { caution ->
+        val warnings = mutableListOf<SafetyWarning>()
+
+        if (profile.age < 18) {
+            warnings += SafetyWarning(
+                action = SafetyAction.MEDICAL_REVIEW,
+                title = "Adult-use safety boundary",
+                message = "PakFit is designed for adults. People under 18 should use nutrition, calorie, and training guidance only with a parent or guardian and a qualified clinician or coach because growth and health needs differ.",
+                sourceCategory = "Adult app safety boundary"
+            )
+        }
+
+        warnings += profile.medicalCautions.map { caution ->
             when (caution) {
                 MedicalCaution.PREGNANCY -> SafetyWarning(
                     caution = caution,
@@ -110,6 +121,8 @@ class PakistaniRecommendationEngine {
                 )
             }
         }
+
+        return warnings
     }
 
     private fun estimateMaintenanceCalories(profile: UserProfile): Int {

@@ -28,6 +28,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include security policy, CODEOWNERS, and security governance gate status.
 - Include accessibility/readability documentation, checksum, gate status, and manual accessibility QA boundary.
 - Include diagnostic privacy documentation, checksum, gate status, and manual SDK disclosure review boundary.
+- Include adult-use safety documentation, checksum, gate status, and store age-suitability review boundary.
 - Include Android Auto Backup and backup/data-extraction sensitive snapshot exclusion status.
 - Include Android declared permission count, permission policy, and camera hardware feature posture.
 - Include Android exported component count, exported component policy, and exported surface gate status.
@@ -67,6 +68,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes security governance evidence.
 - The report includes accessibility and readability evidence.
 - The report includes diagnostic privacy evidence.
+- The report includes adult-use safety evidence.
 - The report includes Android backup privacy status.
 - The report includes Android permission privacy status.
 - The report includes Android exported surface status.

@@ -520,7 +520,7 @@ fun PakFitApp(
                     label = "Age",
                     valueText = "${ageYears.roundToInt()} years",
                     value = ageYears,
-                    valueRange = 16f..75f,
+                    valueRange = 18f..75f,
                     onValueChange = { ageYears = it }
                 )
                 MetricSlider(
@@ -1136,6 +1136,7 @@ private fun MetricSlider(
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChange: (Float) -> Unit
 ) {
+    val sliderValue = value.coerceIn(valueRange.start, valueRange.endInclusive)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1145,7 +1146,7 @@ private fun MetricSlider(
             Text(valueText, fontWeight = FontWeight.SemiBold)
         }
         Slider(
-            value = value,
+            value = sliderValue,
             onValueChange = onValueChange,
             valueRange = valueRange
         )

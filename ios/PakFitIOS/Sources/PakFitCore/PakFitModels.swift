@@ -65,6 +65,11 @@ public enum MedicalCaution: String, CaseIterable, Hashable, Codable {
     case kneeOrJointLimitation = "Knee pain or joint limitation"
 }
 
+public enum SafetyAction: String, CaseIterable, Hashable, Codable {
+    case medicalReview = "Review with a clinician"
+    case modifyPlan = "Plan modified"
+}
+
 public struct UserProfile: Equatable, Codable {
     public var age: Int
     public var weightKg: Double
@@ -127,6 +132,20 @@ public struct FitnessPlan: Equatable, Codable {
     public let mealTiming: [String]
     public let groceryList: [String]
     public let planFocus: [String]
+}
+
+public struct SafetyWarning: Equatable, Codable, Identifiable {
+    public var id: String { "\(title)-\(sourceCategory)" }
+    public let caution: MedicalCaution?
+    public let action: SafetyAction
+    public let title: String
+    public let message: String
+    public let sourceCategory: String
+}
+
+public struct PlanRecommendation: Equatable, Codable {
+    public let plan: FitnessPlan
+    public let warnings: [SafetyWarning]
 }
 
 public enum FoodCategory: String, CaseIterable, Hashable, Codable {

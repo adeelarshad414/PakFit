@@ -29,6 +29,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Validate security governance before release evidence is accepted.
 - Validate accessibility and readability posture before release evidence is accepted.
 - Validate diagnostic privacy before release evidence is accepted.
+- Validate adult-use safety before release evidence is accepted.
 - Provide export scripts that copy the built debug APK, release APK, and release AAB to versioned destinations using build metadata.
 - Add GitHub Actions CI for Android unit tests, lint, debug APK, release APK, and release AAB artifact upload.
 - Add dependency inventory generation and artifact upload to CI.
@@ -36,6 +37,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add security governance validation to CI.
 - Add accessibility and readability validation to CI.
 - Add diagnostic privacy validation to CI.
+- Add adult-use safety validation to CI.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
 - Add source quality gates for English-only app source and obvious hardcoded secret patterns.
 - Add platform privacy gates for iOS privacy manifest, iOS permission privacy, iOS network security, iOS signing hygiene, Android backup/data-extraction posture, Android permission minimization, Android exported surface, Android network security, food photo privacy, store listing/release notes, store privacy disclosure consistency, generated screenshot previews, and Android release signing hygiene.
@@ -75,6 +77,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Security governance is part of the required validation path.
 - Accessibility and readability validation is part of the required validation path.
 - Diagnostic privacy validation is part of the required validation path.
+- Adult-use safety validation is part of the required validation path.
 - Dependency inventory and dynamic/SNAPSHOT dependency blocking are part of the required validation path.
 - `scripts/export-android-debug-apk.sh` can export a versioned debug APK after validation.
 - `scripts/export-android-release-artifacts.sh` can export versioned release APK and AAB artifacts after validation.

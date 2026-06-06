@@ -94,6 +94,9 @@ bash scripts/validate-accessibility-readability.sh
 echo "== Diagnostic privacy gate =="
 bash scripts/validate-diagnostic-privacy.sh
 
+echo "== Adult-use safety gate =="
+bash scripts/validate-adult-use-safety.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 

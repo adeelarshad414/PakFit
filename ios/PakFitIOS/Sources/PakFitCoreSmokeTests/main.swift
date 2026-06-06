@@ -35,6 +35,9 @@ func runPakFitCoreSmokeTests() throws {
     try expect(plan.nutritionTargets.proteinGrams == 135, "protein target should use Pakistani fat-loss profile")
     try expect(plan.mealGuidance.contains { $0.contains("biryani") }, "meal guidance should include desi foods")
     try expect(plan.groceryList.contains("daal"), "budget grocery list should include daal")
+    let underageRecommendation = PakistaniRecommendationEngine().buildRecommendation(profile: UserProfile(age: 17))
+    try expect(underageRecommendation.warnings.count == 1, "under-18 profile should create an adult-use safety warning")
+    try expect(underageRecommendation.warnings[0].message.localizedCaseInsensitiveContains("under 18"), "adult-use warning should name the under-18 boundary")
 
     let foodEngine = FoodRecordEngine()
     var catalog = foodEngine.defaultCatalog()

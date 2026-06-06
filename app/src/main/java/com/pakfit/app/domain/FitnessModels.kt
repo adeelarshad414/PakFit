@@ -98,7 +98,7 @@ data class FitnessPlan(
 )
 
 data class SafetyWarning(
-    val caution: MedicalCaution,
+    val caution: MedicalCaution? = null,
     val action: SafetyAction,
     val title: String,
     val message: String,

@@ -38,6 +38,93 @@ public final class PakistaniRecommendationEngine {
         )
     }
 
+    public func buildRecommendation(profile: UserProfile) -> PlanRecommendation {
+        PlanRecommendation(
+            plan: buildPlan(profile: profile),
+            warnings: buildSafetyWarnings(profile)
+        )
+    }
+
+    private func buildSafetyWarnings(_ profile: UserProfile) -> [SafetyWarning] {
+        var warnings: [SafetyWarning] = []
+
+        if profile.age < 18 {
+            warnings.append(SafetyWarning(
+                caution: nil,
+                action: .medicalReview,
+                title: "Adult-use safety boundary",
+                message: "PakFit is designed for adults. People under 18 should use nutrition, calorie, and training guidance only with a parent or guardian and a qualified clinician or coach because growth and health needs differ.",
+                sourceCategory: "Adult app safety boundary"
+            ))
+        }
+
+        warnings.append(contentsOf: profile.medicalCautions.map { caution in
+            switch caution {
+            case .pregnancy:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .medicalReview,
+                    title: "Pregnancy review recommended",
+                    message: "Please review exercise and nutrition changes with your doctor or obstetric clinician, especially if there are complications or new symptoms.",
+                    sourceCategory: "ACOG pregnancy physical activity guidance"
+                )
+            case .diabetesMedication:
+                let ramadan = profile.lifestyleModes.contains(.ramadanFasting)
+                return SafetyWarning(
+                    caution: caution,
+                    action: .medicalReview,
+                    title: ramadan ? "Ramadan fasting safety check" : "Blood glucose safety check",
+                    message: ramadan
+                        ? "Please review fasting, suhoor, iftar, activity, and medication timing with your doctor or diabetes clinician before fasting."
+                        : "Please review this plan with your doctor or diabetes clinician because activity and meal timing can affect blood glucose and medication needs.",
+                    sourceCategory: ramadan ? "IDF-DAR Ramadan diabetes fasting guidance" : "ADA blood glucose and exercise guidance"
+                )
+            case .heartSymptoms:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .medicalReview,
+                    title: "Heart symptom review needed",
+                    message: "Please speak with a doctor before increasing activity if you have chest discomfort, unusual breathlessness, faintness, or related symptoms.",
+                    sourceCategory: "American Heart Association warning signs"
+                )
+            case .kidneyDisease:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .medicalReview,
+                    title: "Kidney condition review recommended",
+                    message: "Please review protein targets and training changes with your doctor or renal dietitian because kidney needs can vary by condition.",
+                    sourceCategory: "CDC kidney disease self-care guidance"
+                )
+            case .eatingDisorderHistory:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .medicalReview,
+                    title: "Gentle support recommended",
+                    message: "Please review dieting, tracking, and exercise changes with a clinician or eating-disorder-informed professional before using a structured plan.",
+                    sourceCategory: "National Eating Disorders Association guidance"
+                )
+            case .recentSurgery:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .medicalReview,
+                    title: "Surgery recovery check",
+                    message: "Please get clearance from your doctor or surgeon before resuming structured training or changing intensity after surgery.",
+                    sourceCategory: "CDC getting started with physical activity guidance"
+                )
+            case .kneeOrJointLimitation:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .modifyPlan,
+                    title: "Workout adjusted for joints",
+                    message: "The workout uses lower-impact options. Stop movements that cause sharp pain and review persistent pain with a doctor or physiotherapist.",
+                    sourceCategory: "CDC pain during or after exercise guidance"
+                )
+            }
+        })
+
+        return warnings
+    }
+
     private func estimateMaintenanceCalories(_ profile: UserProfile) -> Int {
         let base = (10 * profile.weightKg) + (6.25 * Double(profile.heightCm)) - (5 * Double(profile.age))
         let bmr = profile.gender == .male ? base + 5 : base - 161

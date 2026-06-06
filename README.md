@@ -24,6 +24,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Halal metadata on every default food item and manual food entries
 - Blood pressure inputs and emergency escalation flags for chest pain, BP at/above 180/120, and glucose at/above 400 mg/dL
 - Prayer-aware workout timing notes, including Ramadan timing guidance
+- Adult-use safety boundary for Pakistani adults 18 and older, including under-18 warning behavior for restored or programmatic profiles
 - Phase 2 clinical intelligence MVP with on-device screening insights for diabetes, hypertension, cardiovascular risk, vitamin D risk, and iron/anemia risk
 - English-only medical disclaimers, clinical explanations, and crisis guidance
 - Light and dark mode selector with adaptive app colors
@@ -58,6 +59,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Accessibility and readability gate for Android/iOS semantic headings, custom chart/progress labels, food-photo descriptions, iOS Dynamic Type-friendly fonts, and screen-reader documentation
 - Diagnostic privacy gate blocking runtime health-data logging, crash/analytics/telemetry SDK patterns, and mismatched privacy disclosures
+- Adult-use safety gate for age floor, under-18 warnings, iOS safety warning display, and adult audience listing copy
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
 - Cross-platform version alignment gate for Android source/APK metadata and iOS project metadata
 - Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate
@@ -137,7 +139,7 @@ REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness
 
 GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
-Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, dependency advisory monitoring is documented in `docs/dependency-advisory-monitoring.md`, security governance is documented in `SECURITY.md` and `docs/security-governance.md`, accessibility readiness is documented in `docs/accessibility-readability.md`, diagnostic privacy is documented in `docs/diagnostics-privacy.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, dependency advisory monitoring is documented in `docs/dependency-advisory-monitoring.md`, security governance is documented in `SECURITY.md` and `docs/security-governance.md`, accessibility readiness is documented in `docs/accessibility-readability.md`, diagnostic privacy is documented in `docs/diagnostics-privacy.md`, adult-use safety is documented in `docs/adult-use-safety.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
 
 Store screenshot previews can be rendered and validated with `bash scripts/validate-store-screenshots.sh`. Set `PAKFIT_SCREENSHOT_DIR=/absolute/output/path` to write them outside the ignored repo output folder.
 

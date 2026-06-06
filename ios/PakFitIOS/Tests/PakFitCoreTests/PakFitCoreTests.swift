@@ -26,6 +26,44 @@ final class PakFitCoreTests: XCTestCase {
         XCTAssertEqual(plan.workout.daysPerWeek, 4)
     }
 
+    func testUnderEighteenProfileCreatesAdultUseSafetyBoundaryWarning() {
+        let recommendation = PakistaniRecommendationEngine().buildRecommendation(
+            profile: UserProfile(
+                age: 17,
+                weightKg: 62,
+                heightCm: 168,
+                goal: .fatLoss
+            )
+        )
+
+        XCTAssertEqual(recommendation.warnings.count, 1)
+        let warning = recommendation.warnings[0]
+        XCTAssertNil(warning.caution)
+        XCTAssertEqual(warning.action, .medicalReview)
+        XCTAssertTrue(warning.title.localizedCaseInsensitiveContains("Adult"))
+        XCTAssertTrue(warning.message.localizedCaseInsensitiveContains("under 18"))
+        XCTAssertTrue(warning.message.localizedCaseInsensitiveContains("parent"))
+        XCTAssertTrue(
+            warning.message.localizedCaseInsensitiveContains("clinician") ||
+            warning.message.localizedCaseInsensitiveContains("coach")
+        )
+    }
+
+    func testMedicalCautionWarningsRemainAvailableInSwiftRecommendation() {
+        let recommendation = PakistaniRecommendationEngine().buildRecommendation(
+            profile: UserProfile(
+                age: 32,
+                medicalCautions: [.diabetesMedication],
+                lifestyleModes: [.ramadanFasting]
+            )
+        )
+
+        XCTAssertEqual(recommendation.warnings.count, 1)
+        XCTAssertEqual(recommendation.warnings[0].caution, .diabetesMedication)
+        XCTAssertEqual(recommendation.warnings[0].action, .medicalReview)
+        XCTAssertTrue(recommendation.warnings[0].message.localizedCaseInsensitiveContains("fasting"))
+    }
+
     func testDailyTrackerSupportsMealHourlyAndManualCalories() {
         let engine = FoodRecordEngine()
         var catalog = engine.defaultCatalog()

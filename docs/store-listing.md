@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.39.0
+Listing version: 0.40.0
 
 ## App Identity
 
@@ -8,6 +8,7 @@ Listing version: 0.39.0
 - Android package name: com.pakfit.app
 - iOS bundle identifier: com.pakfit.ios
 - Primary audience: Pakistani adults and families who want culturally familiar nutrition, workout, and health-tracking support.
+- PakFit is designed for adults 18 and older.
 - Distribution state: Draft listing. Final Play Console and App Store Connect submission still requires account ownership, public privacy-policy hosting, store screenshots, ratings questionnaire completion, and legal/privacy review.
 
 ## Short Description

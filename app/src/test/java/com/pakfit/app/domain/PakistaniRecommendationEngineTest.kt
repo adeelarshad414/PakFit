@@ -83,6 +83,26 @@ class PakistaniRecommendationEngineTest {
     }
 
     @Test
+    fun underEighteenProfileCreatesAdultUseSafetyBoundaryWarning() {
+        val recommendation = engine.buildRecommendation(
+            UserProfile(
+                age = 17,
+                heightCm = 168,
+                weightKg = 62.0,
+                goal = Goal.FAT_LOSS
+            )
+        )
+
+        val warning = recommendation.warnings.single()
+        assertEquals(null, warning.caution)
+        assertEquals(SafetyAction.MEDICAL_REVIEW, warning.action)
+        assertTrue(warning.title.contains("Adult", ignoreCase = true))
+        assertTrue(warning.message.contains("under 18", ignoreCase = true))
+        assertTrue(warning.message.contains("parent", ignoreCase = true))
+        assertTrue(warning.message.contains("clinician", ignoreCase = true) || warning.message.contains("coach", ignoreCase = true))
+    }
+
+    @Test
     fun highRiskMedicalCautionsCreateMedicalReviewWarnings() {
         val highRiskCautions = listOf(
             MedicalCaution.PREGNANCY,
