@@ -2,6 +2,8 @@
 
 This document records the committed app identity metadata used by PakFit release validation.
 
+Public-facing store copy is maintained in `docs/store-listing.md`, with versioned release notes under `docs/release-notes/`. The release gate checks that those drafts match the current app identity/version, stay English-only, keep privacy boundaries explicit, and avoid unsafe medical or outcome claims.
+
 ## Android
 
 - Display name: `PakFit`
@@ -20,6 +22,6 @@ This document records the committed app identity metadata used by PakFit release
 
 ## Validation
 
-Run `bash scripts/validate-app-identity.sh` directly or through `bash scripts/validate-release.sh`.
+Run `bash scripts/validate-app-identity.sh` and `bash scripts/validate-store-listing.sh` directly or through `bash scripts/validate-release.sh`.
 
 The gate intentionally treats identifier changes as release-channel changes. Any future rename, bundle ID migration, white-label build, Mac Catalyst target, or alternate distribution channel needs a spec update, store/privacy review, and new release evidence.

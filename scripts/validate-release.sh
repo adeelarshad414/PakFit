@@ -88,6 +88,9 @@ bash scripts/validate-version-alignment.sh
 echo "== App identity metadata gate =="
 bash scripts/validate-app-identity.sh
 
+echo "== Store listing and release notes gate =="
+bash scripts/validate-store-listing.sh
+
 echo "== App icon asset gate =="
 bash scripts/validate-app-icons.sh
 

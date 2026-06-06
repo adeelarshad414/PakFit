@@ -20,6 +20,8 @@ ANDROID_BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"
 ANDROID_DATA_EXTRACTION_RULES="$ROOT_DIR/app/src/main/res/xml/data_extraction_rules.xml"
 IOS_PROJECT_FILE="$ROOT_DIR/ios/PakFitIOS/PakFitIOS.xcodeproj/project.pbxproj"
 IOS_APP_ICON_SET="$ROOT_DIR/ios/PakFitIOS/Assets.xcassets/AppIcon.appiconset"
+STORE_LISTING_FILE="$ROOT_DIR/docs/store-listing.md"
+STORE_RELEASE_NOTES_DIR="$ROOT_DIR/docs/release-notes"
 GRADLEW_FILE="$ROOT_DIR/gradlew"
 GRADLEW_BAT_FILE="$ROOT_DIR/gradlew.bat"
 GRADLE_WRAPPER_JAR="$ROOT_DIR/gradle/wrapper/gradle-wrapper.jar"
@@ -165,6 +167,7 @@ DEBUG_VARIANT_NAME="$(metadata_value "$DEBUG_METADATA_FILE" variantName)"
 RELEASE_VARIANT_NAME="$(metadata_value "$RELEASE_METADATA_FILE" variantName)"
 VERSION_NAME="$(metadata_value "$RELEASE_METADATA_FILE" versionName)"
 VERSION_CODE="$(metadata_number "$RELEASE_METADATA_FILE" versionCode)"
+STORE_RELEASE_NOTES_FILE="$STORE_RELEASE_NOTES_DIR/PakFit-v${VERSION_NAME}.md"
 
 if [[ -z "$VERSION_NAME" || -z "$VERSION_CODE" || -z "$APPLICATION_ID" || -z "$DEBUG_VARIANT_NAME" || -z "$RELEASE_VARIANT_NAME" ]]; then
   echo "Could not read APK metadata from Android output-metadata.json files." >&2
@@ -177,6 +180,26 @@ RELEASE_APK_SHA256="$(sha256_file "$RELEASE_APK_FILE")"
 RELEASE_APK_BYTES="$(wc -c < "$RELEASE_APK_FILE" | tr -d ' ')"
 RELEASE_AAB_SHA256="$(sha256_file "$RELEASE_AAB_FILE")"
 RELEASE_AAB_BYTES="$(wc -c < "$RELEASE_AAB_FILE" | tr -d ' ')"
+STORE_LISTING_STATUS="not checked"
+if bash scripts/validate-store-listing.sh >/dev/null 2>&1; then
+  STORE_LISTING_STATUS="passed"
+fi
+STORE_LISTING_BYTES=""
+STORE_LISTING_SHA256=""
+STORE_LISTING_FILE_STATUS="missing"
+if [[ -f "$STORE_LISTING_FILE" ]]; then
+  STORE_LISTING_FILE_STATUS="$STORE_LISTING_FILE"
+  STORE_LISTING_BYTES="$(wc -c < "$STORE_LISTING_FILE" | tr -d ' ')"
+  STORE_LISTING_SHA256="$(sha256_file "$STORE_LISTING_FILE")"
+fi
+STORE_RELEASE_NOTES_BYTES=""
+STORE_RELEASE_NOTES_SHA256=""
+STORE_RELEASE_NOTES_STATUS="missing"
+if [[ -f "$STORE_RELEASE_NOTES_FILE" ]]; then
+  STORE_RELEASE_NOTES_STATUS="$STORE_RELEASE_NOTES_FILE"
+  STORE_RELEASE_NOTES_BYTES="$(wc -c < "$STORE_RELEASE_NOTES_FILE" | tr -d ' ')"
+  STORE_RELEASE_NOTES_SHA256="$(sha256_file "$STORE_RELEASE_NOTES_FILE")"
+fi
 RELEASE_APK_SIGNATURE_STATUS="$(apk_signature_status "$RELEASE_APK_FILE")"
 RELEASE_SIGNING_ENV_STATUS="not configured in this run"
 if [[ -n "${PAKFIT_RELEASE_STORE_FILE:-}" && -n "${PAKFIT_RELEASE_STORE_PASSWORD:-}" && -n "${PAKFIT_RELEASE_KEY_ALIAS:-}" && -n "${PAKFIT_RELEASE_KEY_PASSWORD:-}" ]]; then
@@ -482,6 +505,23 @@ mkdir -p "$REPORT_DIR"
   echo "- AAB bytes: $RELEASE_AAB_BYTES"
   echo "- AAB SHA-256: $RELEASE_AAB_SHA256"
   echo
+  echo "## Store Listing"
+  echo
+  echo "- Store listing draft: $STORE_LISTING_FILE_STATUS"
+  if [[ -n "$STORE_LISTING_BYTES" ]]; then
+    echo "- Store listing bytes: $STORE_LISTING_BYTES"
+    echo "- Store listing SHA-256: $STORE_LISTING_SHA256"
+  fi
+  echo "- Versioned release notes: $STORE_RELEASE_NOTES_STATUS"
+  if [[ -n "$STORE_RELEASE_NOTES_BYTES" ]]; then
+    echo "- Versioned release notes bytes: $STORE_RELEASE_NOTES_BYTES"
+    echo "- Versioned release notes SHA-256: $STORE_RELEASE_NOTES_SHA256"
+  fi
+  echo "- Store listing gate: $STORE_LISTING_STATUS"
+  echo "- Store listing policy: app identity/version alignment, English-only copy, privacy boundaries, and unsafe medical/outcome claim scan"
+  echo "- Public privacy policy URL: TBD public hosted URL before public store submission"
+  echo "- Store submission boundary: final screenshots, ratings forms, public privacy-policy hosting, account ownership, and legal/privacy review remain external"
+  echo
   echo "## Dependency Inventory"
   echo
   echo "- Inventory report: $DEPENDENCY_REPORT_STATUS"
@@ -527,6 +567,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
+  echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Platform compatibility: Android compile/target SDK and iOS deployment/Swift settings checked"
   echo "- Android build toolchain: AGP compileSdk 35 support checked without suppressing warnings"
