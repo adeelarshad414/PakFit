@@ -6,6 +6,7 @@ This draft maps current PakFit behavior to App Store privacy and privacy manifes
 
 - No account backend.
 - No cloud sync.
+- No remote analytics.
 - No analytics SDK.
 - No advertising or tracking.
 - Sensitive health and fitness information stays local to the user's device unless the user chooses an export preview.

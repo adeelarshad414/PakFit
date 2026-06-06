@@ -49,6 +49,9 @@ jobs:
       - name: Validate store listing and release notes
         run: bash scripts/validate-store-listing.sh
 
+      - name: Validate store privacy disclosures
+        run: bash scripts/validate-store-privacy-disclosures.sh
+
       - name: Validate store screenshot assets
         run: bash scripts/validate-store-screenshots.sh
 

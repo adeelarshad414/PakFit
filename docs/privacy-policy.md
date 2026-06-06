@@ -1,6 +1,6 @@
 # PakFit Privacy Policy Draft
 
-Last updated: 2026-06-05
+Last updated: 2026-06-07
 
 PakFit is a health, fitness, workout, and nutrition coaching app for Pakistani users. This draft describes the current local-first application behavior in this repository.
 

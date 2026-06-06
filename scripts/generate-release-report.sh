@@ -186,6 +186,10 @@ STORE_LISTING_STATUS="not checked"
 if bash scripts/validate-store-listing.sh >/dev/null 2>&1; then
   STORE_LISTING_STATUS="passed"
 fi
+STORE_PRIVACY_DISCLOSURE_STATUS="not checked"
+if bash scripts/validate-store-privacy-disclosures.sh >/dev/null 2>&1; then
+  STORE_PRIVACY_DISCLOSURE_STATUS="passed"
+fi
 STORE_LISTING_BYTES=""
 STORE_LISTING_SHA256=""
 STORE_LISTING_FILE_STATUS="missing"
@@ -559,6 +563,8 @@ mkdir -p "$REPORT_DIR"
   fi
   echo "- Store listing gate: $STORE_LISTING_STATUS"
   echo "- Store listing policy: app identity/version alignment, English-only copy, privacy boundaries, and unsafe medical/outcome claim scan"
+  echo "- Store privacy disclosure gate: $STORE_PRIVACY_DISCLOSURE_STATUS"
+  echo "- Store privacy disclosure policy: Android permissions/backup posture, iOS privacy manifest/purpose strings, privacy policy, Google Play Data safety, App Store privacy, and store listing claims checked for consistency"
   echo "- Public privacy policy URL: TBD public hosted URL before public store submission"
   echo "- Store submission boundary: final screenshots, ratings forms, public privacy-policy hosting, account ownership, and legal/privacy review remain external"
   echo
@@ -625,6 +631,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
+  echo "- Store privacy disclosures: Android permissions, iOS privacy manifest, privacy policy, Google Play Data safety, App Store privacy, store listing privacy summary, and unsupported privacy claims checked"
   echo "- Store screenshots: generated English-only workflow previews, PNG dimensions, contact sheet, and nonblank output checked"
   echo "- App icons: Android adaptive icons and iOS AppIcon asset catalog checked"
   echo "- Platform compatibility: Android compile/target SDK and iOS deployment/Swift settings checked"

@@ -18,6 +18,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include release APK signing verification status when `apksigner` is available.
 - Include Android release signing hygiene gate status.
 - Include iOS signing hygiene gate status.
+- Include store privacy disclosure consistency gate status.
 - Include release minification, resource shrinking, ProGuard/R8 rules, and mapping file checksum evidence.
 - Include release AAB path, size, and SHA-256.
 - Include git branch, git SHA, and worktree status.
@@ -54,6 +55,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes generated store screenshot status.
 - The report includes Android release signing hygiene status.
 - The report includes iOS signing hygiene status.
+- The report includes store privacy disclosure consistency status.
 - The report includes R8/resource shrinking status and mapping checksum when a mapping file exists.
 - The report includes Gradle Wrapper reproducibility evidence.
 - The report includes Gradle dependency verification evidence.

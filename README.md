@@ -54,6 +54,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - iOS network security gate keeping Swift runtime URLs HTTPS-only and blocking ATS cleartext opt-outs
 - iOS signing hygiene gate keeping Apple certificates, provisioning profiles, export options, and App Store credentials outside source control
 - Food photo privacy gate proving preview-only capture and blocking image-byte persistence/upload patterns in this local-first build
+- Store privacy disclosure consistency gate aligning Android permissions, iOS privacy manifest, privacy policy, Google Play Data safety, App Store privacy, and store listing claims
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
 - Cross-platform version alignment gate for Android source/APK metadata and iOS project metadata
