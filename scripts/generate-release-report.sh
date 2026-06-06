@@ -31,6 +31,7 @@ GRADLE_VERIFICATION_METADATA="$ROOT_DIR/gradle/verification-metadata.xml"
 DEPENDABOT_CONFIG="$ROOT_DIR/.github/dependabot.yml"
 SECURITY_POLICY_FILE="$ROOT_DIR/SECURITY.md"
 CODEOWNERS_FILE="$ROOT_DIR/.github/CODEOWNERS"
+ACCESSIBILITY_DOC_FILE="$ROOT_DIR/docs/accessibility-readability.md"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -405,6 +406,16 @@ if [[ -f "$CODEOWNERS_FILE" ]]; then
   CODEOWNERS_STATUS="$CODEOWNERS_FILE"
   CODEOWNERS_SHA256="$(sha256_file "$CODEOWNERS_FILE")"
 fi
+ACCESSIBILITY_READABILITY_STATUS="not checked"
+if bash scripts/validate-accessibility-readability.sh >/dev/null 2>&1; then
+  ACCESSIBILITY_READABILITY_STATUS="passed"
+fi
+ACCESSIBILITY_DOC_STATUS="missing"
+ACCESSIBILITY_DOC_SHA256=""
+if [[ -f "$ACCESSIBILITY_DOC_FILE" ]]; then
+  ACCESSIBILITY_DOC_STATUS="$ACCESSIBILITY_DOC_FILE"
+  ACCESSIBILITY_DOC_SHA256="$(sha256_file "$ACCESSIBILITY_DOC_FILE")"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -534,6 +545,14 @@ mkdir -p "$REPORT_DIR"
   echo "- Security governance gate: $SECURITY_GOVERNANCE_STATUS"
   echo "- Security governance policy: supported versions, sensitive vulnerability reporting boundary, CODEOWNERS coverage, read-only CI permissions, and clinical safety reporting scope checked"
   echo "- Security governance boundary: hosted private vulnerability reporting, branch protection, and public security contact review remain external repository settings"
+  echo
+  echo "## Accessibility And Readability"
+  echo
+  echo "- Accessibility doc: $ACCESSIBILITY_DOC_STATUS"
+  echo "- Accessibility doc SHA-256: ${ACCESSIBILITY_DOC_SHA256:-missing}"
+  echo "- Accessibility and readability gate: $ACCESSIBILITY_READABILITY_STATUS"
+  echo "- Accessibility policy: Android/iOS semantic headings, custom chart/progress labels, food-photo content descriptions, iOS Dynamic Type-friendly fonts, and screen-reader documentation checked"
+  echo "- Accessibility boundary: TalkBack, VoiceOver, large-text, keyboard, switch-control, and signed-device review remain external manual QA before public release"
   echo
   echo "## Android APK"
   echo
@@ -685,6 +704,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
   echo "- Dependency advisory monitoring: Dependabot coverage for Gradle, Swift Package Manager, and GitHub Actions checked"
   echo "- Security governance: SECURITY.md, CODEOWNERS coverage, vulnerability reporting boundaries, and low-risk CI permissions checked"
+  echo "- Accessibility and readability: Android/iOS semantic headings, custom chart/progress labels, Dynamic Type-friendly iOS fonts, and documentation checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -716,6 +736,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS simulator/archive/signing still requires full Xcode.app, Xcode 26+ SDK tooling for App Store upload, and signing assets."
   echo "- Dependabot advisory monitoring is configured, but live vulnerability/advisory results still require the pushed repository and GitHub-hosted dependency scanning or another network-enabled scanner."
   echo "- Hosted private vulnerability reporting, branch protection, and public security-contact review remain external repository settings."
+  echo "- Accessibility manual QA still requires TalkBack, VoiceOver, large-text, keyboard, and switch-control review on target devices."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

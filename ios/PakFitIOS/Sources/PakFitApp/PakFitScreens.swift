@@ -609,7 +609,7 @@ struct HealthScreen: View {
                     Panel(title: "BMI Report") {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(String(format: "%.1f", model.healthReport.bmi.value))
-                                .font(.system(size: 44, weight: .bold, design: .rounded))
+                                .font(.largeTitle.weight(.bold))
                             Text(model.healthReport.bmi.category.rawValue)
                                 .font(.headline)
                             Text(model.healthReport.bmi.note)
@@ -697,7 +697,7 @@ struct HeaderView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Text("\(model.plan.nutritionTargets.calories) kcal target")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.title.weight(.bold))
                     Text("\(model.plan.nutritionTargets.proteinGrams)g protein, \(model.plan.nutritionTargets.fiberGrams)g fiber, \(model.plan.nutritionTargets.waterLiters, specifier: "%.1f")L water")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -748,6 +748,8 @@ struct StatTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value), \(caption)")
     }
 }
 
@@ -884,6 +886,8 @@ struct ProgressMetric: View {
             ProgressView(value: min(1, fraction))
                 .tint(tint)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value) of \(target)")
     }
 }
 
@@ -906,9 +910,12 @@ struct TrendBars: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(item.0): \(item.1) calories")
             }
         }
         .frame(height: 130)
+        .accessibilityElement(children: .contain)
     }
 }
 
@@ -919,9 +926,12 @@ struct TodoRow: View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.teal)
+                .accessibilityHidden(true)
             Text(text)
                 .font(.subheadline)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(text)
     }
 }
 
@@ -948,6 +958,8 @@ struct EstimateView: View {
         }
         .padding(12)
         .background(.teal.opacity(0.08), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(estimate.foodName), \(estimate.estimatedCalories) calories, confidence \(estimate.confidence.rawValue)")
     }
 }
 
@@ -1009,6 +1021,8 @@ struct HealthFlagRow: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(flag.markerType.rawValue), \(flag.riskLevel.rawValue), \(flag.title). \(flag.message)")
     }
 
     private var riskColor: Color {

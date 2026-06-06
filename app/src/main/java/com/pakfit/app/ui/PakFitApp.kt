@@ -48,6 +48,11 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -847,6 +852,7 @@ private fun Header() {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = "PakFit",
+            modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold
         )
@@ -863,6 +869,7 @@ private fun SectionHeader(section: AppSection) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = section.heading,
+            modifier = Modifier.semantics { heading() },
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -938,7 +945,12 @@ private fun ControlCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = title,
+                modifier = Modifier.semantics { heading() },
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
             content()
         }
     }
@@ -1320,6 +1332,9 @@ private fun MetricTile(
 ) {
     Box(
         modifier = modifier
+            .semantics(mergeDescendants = true) {
+                contentDescription = "$label $value $detail"
+            }
             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
             .padding(12.dp)
     ) {
@@ -1420,22 +1435,39 @@ private fun ProgressMetric(
             Text(label)
             Text(valueText, fontWeight = FontWeight.SemiBold)
         }
-        ProgressBar(progress = progress, color = color)
+        ProgressBar(
+            progress = progress,
+            color = color,
+            accessibilityLabel = "$label $valueText"
+        )
     }
 }
 
 @Composable
-private fun ProgressBar(progress: Double, color: Color) {
+private fun ProgressBar(
+    progress: Double,
+    color: Color,
+    accessibilityLabel: String
+) {
+    val safeProgress = progress.coerceIn(0.0, 1.0).toFloat()
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(10.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(5.dp)),
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(5.dp))
+            .semantics {
+                contentDescription = accessibilityLabel
+                progressBarRangeInfo = ProgressBarRangeInfo(
+                    current = safeProgress,
+                    range = 0f..1f,
+                    steps = 0
+                )
+            },
         contentAlignment = Alignment.CenterStart
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(progress.coerceIn(0.0, 1.0).toFloat())
+                .fillMaxWidth(safeProgress)
                 .height(10.dp)
                 .background(color, RoundedCornerShape(5.dp))
         )
@@ -1455,13 +1487,21 @@ private fun MiniBarChart(
         points.forEach { point ->
             val value = valueForPoint(point).coerceAtLeast(0)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "$title, ${point.label}, $value"
+                    },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(point.label, modifier = Modifier.weight(0.18f))
                 Box(modifier = Modifier.weight(0.62f)) {
-                    ProgressBar(progress = value.toDouble() / maxValue, color = color)
+                    ProgressBar(
+                        progress = value.toDouble() / maxValue,
+                        color = color,
+                        accessibilityLabel = "$title ${point.label} $value"
+                    )
                 }
                 Text("$value", modifier = Modifier.weight(0.2f), fontWeight = FontWeight.SemiBold)
             }
@@ -1478,8 +1518,14 @@ private fun TrendLine(trend: TrendInsight) {
 @Composable
 private fun TodoLine(todo: AnalysisTodo) {
     val marker = if (todo.completed) "[x]" else "[ ]"
-    Text("$marker ${todo.title}", fontWeight = FontWeight.SemiBold)
-    Text(todo.detail, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f))
+    Column(
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = "${if (todo.completed) "Completed" else "Open"} todo: ${todo.title}. ${todo.detail}"
+        }
+    ) {
+        Text("$marker ${todo.title}", fontWeight = FontWeight.SemiBold)
+        Text(todo.detail, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f))
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -1669,7 +1715,11 @@ private fun ClinicalInsightLine(insight: ClinicalRiskInsight) {
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("${insight.title}: ${insight.level.label}", fontWeight = FontWeight.SemiBold)
-        ProgressBar(progress = insight.score.toDouble() / 10.0, color = color)
+        ProgressBar(
+            progress = insight.score.toDouble() / 10.0,
+            color = color,
+            accessibilityLabel = "${insight.title} score ${insight.score} out of 10"
+        )
         Text(insight.explanationEnglish)
         insight.actionSteps.take(3).forEach { step ->
             Text("- $step", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.78f))

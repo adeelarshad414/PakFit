@@ -55,6 +55,9 @@ jobs:
       - name: Validate security governance
         run: bash scripts/validate-security-governance.sh
 
+      - name: Validate accessibility and readability
+        run: bash scripts/validate-accessibility-readability.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -193,3 +196,6 @@ jobs:
 
       - name: Validate security governance
         run: bash scripts/validate-security-governance.sh
+
+      - name: Validate accessibility and readability
+        run: bash scripts/validate-accessibility-readability.sh

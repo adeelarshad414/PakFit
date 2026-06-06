@@ -88,6 +88,9 @@ bash scripts/validate-dependency-advisory-config.sh
 echo "== Security governance gate =="
 bash scripts/validate-security-governance.sh
 
+echo "== Accessibility and readability gate =="
+bash scripts/validate-accessibility-readability.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 
