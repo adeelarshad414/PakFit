@@ -148,6 +148,16 @@ xcode_setting_value() {
   sed -n "s/.*$key = \\([^;]*\\);.*/\\1/p" "$IOS_PROJECT_FILE" | head -1
 }
 
+android_source_setting_value() {
+  local key="$1"
+  sed -n "s/.*$key = \"\\([^\"]*\\)\".*/\\1/p" "$ANDROID_BUILD_FILE" | head -1
+}
+
+android_source_number_value() {
+  local key="$1"
+  sed -n "s/.*$key = \\([0-9][0-9]*\\).*/\\1/p" "$ANDROID_BUILD_FILE" | head -1
+}
+
 APPLICATION_ID="$(metadata_value "$RELEASE_METADATA_FILE" applicationId)"
 DEBUG_VARIANT_NAME="$(metadata_value "$DEBUG_METADATA_FILE" variantName)"
 RELEASE_VARIANT_NAME="$(metadata_value "$RELEASE_METADATA_FILE" variantName)"
@@ -258,8 +268,14 @@ if [[ -f "$GRADLE_VERIFICATION_METADATA" ]]; then
   GRADLE_VERIFICATION_COMPONENTS="$(grep -c "<component " "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
   GRADLE_VERIFICATION_CHECKSUMS="$(grep -c "<sha256 " "$GRADLE_VERIFICATION_METADATA" | tr -d ' ')"
 fi
+ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
+ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 IOS_MARKETING_VERSION="$(xcode_setting_value MARKETING_VERSION)"
 IOS_BUILD_VERSION="$(xcode_setting_value CURRENT_PROJECT_VERSION)"
+VERSION_ALIGNMENT_STATUS="failed"
+if bash scripts/validate-version-alignment.sh --include-built-metadata >/dev/null 2>&1; then
+  VERSION_ALIGNMENT_STATUS="passed"
+fi
 GIT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 REPORT_TIME_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -316,6 +332,11 @@ mkdir -p "$REPORT_DIR"
   echo "- Application ID: $APPLICATION_ID"
   echo "- Version name: $VERSION_NAME"
   echo "- Version code: $VERSION_CODE"
+  echo "- Android source version name: ${ANDROID_SOURCE_VERSION_NAME:-not detected}"
+  echo "- Android source version code: ${ANDROID_SOURCE_VERSION_CODE:-not detected}"
+  echo "- iOS marketing version: ${IOS_MARKETING_VERSION:-not detected}"
+  echo "- iOS build version: ${IOS_BUILD_VERSION:-not detected}"
+  echo "- Version alignment gate: $VERSION_ALIGNMENT_STATUS"
   echo "- Android Auto Backup: $ANDROID_AUTO_BACKUP_STATUS"
   echo "- Full backup rules reference: $ANDROID_BACKUP_RULES_STATUS"
   echo "- Data extraction rules reference: $ANDROID_DATA_EXTRACTION_STATUS"
@@ -387,6 +408,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Local command: bash scripts/validate-release.sh"
   echo "- Build reproducibility: Gradle Wrapper integrity gate"
   echo "- Gradle dependencies: strict SHA-256 dependency verification metadata gate"
+  echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- Android: testDebugUnitTest, lintDebug, lintRelease, assembleDebug, assembleRelease, and bundleRelease"
   echo "- Dependency inventory: dynamic/SNAPSHOT dependency gate plus Android and Swift dependency reports"
   echo "- iOS: swift run PakFitCoreSmokeTests and swift build --target PakFitApp"

@@ -31,8 +31,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Validate cross-platform version alignment
+        run: bash scripts/validate-version-alignment.sh
+
       - name: Run Android unit tests, lint, and assemble APK/AAB artifacts
         run: ./gradlew --dependency-verification strict testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
+
+      - name: Validate Android artifact version metadata
+        run: bash scripts/validate-version-alignment.sh --include-built-metadata
 
       - name: Validate Android permission privacy posture
         run: bash scripts/validate-android-permissions.sh

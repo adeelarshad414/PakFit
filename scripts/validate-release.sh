@@ -82,8 +82,14 @@ if ! grep -q "<sha256 " "$VERIFICATION_METADATA"; then
   exit 1
 fi
 
+echo "== Cross-platform version alignment gate =="
+bash scripts/validate-version-alignment.sh
+
 echo "== Android unit tests, lint, debug APK, release APK, and release AAB =="
 "$GRADLE_CMD" "${GRADLE_VERIFICATION_ARGS[@]}" testDebugUnitTest lintDebug lintRelease assembleDebug assembleRelease bundleRelease
+
+echo "== Android artifact version metadata gate =="
+bash scripts/validate-version-alignment.sh --include-built-metadata
 
 echo "== Dependency inventory gate =="
 GRADLE_CMD="$GRADLE_CMD" bash scripts/generate-dependency-inventory.sh

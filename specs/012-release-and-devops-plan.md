@@ -62,6 +62,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 ## CI
 
 - Run unit tests.
+- Validate Android/iOS source version metadata alignment before building release artifacts.
 - Validate Gradle Wrapper distribution checksum and wrapper JAR checksum.
 - Validate resolved Gradle dependency artifacts with strict SHA-256 dependency verification metadata.
 - Run Android debug and release lint.
@@ -71,6 +72,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Upload debug APK artifact.
 - Upload release APK and AAB artifacts.
 - Generate and upload release evidence report.
+- Validate built Android APK metadata matches Android/iOS source version metadata.
 - Run iOS Swift core smoke tests.
 - Compile the SwiftUI app target.
 - Run English-only source check.
@@ -87,6 +89,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 
 - Specs updated.
 - Tests passing.
+- Cross-platform version alignment gate passing.
 - Android lint passing.
 - Gradle Wrapper integrity gate passing.
 - Strict Gradle dependency verification gate passing.
@@ -108,6 +111,14 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 Given a developer has Android SDK and Java configured
 When they run the documented release validation command
 Then debug APK, release APK, release AAB, and release evidence report artifacts are generated
+
+### Scenario: Android and iOS versions stay aligned
+
+Given the release validation command runs
+When Android and iOS version metadata is inspected
+Then Android versionName matches iOS MARKETING_VERSION
+And Android versionCode matches iOS CURRENT_PROJECT_VERSION
+And built Android APK metadata matches source version metadata
 
 ### Scenario: Release hardening is enforced
 

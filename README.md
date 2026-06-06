@@ -44,6 +44,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Food photo privacy gate proving preview-only capture and blocking image-byte persistence/upload patterns in this local-first build
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
+- Cross-platform version alignment gate for Android source/APK metadata and iOS project metadata
 - Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate
 - Strict Gradle dependency verification metadata with SHA-256 checksums for resolved Android artifacts
 - Offline dependency inventory with dynamic/SNAPSHOT dependency gate for Android and Swift package posture
