@@ -162,6 +162,9 @@ fi
 echo "== Android permission privacy gate =="
 bash scripts/validate-android-permissions.sh
 
+echo "== Android exported surface gate =="
+bash scripts/validate-android-exported-surface.sh
+
 echo "== Food photo privacy gate =="
 bash scripts/validate-photo-privacy.sh
 

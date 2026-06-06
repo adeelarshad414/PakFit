@@ -215,6 +215,11 @@ ANDROID_CAMERA_FEATURE_STATUS="not detected"
 if grep -q 'android:name="android.hardware.camera"' "$ANDROID_MANIFEST" && grep -q 'android:required="false"' "$ANDROID_MANIFEST"; then
   ANDROID_CAMERA_FEATURE_STATUS="declared optional"
 fi
+ANDROID_EXPORTED_TRUE_COUNT="$(grep -c 'android:exported="true"' "$ANDROID_MANIFEST" | tr -d ' ')"
+ANDROID_EXPORTED_SURFACE_STATUS="not checked"
+if bash scripts/validate-android-exported-surface.sh >/dev/null 2>&1; then
+  ANDROID_EXPORTED_SURFACE_STATUS="passed"
+fi
 ANDROID_PHOTO_CAPTURE_STATUS="not detected"
 if grep -q "ActivityResultContracts.TakePicturePreview" "$ROOT_DIR/app/src/main/java/com/pakfit/app/ui/PakFitApp.kt"; then
   ANDROID_PHOTO_CAPTURE_STATUS="preview-only ActivityResultContracts.TakePicturePreview"
@@ -348,6 +353,9 @@ mkdir -p "$REPORT_DIR"
   echo "- Declared permission count: $ANDROID_DECLARED_PERMISSION_COUNT"
   echo "- Permission policy: only INTERNET and CAMERA are allowed for current online search and food photo workflows"
   echo "- Camera hardware feature: $ANDROID_CAMERA_FEATURE_STATUS"
+  echo "- Exported component count: $ANDROID_EXPORTED_TRUE_COUNT"
+  echo "- Exported component policy: only launcher MainActivity may be exported"
+  echo "- Android exported surface gate: $ANDROID_EXPORTED_SURFACE_STATUS"
   echo "- Food photo capture mode: $ANDROID_PHOTO_CAPTURE_STATUS"
   echo "- Food photo privacy gate: $PHOTO_PRIVACY_STATUS"
   echo
@@ -416,6 +424,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Store privacy gate: PrivacyInfo.xcprivacy plist and UserDefaults reason checks"
   echo "- Android backup privacy gate: Auto Backup disabled and sensitive snapshot exclusions checked"
   echo "- Android permission privacy gate: declared permissions limited to INTERNET and CAMERA with camera hardware optional"
+  echo "- Android exported surface gate: only launcher MainActivity may be exported"
   echo "- Food photo privacy gate: preview-only capture with no image-byte persistence/upload patterns"
   echo
   echo "## Release Boundaries"

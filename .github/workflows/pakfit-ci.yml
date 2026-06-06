@@ -43,6 +43,9 @@ jobs:
       - name: Validate Android permission privacy posture
         run: bash scripts/validate-android-permissions.sh
 
+      - name: Validate Android exported component surface
+        run: bash scripts/validate-android-exported-surface.sh
+
       - name: Validate food photo privacy posture
         run: bash scripts/validate-photo-privacy.sh
 

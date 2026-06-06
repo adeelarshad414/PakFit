@@ -80,6 +80,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Validate iOS privacy manifest format and UserDefaults required-reason declaration.
 - Validate Android Auto Backup is disabled and sensitive snapshot backup/data-extraction exclusions exist.
 - Validate Android permissions are limited to the approved online search and food photo capture surface.
+- Validate Android exported components are limited to the launcher activity.
 - Validate food photo capture stays preview-only and image bytes are not persisted or uploaded by app code.
 - Store APK artifact.
 - Keep Android release minification and resource shrinking enabled.
@@ -95,6 +96,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Strict Gradle dependency verification gate passing.
 - Dependency inventory gate passing.
 - Android permission privacy gate passing.
+- Android exported surface gate passing.
 - Food photo privacy gate passing.
 - Debug APK, release APK, and release AAB build.
 - Release APK uses R8 minification and resource shrinking.
@@ -161,3 +163,10 @@ Given the release validation command runs
 When Android and iOS photo workflow sources are inspected
 Then food photo capture remains preview-only
 And image-byte persistence or upload patterns fail the gate
+
+### Scenario: Android exported surface is minimized
+
+Given the release validation command runs
+When the Android manifest is inspected
+Then only the launcher MainActivity is exported
+And services, receivers, providers, or activity aliases fail the gate until a security review spec exists
