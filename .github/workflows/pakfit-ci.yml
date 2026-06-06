@@ -58,6 +58,9 @@ jobs:
       - name: Validate accessibility and readability
         run: bash scripts/validate-accessibility-readability.sh
 
+      - name: Validate diagnostic privacy
+        run: bash scripts/validate-diagnostic-privacy.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -199,3 +202,6 @@ jobs:
 
       - name: Validate accessibility and readability
         run: bash scripts/validate-accessibility-readability.sh
+
+      - name: Validate diagnostic privacy
+        run: bash scripts/validate-diagnostic-privacy.sh

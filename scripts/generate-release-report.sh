@@ -32,6 +32,7 @@ DEPENDABOT_CONFIG="$ROOT_DIR/.github/dependabot.yml"
 SECURITY_POLICY_FILE="$ROOT_DIR/SECURITY.md"
 CODEOWNERS_FILE="$ROOT_DIR/.github/CODEOWNERS"
 ACCESSIBILITY_DOC_FILE="$ROOT_DIR/docs/accessibility-readability.md"
+DIAGNOSTIC_PRIVACY_DOC_FILE="$ROOT_DIR/docs/diagnostics-privacy.md"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -416,6 +417,16 @@ if [[ -f "$ACCESSIBILITY_DOC_FILE" ]]; then
   ACCESSIBILITY_DOC_STATUS="$ACCESSIBILITY_DOC_FILE"
   ACCESSIBILITY_DOC_SHA256="$(sha256_file "$ACCESSIBILITY_DOC_FILE")"
 fi
+DIAGNOSTIC_PRIVACY_STATUS="not checked"
+if bash scripts/validate-diagnostic-privacy.sh >/dev/null 2>&1; then
+  DIAGNOSTIC_PRIVACY_STATUS="passed"
+fi
+DIAGNOSTIC_PRIVACY_DOC_STATUS="missing"
+DIAGNOSTIC_PRIVACY_DOC_SHA256=""
+if [[ -f "$DIAGNOSTIC_PRIVACY_DOC_FILE" ]]; then
+  DIAGNOSTIC_PRIVACY_DOC_STATUS="$DIAGNOSTIC_PRIVACY_DOC_FILE"
+  DIAGNOSTIC_PRIVACY_DOC_SHA256="$(sha256_file "$DIAGNOSTIC_PRIVACY_DOC_FILE")"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -553,6 +564,14 @@ mkdir -p "$REPORT_DIR"
   echo "- Accessibility and readability gate: $ACCESSIBILITY_READABILITY_STATUS"
   echo "- Accessibility policy: Android/iOS semantic headings, custom chart/progress labels, food-photo content descriptions, iOS Dynamic Type-friendly fonts, and screen-reader documentation checked"
   echo "- Accessibility boundary: TalkBack, VoiceOver, large-text, keyboard, switch-control, and signed-device review remain external manual QA before public release"
+  echo
+  echo "## Diagnostic Privacy"
+  echo
+  echo "- Diagnostic privacy doc: $DIAGNOSTIC_PRIVACY_DOC_STATUS"
+  echo "- Diagnostic privacy doc SHA-256: ${DIAGNOSTIC_PRIVACY_DOC_SHA256:-missing}"
+  echo "- Diagnostic privacy gate: $DIAGNOSTIC_PRIVACY_STATUS"
+  echo "- Diagnostic privacy policy: runtime logging, stack-trace printing, analytics SDKs, crash SDKs, telemetry dependencies, and privacy disclosure alignment checked"
+  echo "- Diagnostic privacy boundary: signed-binary SDK declaration review and external monitoring configuration review remain manual before public release"
   echo
   echo "## Android APK"
   echo
@@ -705,6 +724,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Dependency advisory monitoring: Dependabot coverage for Gradle, Swift Package Manager, and GitHub Actions checked"
   echo "- Security governance: SECURITY.md, CODEOWNERS coverage, vulnerability reporting boundaries, and low-risk CI permissions checked"
   echo "- Accessibility and readability: Android/iOS semantic headings, custom chart/progress labels, Dynamic Type-friendly iOS fonts, and documentation checked"
+  echo "- Diagnostic privacy: runtime logging, crash/analytics/telemetry SDK patterns, and privacy disclosure alignment checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -737,6 +757,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Dependabot advisory monitoring is configured, but live vulnerability/advisory results still require the pushed repository and GitHub-hosted dependency scanning or another network-enabled scanner."
   echo "- Hosted private vulnerability reporting, branch protection, and public security-contact review remain external repository settings."
   echo "- Accessibility manual QA still requires TalkBack, VoiceOver, large-text, keyboard, and switch-control review on target devices."
+  echo "- Diagnostic privacy manual QA still requires signed-binary SDK declaration review and any external monitoring console review."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

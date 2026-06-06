@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.38.0
+Listing version: 0.39.0
 
 ## App Identity
 
@@ -36,6 +36,7 @@ Pakistani fitness, desi diet, calorie tracker, food log, workout planner, BMI, d
 - No account, ads, analytics SDK, push notifications, remote photo upload, or cloud sync is enabled in this build.
 - No cloud sync or account backend is enabled in this build.
 - No remote analytics or developer-run user tracking is enabled in this build.
+- No diagnostic logs, crash reports, analytics events, or health-data telemetry are emitted in this build.
 - Android currently declares only INTERNET and CAMERA for online calorie search and optional food-photo workflows.
 - iOS camera and photo-library purpose strings are limited to user-selected food-photo calorie estimation.
 - Privacy policy URL: TBD public hosted URL before public store submission.

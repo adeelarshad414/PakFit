@@ -91,6 +91,9 @@ bash scripts/validate-security-governance.sh
 echo "== Accessibility and readability gate =="
 bash scripts/validate-accessibility-readability.sh
 
+echo "== Diagnostic privacy gate =="
+bash scripts/validate-diagnostic-privacy.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 

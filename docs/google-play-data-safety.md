@@ -8,6 +8,7 @@ This draft maps current PakFit behavior to a Google Play Data safety form. It mu
 - No backend API.
 - No cloud sync.
 - No remote analytics.
+- No diagnostic logs, crash reports, analytics events, or health-data telemetry are emitted in this build.
 - No advertising SDK.
 - Sensitive profile, health, food, lifestyle, mental wellness, clinical risk, consent, and manual food data stays local to the device.
 - Saved Android snapshot payloads are encrypted with an Android Keystore-backed AES-GCM key.

@@ -34,6 +34,8 @@ If symptoms are severe or safety is at risk, users should contact local emergenc
 
 Analytics are off in the current app. Future analytics require a separate schema, privacy notice, and explicit opt-in before implementation.
 
+No diagnostic logs, crash reports, analytics events, or health-data telemetry are emitted in this build. Future crash reporting, diagnostics, analytics, or telemetry SDKs require a new spec, security/privacy review, consent behavior, and updated store disclosures before implementation.
+
 ## User Controls
 
 Users can save, restore, export-preview, and clear the local snapshot from the app's local data/privacy controls. Export preview is user-controlled plaintext and should be handled carefully.
