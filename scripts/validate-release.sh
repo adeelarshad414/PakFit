@@ -151,6 +151,9 @@ bash scripts/validate-ios-permission-privacy.sh
 echo "== iOS network security gate =="
 bash scripts/validate-ios-network-security.sh
 
+echo "== iOS signing hygiene gate =="
+bash scripts/validate-ios-signing-hygiene.sh
+
 echo "== Android backup privacy gate =="
 ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
 BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"

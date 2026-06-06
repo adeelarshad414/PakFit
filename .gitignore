@@ -14,3 +14,12 @@ local.properties
 *.pfx
 *.pem
 *.key
+*.cer
+*.certSigningRequest
+*.csr
+*.developerprofile
+*.mobileprovision
+*.provisionprofile
+*.ipa
+*.xcarchive
+ExportOptions.plist

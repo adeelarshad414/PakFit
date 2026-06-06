@@ -297,6 +297,10 @@ IOS_NETWORK_SECURITY_STATUS="not checked"
 if bash scripts/validate-ios-network-security.sh >/dev/null 2>&1; then
   IOS_NETWORK_SECURITY_STATUS="passed"
 fi
+IOS_SIGNING_HYGIENE_STATUS="not checked"
+if bash scripts/validate-ios-signing-hygiene.sh >/dev/null 2>&1; then
+  IOS_SIGNING_HYGIENE_STATUS="passed"
+fi
 IOS_CAMERA_PURPOSE_COUNT="$(grep -c 'INFOPLIST_KEY_NSCameraUsageDescription' "$IOS_PROJECT_FILE" | tr -d ' ')"
 IOS_PHOTO_PURPOSE_COUNT="$(grep -c 'INFOPLIST_KEY_NSPhotoLibraryUsageDescription' "$IOS_PROJECT_FILE" | tr -d ' ')"
 IOS_CAMERA_PURPOSE_STATUS="missing"
@@ -392,6 +396,18 @@ IOS_SWIFT_VERSION="$(xcode_setting_value SWIFT_VERSION)"
 IOS_BUNDLE_ID="$(xcode_setting_value PRODUCT_BUNDLE_IDENTIFIER)"
 IOS_DISPLAY_NAME="$(xcode_setting_value INFOPLIST_KEY_CFBundleDisplayName)"
 IOS_TARGETED_DEVICE_FAMILY="$(xcode_setting_value TARGETED_DEVICE_FAMILY)"
+IOS_CODE_SIGN_STYLE="$(xcode_setting_value CODE_SIGN_STYLE)"
+IOS_DEVELOPMENT_TEAM_VALUES="$(
+  sed -n 's/.*DEVELOPMENT_TEAM = \(.*\);.*/\1/p' "$IOS_PROJECT_FILE" \
+    | sed 's/^"//; s/"$//' \
+    | sed '/^[[:space:]]*$/d' \
+    | sort -u \
+    | awk 'BEGIN { values = "" } { values = values (values == "" ? "" : ", ") $0 } END { print values }'
+)"
+IOS_DEVELOPMENT_TEAM_STATUS="unset in source"
+if [[ -n "$IOS_DEVELOPMENT_TEAM_VALUES" ]]; then
+  IOS_DEVELOPMENT_TEAM_STATUS="$IOS_DEVELOPMENT_TEAM_VALUES"
+fi
 VERSION_ALIGNMENT_STATUS="failed"
 if bash scripts/validate-version-alignment.sh --include-built-metadata >/dev/null 2>&1; then
   VERSION_ALIGNMENT_STATUS="passed"
@@ -583,6 +599,8 @@ mkdir -p "$REPORT_DIR"
   echo "- Bundle identifier: ${IOS_BUNDLE_ID:-not detected}"
   echo "- Display name: ${IOS_DISPLAY_NAME:-not detected}"
   echo "- Target device family: ${IOS_TARGETED_DEVICE_FAMILY:-not detected}"
+  echo "- Code sign style: ${IOS_CODE_SIGN_STYLE:-not detected}"
+  echo "- Development team source setting: $IOS_DEVELOPMENT_TEAM_STATUS"
   echo "- App identity gate: $APP_IDENTITY_STATUS"
   echo "- Privacy manifest: $PRIVACY_MANIFEST_STATUS"
   echo "- Required reason API declared: NSPrivacyAccessedAPICategoryUserDefaults / CA92.1"
@@ -592,6 +610,8 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS permission privacy gate: $IOS_PERMISSION_PRIVACY_STATUS"
   echo "- iOS runtime URL policy: $IOS_RUNTIME_URL_POLICY"
   echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
+  echo "- iOS signing hygiene gate: $IOS_SIGNING_HYGIENE_STATUS"
+  echo "- iOS signing policy: Apple certificates, provisioning profiles, export options, App Store credentials, development team, profiles, signing identities, and manual signing remain external"
   echo "- App icon asset gate: $APP_ICON_GATE_STATUS"
   echo "- Platform compatibility gate: $PLATFORM_COMPATIBILITY_STATUS"
   echo "- Android build toolchain gate: $ANDROID_BUILD_TOOLCHAIN_STATUS"
@@ -621,6 +641,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Android exported surface gate: only launcher MainActivity may be exported"
   echo "- Android network security gate: cleartext traffic disabled and runtime URLs HTTPS-only"
   echo "- iOS network security gate: Swift runtime URLs HTTPS-only and no ATS cleartext opt-outs"
+  echo "- iOS signing hygiene gate: no repo-local signing material, no hardcoded signing/App Store credentials, and unsigned local Xcode project posture checked"
   echo "- Food photo privacy gate: preview-only capture with no image-byte persistence/upload patterns"
   echo
   echo "## Release Boundaries"

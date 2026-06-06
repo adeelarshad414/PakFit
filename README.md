@@ -52,6 +52,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Cross-platform app icon assets with Android adaptive launcher icons and iOS AppIcon catalog validation
 - iOS permission privacy gate keeping camera/photo purpose strings food-photo scoped
 - iOS network security gate keeping Swift runtime URLs HTTPS-only and blocking ATS cleartext opt-outs
+- iOS signing hygiene gate keeping Apple certificates, provisioning profiles, export options, and App Store credentials outside source control
 - Food photo privacy gate proving preview-only capture and blocking image-byte persistence/upload patterns in this local-first build
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
