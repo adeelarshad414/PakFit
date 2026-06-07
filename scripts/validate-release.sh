@@ -97,6 +97,9 @@ bash scripts/validate-diagnostic-privacy.sh
 echo "== Adult-use safety gate =="
 bash scripts/validate-adult-use-safety.sh
 
+echo "== agentic pipeline gate =="
+bash scripts/validate-agentic-pipeline.sh
+
 echo "== iOS setup parity gate =="
 bash scripts/validate-ios-setup-parity.sh
 

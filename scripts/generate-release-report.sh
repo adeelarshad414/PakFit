@@ -34,6 +34,7 @@ CODEOWNERS_FILE="$ROOT_DIR/.github/CODEOWNERS"
 ACCESSIBILITY_DOC_FILE="$ROOT_DIR/docs/accessibility-readability.md"
 DIAGNOSTIC_PRIVACY_DOC_FILE="$ROOT_DIR/docs/diagnostics-privacy.md"
 ADULT_USE_SAFETY_DOC_FILE="$ROOT_DIR/docs/adult-use-safety.md"
+AGENTIC_PIPELINE_DOC_FILE="$ROOT_DIR/docs/agentic-pipeline.md"
 IOS_SETUP_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-setup-parity.md"
 IOS_HEALTH_MARKER_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-health-marker-parity.md"
 IOS_LIFESTYLE_COACH_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-lifestyle-coach-parity.md"
@@ -450,6 +451,16 @@ if [[ -f "$ADULT_USE_SAFETY_DOC_FILE" ]]; then
   ADULT_USE_SAFETY_DOC_STATUS="$ADULT_USE_SAFETY_DOC_FILE"
   ADULT_USE_SAFETY_DOC_SHA256="$(sha256_file "$ADULT_USE_SAFETY_DOC_FILE")"
 fi
+AGENTIC_PIPELINE_STATUS="not checked"
+if bash scripts/validate-agentic-pipeline.sh >/dev/null 2>&1; then
+  AGENTIC_PIPELINE_STATUS="passed"
+fi
+AGENTIC_PIPELINE_DOC_STATUS="missing"
+AGENTIC_PIPELINE_DOC_SHA256=""
+if [[ -f "$AGENTIC_PIPELINE_DOC_FILE" ]]; then
+  AGENTIC_PIPELINE_DOC_STATUS="$AGENTIC_PIPELINE_DOC_FILE"
+  AGENTIC_PIPELINE_DOC_SHA256="$(sha256_file "$AGENTIC_PIPELINE_DOC_FILE")"
+fi
 IOS_SETUP_PARITY_STATUS="not checked"
 if bash scripts/validate-ios-setup-parity.sh >/dev/null 2>&1; then
   IOS_SETUP_PARITY_STATUS="passed"
@@ -722,6 +733,14 @@ mkdir -p "$REPORT_DIR"
   echo "- Adult-use safety policy: Android age floor, restored-value slider clamping, Android/iOS under-18 warnings, iOS safety warning display, and adult audience listing copy checked"
   echo "- Adult-use safety boundary: store rating questionnaire, legal/privacy review, and age-suitability listing review remain external before public release"
   echo
+  echo "## Agentic Development Pipeline"
+  echo
+  echo "- Agentic pipeline doc: $AGENTIC_PIPELINE_DOC_STATUS"
+  echo "- Agentic pipeline doc SHA-256: ${AGENTIC_PIPELINE_DOC_SHA256:-missing}"
+  echo "- Agentic pipeline gate: $AGENTIC_PIPELINE_STATUS"
+  echo "- Agentic pipeline policy: native Android/iOS start-stop scripts, PowerShell scripts, VS Code tasks, SPEC_MAP, test credentials, quickref, setup guide, DOCX, screenshots, video script, and demo orchestration checked"
+  echo "- Agentic pipeline boundary: no backend, database, web server, Expo service, GitHub push, or native device recording is implied by this gate"
+  echo
   echo "## iOS Setup Parity"
   echo
   echo "- iOS setup parity doc: $IOS_SETUP_PARITY_DOC_STATUS"
@@ -970,6 +989,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Accessibility and readability: Android/iOS semantic headings, custom chart/progress labels, Dynamic Type-friendly iOS fonts, and documentation checked"
   echo "- Diagnostic privacy: runtime logging, crash/analytics/telemetry SDK patterns, and privacy disclosure alignment checked"
   echo "- Adult-use safety: age floor, under-18 warning behavior, iOS warning display, and adult audience listing copy checked"
+  echo "- Agentic development pipeline: native start/stop scripts, PowerShell scripts, VS Code tasks, SPEC_MAP, quickref, setup guide, DOCX, screenshots, and demo orchestration checked"
   echo "- iOS setup parity: editable iOS Setup tab, profile controls, lifestyle/caution toggles, and profile writeback checked"
   echo "- iOS health marker parity: editable iOS clinical marker controls, emergency symptom input, lab-profile writeback, docs, and store listing copy checked"
   echo "- iOS lifestyle coach parity: editable daily burn/lifestyle controls, Swift coach review engine, dynamic strengths/actions, docs, and store listing copy checked"
@@ -1015,6 +1035,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Accessibility manual QA still requires TalkBack, VoiceOver, large-text, keyboard, and switch-control review on target devices."
   echo "- Diagnostic privacy manual QA still requires signed-binary SDK declaration review and any external monitoring console review."
   echo "- Adult-use safety manual QA still requires store rating questionnaire review and final legal/privacy review for age suitability."
+  echo "- Agentic Development Pipeline manual QA still requires native Android/iOS device recording, sales voiceover recording, GitHub push on explicit request, and external developer handoff review."
   echo "- iOS Setup manual QA still requires iPhone device review for layout, VoiceOver, and large text."
   echo "- iOS Health marker manual QA still requires iPhone device review, VoiceOver, large text, and clinical copy review."
   echo "- iOS Lifestyle Coach manual QA still requires iPhone device review, VoiceOver, large text, and health/coach copy review."

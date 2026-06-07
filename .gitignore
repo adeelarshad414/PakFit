@@ -4,6 +4,7 @@ build/
 app/build/
 ios/PakFitIOS/.build/
 outputs/
+logs/
 local.properties
 *.iml
 .idea/

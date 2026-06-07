@@ -30,6 +30,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Validate accessibility and readability posture before release evidence is accepted.
 - Validate diagnostic privacy before release evidence is accepted.
 - Validate adult-use safety before release evidence is accepted.
+- Validate agentic development pipeline artifacts before release evidence is accepted.
 - Validate iOS setup parity before release evidence is accepted.
 - Validate iOS health marker parity before release evidence is accepted.
 - Validate iOS lifestyle coach parity before release evidence is accepted.
@@ -49,6 +50,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add accessibility and readability validation to CI.
 - Add diagnostic privacy validation to CI.
 - Add adult-use safety validation to CI.
+- Add agentic development pipeline validation to CI.
 - Add iOS setup parity validation to CI.
 - Add iOS health marker parity validation to CI.
 - Add iOS lifestyle coach parity validation to CI.
@@ -100,6 +102,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Accessibility and readability validation is part of the required validation path.
 - Diagnostic privacy validation is part of the required validation path.
 - Adult-use safety validation is part of the required validation path.
+- Agentic development pipeline validation is part of the required validation path.
 - iOS setup parity validation is part of the required validation path.
 - iOS health marker parity validation is part of the required validation path.
 - iOS lifestyle coach parity validation is part of the required validation path.

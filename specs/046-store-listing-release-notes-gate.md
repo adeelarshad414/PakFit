@@ -28,4 +28,4 @@ Add a locally verifiable store-listing and release-notes gate so PakFit's public
 - `scripts/validate-release.sh` runs the store-listing gate.
 - GitHub Actions runs the store-listing gate.
 - `scripts/generate-release-report.sh` records store listing, release notes, checksum, and gate status evidence.
-- Android and iOS version metadata are bumped to `0.31.0` build `31`.
+- Android and iOS version metadata are bumped to the current aligned release version before validation.

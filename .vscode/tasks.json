@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start PakFit Native Validation",
+      "type": "shell",
+      "command": "bash scripts/dev-start.sh",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop PakFit Dev Processes",
+      "type": "shell",
+      "command": "bash scripts/dev-stop.sh",
+      "group": "build",
+      "presentation": {
+        "panel": "shared",
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Restart PakFit Native Validation",
+      "type": "shell",
+      "command": "bash scripts/dev-restart.sh",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Release Validation",
+      "type": "shell",
+      "command": "bash scripts/validate-release.sh",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Capture Screenshots",
+      "type": "shell",
+      "command": "node scripts/capture-screenshots.js",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Record Demo Video",
+      "type": "shell",
+      "command": "node scripts/record-demo.js",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.51.0
+Listing version: 0.52.0
 
 ## App Identity
 
@@ -34,6 +34,7 @@ Kidney safety mode caps high-protein targets and switches to renal clinician-rev
 Diabetes medication safety mode pauses aggressive calorie targets and switches to clinician-reviewed meal timing and moderate movement guidance on Android and iOS.
 Review analysis dashboard, weekly summaries, monthly summaries, charts, graphs, trends, todos, and history on Android and iOS.
 Use versioned Android APK/AAB and iOS application handoff artifacts for local release review before store submission.
+Use the agentic developer pipeline docs, SPEC_MAP, quick commands, setup guide, screenshots, and demo script artifacts to hand off PakFit without guessing local build steps.
 
 Food photo estimates stay local in this build. PakFit uses your selected photo preview, food hint, and portion choice to estimate visible calories and encourages manual confirmation when confidence is limited.
 

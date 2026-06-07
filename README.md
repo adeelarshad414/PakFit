@@ -64,6 +64,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - iOS network security gate keeping Swift runtime URLs HTTPS-only and blocking ATS cleartext opt-outs
 - iOS signing hygiene gate keeping Apple certificates, provisioning profiles, export options, and App Store credentials outside source control
 - iOS application handoff artifact with versioned Xcode project, SwiftUI source, Swift core, tests, AppIcon assets, manifest, and checksums
+- Agentic developer pipeline with native start/stop scripts, VS Code tasks, SPEC_MAP, quick commands, setup guide, screenshots, and demo video script
 - Food photo privacy gate proving preview-only capture and blocking image-byte persistence/upload patterns in this local-first build
 - Store privacy disclosure consistency gate aligning Android permissions, iOS privacy manifest, privacy policy, Google Play Data safety, App Store privacy, and store listing claims
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
@@ -82,6 +83,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - iOS analysis dashboard parity gate for local summaries, charts, trends, todos, and history reporting
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
 - iOS app handoff artifact gate for local review evidence while signed IPA/App Store archive creation remains external
+- Agentic development pipeline gate for start/stop scripts, VS Code tasks, SPEC_MAP, quickref, setup guide, screenshots, and demo script artifacts
 - Cross-platform version alignment gate for Android source/APK metadata and iOS project metadata
 - Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate
 - Strict Gradle dependency verification metadata with SHA-256 checksums for resolved Android artifacts

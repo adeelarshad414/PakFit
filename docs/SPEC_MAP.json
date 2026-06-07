@@ -1,0 +1,164 @@
+{
+  "app": {
+    "name": "PakFit",
+    "version": "0.52.0",
+    "build": 52,
+    "type": ["Native Android", "Native iOS"],
+    "android": {
+      "applicationId": "com.pakfit.app",
+      "namespace": "com.pakfit.app",
+      "minSdk": 26,
+      "targetSdk": 35,
+      "compileSdk": 35,
+      "entryActivity": "com.pakfit.app.MainActivity"
+    },
+    "ios": {
+      "bundleIdentifier": "com.pakfit.ios",
+      "deploymentTarget": "16.0",
+      "swiftToolsVersion": "5.9",
+      "xcodeProject": "ios/PakFitIOS/PakFitIOS.xcodeproj"
+    },
+    "services": [],
+    "ports": [],
+    "backend": "none",
+    "database": "none",
+    "cloudSync": "none",
+    "deepLinks": [],
+    "privacyPosture": "Local-first health, food, photo-preview, and snapshot workflows with no account backend, analytics SDK, crash SDK, ads, or remote photo upload in this build."
+  },
+  "personas": [
+    {
+      "id": "office_worker_fat_loss",
+      "name": "Office Worker Fat Loss",
+      "exampleEmail": "office_worker@demo.pakfit.com",
+      "password": "N/A - no account login in this local native build",
+      "permissions": ["local_plan", "tracker", "analysis_dashboard", "health_markers"],
+      "description": "Pakistani office worker with chai, canteen meals, family dinners, low activity, and fat-loss goals."
+    },
+    {
+      "id": "beginner_woman_home",
+      "name": "Beginner Woman Training At Home",
+      "exampleEmail": "home_beginner@demo.pakfit.com",
+      "password": "N/A - no account login in this local native build",
+      "permissions": ["local_plan", "home_workout", "medical_cautions", "light_dark_theme"],
+      "description": "Beginner user who prefers private home workouts, respectful coaching, and safety-aware pregnancy or caution handling."
+    },
+    {
+      "id": "vegetarian_budget_student",
+      "name": "Vegetarian Student On Budget",
+      "exampleEmail": "vegetarian_student@demo.pakfit.com",
+      "password": "N/A - no account login in this local native build",
+      "permissions": ["local_plan", "budget_grocery_list", "manual_food_entry", "food_catalog"],
+      "description": "Budget-conscious student using daal, chana, lobia, dahi, paneer, soy, rice, and roti."
+    },
+    {
+      "id": "gym_muscle_gain_user",
+      "name": "Gym Muscle Gain User",
+      "exampleEmail": "gym_user@demo.pakfit.com",
+      "password": "N/A - no account login in this local native build",
+      "permissions": ["local_plan", "gym_workouts", "equipment_selection", "nutrition_targets"],
+      "description": "Gym user who wants muscle gain without dirty bulking and still eats Pakistani family meals."
+    },
+    {
+      "id": "health_marker_reviewer",
+      "name": "Health Marker Reviewer",
+      "exampleEmail": "health_reviewer@demo.pakfit.com",
+      "password": "N/A - no account login in this local native build",
+      "permissions": ["bmi", "lipids", "uric_acid", "blood_sugar", "hba1c", "hemoglobin", "blood_pressure", "clinical_insights"],
+      "description": "Adult user reviewing BMI, cholesterol, uric acid, fasting blood sugar, HbA1c, hemoglobin, BP, and diabetes status."
+    },
+    {
+      "id": "ramadan_diabetes_medication_user",
+      "name": "Ramadan Diabetes Medication User",
+      "exampleEmail": "ramadan_diabetes@demo.pakfit.com",
+      "password": "N/A - no account login in this local native build",
+      "permissions": ["ramadan_timing", "diabetes_medication_safety", "medical_review_warnings"],
+      "description": "User who needs Ramadan suhoor/iftar timing, low-glucose boundaries, and clinician-reviewed diabetes medication guidance."
+    }
+  ],
+  "screens": [
+    {
+      "id": "dashboard",
+      "route": "native://dashboard",
+      "platforms": ["Android", "iOS"],
+      "access": "all personas",
+      "description": "Today overview, intake, burn, net calories, meal count, health flags, adherence score, and screening status."
+    },
+    {
+      "id": "tracker",
+      "route": "native://tracker",
+      "platforms": ["Android", "iOS"],
+      "access": "all personas",
+      "description": "Daily meal, hourly food logging, calorie totals, manual food entry, online calorie search, and food-photo estimate controls."
+    },
+    {
+      "id": "health",
+      "route": "native://health",
+      "platforms": ["Android", "iOS"],
+      "access": "health marker and safety personas",
+      "description": "BMI, lipid profile, uric acid, fasting blood sugar, HbA1c, hemoglobin, diabetes status, blood pressure, mental wellness, and clinical insights."
+    },
+    {
+      "id": "plan",
+      "route": "native://plan",
+      "platforms": ["Android", "iOS"],
+      "access": "all personas",
+      "description": "Recommendation output with safety warnings, calorie/protein targets, Pakistani meal guidance, meal timing, grocery suggestions, workout sessions, and plan focus."
+    },
+    {
+      "id": "setup",
+      "route": "native://setup",
+      "platforms": ["Android", "iOS"],
+      "access": "all personas",
+      "description": "Profile inputs, goals, activity, diet pattern, training place, lifestyle modes, equipment, theme, and medical caution controls."
+    }
+  ],
+  "features": [
+    "Pakistani calorie and protein plan generation",
+    "Pregnancy, blood pressure, kidney disease, diabetes medication, and PCOS safety gates",
+    "Daily, weekly, and monthly calorie intake/burn/net summaries",
+    "Manual food item and custom category entry",
+    "Desi food catalog with desserts, drinks, snacks, roti/rice, daal, sabzi, dairy, and proteins",
+    "Food photo preview estimator with local-only confidence label",
+    "Online calorie search URL generation with Pakistani context",
+    "Analysis dashboards, charts, bars, progress, trends, todos, and history",
+    "BMI and health marker reports for cholesterol, uric acid, blood sugar, HbA1c, hemoglobin, BP, and diabetes status",
+    "Mental wellness PHQ-9/GAD-7 screeners and Pakistan crisis resources",
+    "Local encrypted snapshot save, restore, and export preview",
+    "Light and dark mode"
+  ],
+  "env": [
+    {
+      "name": "JAVA_HOME",
+      "required": "recommended for Android builds",
+      "example": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+    },
+    {
+      "name": "ANDROID_HOME",
+      "required": "recommended for Android SDK tools",
+      "example": "/opt/homebrew/share/android-commandlinetools"
+    },
+    {
+      "name": "GRADLE_USER_HOME",
+      "required": "optional",
+      "example": "/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/work/pakfit-gradle"
+    },
+    {
+      "name": "PAKFIT_SCREENSHOT_DIR",
+      "required": "optional",
+      "example": "docs/screenshots"
+    },
+    {
+      "name": "PYTHON_CMD",
+      "required": "optional",
+      "example": "/Users/adeel.arshad/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3"
+    }
+  ],
+  "testCredentials": "docs/TEST_CREDENTIALS.csv",
+  "sourceSpecs": [
+    "specs/002-user-personas-pakistan.md",
+    "specs/003-functional-requirements.md",
+    "specs/006-ux-flows-and-screen-inventory.md",
+    "specs/025-release-automation-and-ci-gates.md"
+  ]
+}
