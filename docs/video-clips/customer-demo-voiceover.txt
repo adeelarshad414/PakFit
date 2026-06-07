@@ -1,0 +1,13 @@
+Welcome to PakFit, a health, fitness, workout, and nutrition coach designed for Pakistani users.
+
+PakFit starts with a practical profile: age, weight, goal, daily routine, diet pattern, training place, and available equipment. The plan is built around real local habits like roti, rice, daal, sabzi, chai, office lunches, family dinners, Ramadan routines, and budget meals.
+
+The app turns that profile into daily calorie targets, protein guidance, workout planning, and safety notes. Users can track food by meal or by hour, add Pakistani dishes, desserts, drinks, and custom family recipes, and review intake, burn, net calories, and history.
+
+PakFit also supports health marker tracking for BMI, cholesterol, uric acid, fasting blood sugar, HbA1c, hemoglobin, diabetes status, and blood pressure. These tools are educational and non-diagnostic, helping users notice trends they should discuss with a qualified clinician.
+
+For higher risk situations, PakFit adds stronger safety boundaries. Pregnancy, high blood pressure, kidney disease, diabetes medication, PCOS, anemia, vitamin D, cardiovascular risk, and mental wellness flows all keep guidance cautious and review focused.
+
+The analysis dashboard converts daily records into progress bars, charts, trends, todos, weekly summaries, monthly summaries, and newest-first history. Users can quickly see what is improving, what needs attention, and what action to take next.
+
+PakFit is local-first, privacy-aware, culturally familiar, and built with automated release checks for Android and iOS. It is ready for device QA, clinical copy review, and the next production distribution steps.
