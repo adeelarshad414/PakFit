@@ -94,6 +94,8 @@ final class PakFitViewModel: ObservableObject {
     private let foodEngine = FoodRecordEngine()
     private let healthEngine = HealthReportCalculator()
     private let coachEngine = CoachReviewEngine()
+    private let clinicalEngine = ClinicalIntelligenceEngine()
+    private let mentalWellnessEngine = MentalWellnessEngine()
     private let searchEngine = FoodSearchEngine()
     private let photoEstimator = FoodPhotoEstimator()
     private let snapshotCodec = PakFitSnapshotCodec()
@@ -181,6 +183,18 @@ final class PakFitViewModel: ObservableObject {
             gad7Score: gad7Score,
             supportFlags: mentalSupportFlags
         )
+    }
+
+    var clinicalReport: ClinicalIntelligenceReport {
+        clinicalEngine.buildReport(
+            profile: profile,
+            labProfile: labProfile,
+            riskFactors: clinicalRiskFactors
+        )
+    }
+
+    var mentalWellnessReport: MentalWellnessReport {
+        mentalWellnessEngine.buildReport(input: mentalWellnessInput)
     }
 
     var snapshotSummary: PakFitSnapshotSummary {
@@ -673,6 +687,21 @@ struct HealthScreen: View {
                         }
                     }
 
+                    ClinicalRiskInputPanel(
+                        selectedFactors: model.clinicalRiskFactors,
+                        onToggle: toggleClinicalRiskFactor
+                    )
+
+                    ClinicalInsightsPanel(report: model.clinicalReport)
+
+                    MentalWellnessPanel(
+                        phq9Score: $model.phq9Score,
+                        gad7Score: $model.gad7Score,
+                        supportFlags: model.mentalSupportFlags,
+                        onToggleSupportFlag: toggleMentalSupportFlag,
+                        report: model.mentalWellnessReport
+                    )
+
                     Panel(title: "Clinical Boundary") {
                         Text(model.healthReport.medicalDisclaimer)
                             .font(.footnote)
@@ -744,6 +773,26 @@ struct HealthScreen: View {
                 model.labProfile = updated
             }
         )
+    }
+
+    private func toggleClinicalRiskFactor(_ factor: ClinicalRiskFactor) {
+        var updated = model.clinicalRiskFactors
+        if updated.contains(factor) {
+            updated.remove(factor)
+        } else {
+            updated.insert(factor)
+        }
+        model.clinicalRiskFactors = updated
+    }
+
+    private func toggleMentalSupportFlag(_ flag: MentalSupportFlag) {
+        var updated = model.mentalSupportFlags
+        if updated.contains(flag) {
+            updated.remove(flag)
+        } else {
+            updated.insert(flag)
+        }
+        model.mentalSupportFlags = updated
     }
 }
 
@@ -1451,6 +1500,207 @@ struct BreakdownRow: View {
                 .foregroundStyle(.secondary)
         }
         .font(.subheadline)
+    }
+}
+
+struct ClinicalRiskInputPanel: View {
+    let selectedFactors: Set<ClinicalRiskFactor>
+    let onToggle: (ClinicalRiskFactor) -> Void
+
+    var body: some View {
+        Panel(title: "Clinical Risk Factors") {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Optional risk factors help screen diabetes, BP, heart, vitamin D, and anemia risk without diagnosing disease.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                ToggleGrid(
+                    items: ClinicalRiskFactor.allCases,
+                    selected: selectedFactors,
+                    title: { $0.rawValue },
+                    onToggle: onToggle
+                )
+            }
+        }
+    }
+}
+
+struct ClinicalInsightsPanel: View {
+    let report: ClinicalIntelligenceReport
+
+    var body: some View {
+        Panel(title: "Clinical Insights") {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(report.disclaimerEnglish)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                ForEach(report.insights) { insight in
+                    ClinicalRiskInsightRow(insight: insight)
+                }
+            }
+        }
+    }
+}
+
+struct ClinicalRiskInsightRow: View {
+    let insight: ClinicalRiskInsight
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label(insight.type.rawValue, systemImage: iconName)
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("\(insight.level.rawValue) \(insight.score)")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(levelColor.opacity(0.14), in: Capsule())
+                    .foregroundStyle(levelColor)
+            }
+            Text(insight.title)
+                .font(.headline)
+            Text(insight.explanationEnglish)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            ForEach(insight.actionSteps, id: \.self) { step in
+                TodoRow(text: step)
+            }
+            Text(insight.sourceCategory)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 5)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(insight.type.rawValue), \(insight.level.rawValue), score \(insight.score). \(insight.title). \(insight.explanationEnglish)")
+    }
+
+    private var levelColor: Color {
+        switch insight.level {
+        case .low:
+            return .teal
+        case .moderate:
+            return .orange
+        case .high:
+            return .red
+        case .urgentReview:
+            return .purple
+        }
+    }
+
+    private var iconName: String {
+        switch insight.type {
+        case .type2Diabetes:
+            return "drop.triangle.fill"
+        case .hypertension:
+            return "heart.text.square.fill"
+        case .cardiovascular:
+            return "waveform.path.ecg"
+        case .vitaminDDeficiency:
+            return "sun.max.fill"
+        case .ironDeficiencyAnemia:
+            return "cross.vial.fill"
+        }
+    }
+}
+
+struct MentalWellnessPanel: View {
+    @Binding var phq9Score: Int
+    @Binding var gad7Score: Int
+    let supportFlags: Set<MentalSupportFlag>
+    let onToggleSupportFlag: (MentalSupportFlag) -> Void
+    let report: MentalWellnessReport
+
+    var body: some View {
+        Panel(title: "Mental Wellness") {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(report.disclaimerEnglish)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Stepper("PHQ-9 score: \(phq9Score)", value: $phq9Score, in: 0...27)
+                Stepper("GAD-7 score: \(gad7Score)", value: $gad7Score, in: 0...21)
+
+                ToggleGrid(
+                    items: MentalSupportFlag.allCases,
+                    selected: supportFlags,
+                    title: { $0.rawValue },
+                    onToggle: onToggleSupportFlag
+                )
+
+                MentalScreeningResultView(result: report.phq9)
+                MentalScreeningResultView(result: report.gad7)
+
+                Label(report.crisisMessageEnglish, systemImage: report.crisisEscalation ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(report.crisisEscalation ? .red : .teal)
+                    .accessibilityElement(children: .combine)
+
+                ForEach(report.crisisResources) { resource in
+                    CrisisResourceRow(resource: resource)
+                }
+            }
+        }
+    }
+}
+
+struct MentalScreeningResultView: View {
+    let result: MentalScreeningResult
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(result.scale.rawValue)
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("\(result.score) - \(result.severity.rawValue)")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(severityColor.opacity(0.14), in: Capsule())
+                    .foregroundStyle(severityColor)
+            }
+            Text(result.interpretation)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            ForEach(result.actionSteps, id: \.self) { step in
+                TodoRow(text: step)
+            }
+        }
+        .padding(.vertical, 5)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(result.scale.rawValue), score \(result.score), \(result.severity.rawValue). \(result.interpretation)")
+    }
+
+    private var severityColor: Color {
+        switch result.severity {
+        case .minimal:
+            return .teal
+        case .mild:
+            return .green
+        case .moderate:
+            return .orange
+        case .moderatelySevere, .severe:
+            return .red
+        }
+    }
+}
+
+struct CrisisResourceRow: View {
+    let resource: CrisisResource
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label(resource.name, systemImage: "phone.fill")
+                .font(.subheadline.weight(.semibold))
+            Text(resource.phone)
+                .font(.footnote.monospacedDigit())
+            Text(resource.description)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 5)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(resource.name), \(resource.phone). \(resource.description)")
     }
 }
 

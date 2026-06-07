@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.43.0
+Listing version: 0.44.0
 
 ## App Identity
 
@@ -26,6 +26,7 @@ Use on-device health reports for BMI, blood pressure, lipid profile, uric acid, 
 Setup profile, goals, diet pattern, lifestyle modes, and medical cautions on Android and iOS.
 Edit BMI inputs, blood pressure, lipid profile, uric acid, blood sugar, HbA1c, hemoglobin, and diabetes status on Android and iOS.
 Edit daily calories burned, water, steps, sleep, workout minutes, stress, and coach review actions on Android and iOS.
+Review PHQ-9, GAD-7, crisis support, diabetes risk, BP risk, heart risk, vitamin D risk, and anemia risk on Android and iOS.
 
 Food photo estimates stay local in this build. PakFit uses your selected photo preview, food hint, and portion choice to estimate visible calories and encourages manual confirmation when confidence is limited.
 

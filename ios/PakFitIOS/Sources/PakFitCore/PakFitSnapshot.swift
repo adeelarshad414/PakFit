@@ -28,6 +28,19 @@ public enum MentalSupportFlag: String, CaseIterable, Hashable, Codable {
     case cannotStaySafe = "Cannot stay safe"
 }
 
+public enum MentalScale: String, CaseIterable, Hashable, Codable {
+    case phq9 = "PHQ-9 depression screener"
+    case gad7 = "GAD-7 anxiety screener"
+}
+
+public enum MentalSeverity: String, CaseIterable, Hashable, Codable {
+    case minimal = "Minimal"
+    case mild = "Mild"
+    case moderate = "Moderate"
+    case moderatelySevere = "Moderately severe"
+    case severe = "Severe"
+}
+
 public struct MentalWellnessInput: Equatable, Codable {
     public var phq9Score: Int?
     public var gad7Score: Int?
@@ -53,6 +66,46 @@ public struct MentalWellnessInput: Equatable, Codable {
     }
 }
 
+public struct MentalScreeningResult: Equatable, Codable {
+    public let scale: MentalScale
+    public let score: Int
+    public let severity: MentalSeverity
+    public let interpretation: String
+    public let actionSteps: [String]
+}
+
+public struct CrisisResource: Equatable, Identifiable, Codable {
+    public var id: String { "\(name)-\(phone)" }
+    public let name: String
+    public let phone: String
+    public let description: String
+}
+
+public struct MentalWellnessReport: Equatable, Codable {
+    public let phq9: MentalScreeningResult
+    public let gad7: MentalScreeningResult
+    public let crisisEscalation: Bool
+    public let crisisMessageEnglish: String
+    public let crisisResources: [CrisisResource]
+    public let disclaimerEnglish: String
+
+    public init(
+        phq9: MentalScreeningResult,
+        gad7: MentalScreeningResult,
+        crisisEscalation: Bool,
+        crisisMessageEnglish: String,
+        crisisResources: [CrisisResource],
+        disclaimerEnglish: String = "Screening only; this is not a diagnosis. If symptoms affect daily life or safety, contact a qualified mental health professional or emergency service."
+    ) {
+        self.phq9 = phq9
+        self.gad7 = gad7
+        self.crisisEscalation = crisisEscalation
+        self.crisisMessageEnglish = crisisMessageEnglish
+        self.crisisResources = crisisResources
+        self.disclaimerEnglish = disclaimerEnglish
+    }
+}
+
 public enum ClinicalRiskFactor: String, CaseIterable, Hashable, Codable {
     case familyHistoryDiabetes = "Family history diabetes"
     case familyHistoryHypertension = "Family history high BP"
@@ -62,6 +115,58 @@ public enum ClinicalRiskFactor: String, CaseIterable, Hashable, Codable {
     case lowIronDiet = "Low-iron diet"
     case heavyPeriodsOrBloodLoss = "Heavy periods or blood loss"
     case smokingOrTobacco = "Smoking or tobacco"
+}
+
+public enum ClinicalRiskType: String, CaseIterable, Hashable, Codable {
+    case type2Diabetes = "Type 2 diabetes"
+    case hypertension = "Hypertension"
+    case cardiovascular = "Cardiovascular"
+    case vitaminDDeficiency = "Vitamin D deficiency"
+    case ironDeficiencyAnemia = "Iron-deficiency anemia"
+}
+
+public enum ClinicalRiskLevel: String, CaseIterable, Hashable, Codable {
+    case low = "Low"
+    case moderate = "Moderate"
+    case high = "High"
+    case urgentReview = "Urgent review"
+
+    public var priority: Int {
+        switch self {
+        case .low:
+            return 0
+        case .moderate:
+            return 1
+        case .high:
+            return 2
+        case .urgentReview:
+            return 3
+        }
+    }
+}
+
+public struct ClinicalRiskInsight: Equatable, Identifiable, Codable {
+    public var id: String { type.rawValue }
+    public let type: ClinicalRiskType
+    public let level: ClinicalRiskLevel
+    public let score: Int
+    public let title: String
+    public let explanationEnglish: String
+    public let actionSteps: [String]
+    public let sourceCategory: String
+}
+
+public struct ClinicalIntelligenceReport: Equatable, Codable {
+    public let insights: [ClinicalRiskInsight]
+    public let disclaimerEnglish: String
+
+    public init(
+        insights: [ClinicalRiskInsight],
+        disclaimerEnglish: String = "Screening insight only. This is not a diagnosis or treatment plan; review symptoms, labs, and medicines with a qualified clinician."
+    ) {
+        self.insights = insights
+        self.disclaimerEnglish = disclaimerEnglish
+    }
 }
 
 public struct ConsentState: Equatable, Codable {

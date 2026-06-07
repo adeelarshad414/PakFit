@@ -786,6 +786,321 @@ public final class CoachReviewEngine {
     ]
 }
 
+public final class MentalWellnessEngine {
+    public init() {}
+
+    public func buildReport(input: MentalWellnessInput) -> MentalWellnessReport {
+        let phq9Score = min(max(input.phq9Score ?? 0, 0), 27)
+        let gad7Score = min(max(input.gad7Score ?? 0, 0), 21)
+        let crisisEscalation = input.suicidalIdeation
+            || input.panicOrSevereDistress
+            || input.cannotStaySafe
+            || input.supportFlags.contains(.selfHarmThoughts)
+            || input.supportFlags.contains(.panicOrSevereDistress)
+            || input.supportFlags.contains(.cannotStaySafe)
+
+        return MentalWellnessReport(
+            phq9: phq9Result(phq9Score),
+            gad7: gad7Result(gad7Score),
+            crisisEscalation: crisisEscalation,
+            crisisMessageEnglish: crisisEscalation
+                ? "If you may hurt yourself, cannot stay safe, or feel out of control, stay near a trusted person and contact emergency or crisis support now."
+                : "No crisis flag selected. Keep tracking mood, sleep, stress, and support needs.",
+            crisisResources: crisisEscalation ? pakistanCrisisResources() : []
+        )
+    }
+
+    private func phq9Result(_ score: Int) -> MentalScreeningResult {
+        let severity: MentalSeverity
+        switch score {
+        case 0...4:
+            severity = .minimal
+        case 5...9:
+            severity = .mild
+        case 10...14:
+            severity = .moderate
+        case 15...19:
+            severity = .moderatelySevere
+        default:
+            severity = .severe
+        }
+
+        return MentalScreeningResult(
+            scale: .phq9,
+            score: score,
+            severity: severity,
+            interpretation: "PHQ-9 score \(score) is \(severity.rawValue.lowercased()) on a depression screening scale.",
+            actionSteps: mentalActionSteps(severity: severity, symptomLabel: "depression symptoms")
+        )
+    }
+
+    private func gad7Result(_ score: Int) -> MentalScreeningResult {
+        let severity: MentalSeverity
+        switch score {
+        case 0...4:
+            severity = .minimal
+        case 5...9:
+            severity = .mild
+        case 10...14:
+            severity = .moderate
+        default:
+            severity = .severe
+        }
+
+        return MentalScreeningResult(
+            scale: .gad7,
+            score: score,
+            severity: severity,
+            interpretation: "GAD-7 score \(score) is \(severity.rawValue.lowercased()) on an anxiety screening scale.",
+            actionSteps: mentalActionSteps(severity: severity, symptomLabel: "anxiety symptoms")
+        )
+    }
+
+    private func mentalActionSteps(severity: MentalSeverity, symptomLabel: String) -> [String] {
+        switch severity {
+        case .minimal:
+            return ["Keep a simple weekly check-in for mood, sleep, stress, and movement."]
+        case .mild:
+            return [
+                "Use basic support: regular sleep, prayer or reflection if helpful, walking, journaling, and talking to a trusted person.",
+                "Repeat the screener if symptoms increase or start affecting work, study, family, or worship."
+            ]
+        case .moderate:
+            return [
+                "Consider booking a qualified mental health professional for \(symptomLabel).",
+                "Build a daily support routine and avoid isolating when symptoms rise."
+            ]
+        case .moderatelySevere, .severe:
+            return [
+                "Prioritize professional evaluation for \(symptomLabel) soon.",
+                "Tell a trusted person what is happening and make a practical safety/support plan.",
+                "Use emergency or crisis resources immediately if safety is at risk."
+            ]
+        }
+    }
+
+    private func pakistanCrisisResources() -> [CrisisResource] {
+        [
+            CrisisResource(
+                name: "Rescue 1122",
+                phone: "1122 / 112 from mobile phones",
+                description: "Ambulance and emergency response in Pakistan."
+            ),
+            CrisisResource(
+                name: "Police emergency",
+                phone: "15",
+                description: "Use when immediate personal safety is threatened."
+            ),
+            CrisisResource(
+                name: "Umang Pakistan",
+                phone: "(92) 0311 7786264 / 0311 77UMANG",
+                description: "Pakistan mental health helpline and suicide prevention support."
+            ),
+            CrisisResource(
+                name: "Rozan counselling",
+                phone: "0092 3355000401 / 0402 / 0403",
+                description: "Counselling support listed in WHO EMRO Pakistan crisis resources."
+            )
+        ]
+    }
+}
+
+public final class ClinicalIntelligenceEngine {
+    public init() {}
+
+    public func buildReport(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalIntelligenceReport {
+        let insights = [
+            diabetesInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors),
+            hypertensionInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors),
+            cardiovascularInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors),
+            vitaminDInsight(profile: profile, riskFactors: riskFactors),
+            ironAnemiaInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors)
+        ].sorted {
+            if $0.level.priority != $1.level.priority {
+                return $0.level.priority > $1.level.priority
+            }
+            return $0.score > $1.score
+        }
+
+        return ClinicalIntelligenceReport(insights: insights)
+    }
+
+    private func diabetesInsight(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalRiskInsight {
+        let bmi = bmi(profile)
+        var score = 0
+        if bmi >= 27.5 { score += 3 } else if bmi >= 23.0 { score += 2 }
+        if profile.age >= 45 { score += 2 }
+        if profile.activityLevel == .sedentary { score += 1 }
+        if riskFactors.contains(.familyHistoryDiabetes) { score += 2 }
+        if let hba1c = labProfile.hba1cPercent, hba1c >= 5.7 { score += 2 }
+        if let fasting = labProfile.fastingBloodSugarMgDl, fasting >= 100 { score += 1 }
+        if labProfile.diabetesStatus == .prediabetes { score += 2 }
+        if labProfile.diabetesStatus == .diabetes { score += 3 }
+
+        return ClinicalRiskInsight(
+            type: .type2Diabetes,
+            level: riskLevel(score),
+            score: score,
+            title: "Diabetes risk screening",
+            explanationEnglish: "Your South Asian BMI, activity, family history, glucose, or HbA1c inputs suggest a higher screening risk for type 2 diabetes. This does not diagnose diabetes.",
+            actionSteps: [
+                "Review HbA1c and fasting glucose with your doctor, especially if values are repeatedly high.",
+                "Use a balanced roti/rice portion, protein, sabzi, and a short walk after meals.",
+                "Track symptoms such as unusual thirst, frequent urination, tiredness, or blurred vision."
+            ],
+            sourceCategory: "CDC diabetes risk factor guidance"
+        )
+    }
+
+    private func hypertensionInsight(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalRiskInsight {
+        let bmi = bmi(profile)
+        var score = 0
+        let systolic = labProfile.systolicBpMmHg ?? 0
+        let diastolic = labProfile.diastolicBpMmHg ?? 0
+        if systolic >= 140 || diastolic >= 90 { score += 3 } else if systolic >= 130 || diastolic >= 80 { score += 2 }
+        if bmi >= 27.5 { score += 2 } else if bmi >= 23.0 { score += 1 }
+        if profile.age >= 45 { score += 1 }
+        if profile.activityLevel == .sedentary { score += 1 }
+        if riskFactors.contains(.familyHistoryHypertension) { score += 2 }
+        if riskFactors.contains(.highSaltIntake) { score += 2 }
+        if labProfile.diabetesStatus != .notDiabetic { score += 1 }
+
+        return ClinicalRiskInsight(
+            type: .hypertension,
+            level: riskLevel(score),
+            score: score,
+            title: "Blood pressure risk screening",
+            explanationEnglish: "Your BP reading and risk factors suggest higher screening risk for blood pressure problems. Repeated readings and clinician review matter more than a single value.",
+            actionSteps: [
+                "Recheck BP calmly on different days and discuss repeated high readings with a doctor.",
+                "Reduce added salt, salty achar, packaged snacks, and very salty restaurant foods.",
+                "Use walking, sleep routine, and weight management goals that fit your current health status."
+            ],
+            sourceCategory: "NHLBI high blood pressure risk factor guidance"
+        )
+    }
+
+    private func cardiovascularInsight(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalRiskInsight {
+        let bmi = bmi(profile)
+        var score = 0
+        if profile.gender == .male && profile.age >= 45 { score += 2 }
+        if profile.gender == .female && profile.age >= 55 { score += 2 }
+        if bmi >= 27.5 { score += 1 }
+        if (labProfile.totalCholesterolMgDl ?? 0) >= 200 { score += 1 }
+        if (labProfile.ldlMgDl ?? 0) > 100 { score += 1 }
+        if (labProfile.triglyceridesMgDl ?? 0) >= 150 { score += 1 }
+        if let hdl = labProfile.hdlMgDl {
+            let lowHdl = profile.gender == .male ? hdl < 40 : hdl < 50
+            if lowHdl { score += 1 }
+        }
+        if (labProfile.systolicBpMmHg ?? 0) >= 130 || (labProfile.diastolicBpMmHg ?? 0) >= 80 { score += 2 }
+        if labProfile.diabetesStatus != .notDiabetic || (labProfile.hba1cPercent ?? 0) >= 5.7 { score += 2 }
+        if riskFactors.contains(.familyHistoryEarlyHeartDisease) { score += 2 }
+        if riskFactors.contains(.smokingOrTobacco) { score += 2 }
+
+        return ClinicalRiskInsight(
+            type: .cardiovascular,
+            level: riskLevel(score),
+            score: score,
+            title: "Heart health risk screening",
+            explanationEnglish: "Cholesterol, BP, diabetes status, tobacco, age, BMI, and family history can stack together into higher cardiovascular screening risk.",
+            actionSteps: [
+                "Book clinician review for cholesterol, BP, glucose, and family history together.",
+                "Prioritize tobacco reduction support if relevant; do not rely on diet changes alone.",
+                "Build meals around grilled protein, daal, sabzi, fruit, oats or whole grains, and measured oil."
+            ],
+            sourceCategory: "NHLBI heart disease risk factor guidance"
+        )
+    }
+
+    private func vitaminDInsight(
+        profile: UserProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalRiskInsight {
+        let bmi = bmi(profile)
+        var score = 0
+        if riskFactors.contains(.lowSunExposure) { score += 3 }
+        if profile.age >= 60 { score += 1 }
+        if bmi >= 27.5 { score += 2 }
+        if profile.dietPattern == .vegetarian { score += 1 }
+
+        return ClinicalRiskInsight(
+            type: .vitaminDDeficiency,
+            level: riskLevel(score),
+            score: score,
+            title: "Vitamin D risk screening",
+            explanationEnglish: "Low sun exposure, higher BMI, older age, or limited food sources can raise screening risk for vitamin D deficiency.",
+            actionSteps: [
+                "Discuss a vitamin D lab test with your doctor if fatigue, bone pain, low sun exposure, or repeated deficiency is a concern.",
+                "Use safe sun exposure habits and avoid sunburn.",
+                "Add suitable food sources such as eggs, fish, fortified dairy, or doctor-approved alternatives."
+            ],
+            sourceCategory: "NIH Office of Dietary Supplements vitamin D guidance"
+        )
+    }
+
+    private func ironAnemiaInsight(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalRiskInsight {
+        var score = 0
+        if let hemoglobin = labProfile.hemoglobinGdl {
+            let lowHemoglobin = profile.gender == .male ? hemoglobin < 14.0 : hemoglobin < 12.0
+            if lowHemoglobin { score += 4 }
+        }
+        if profile.gender == .female { score += 1 }
+        if riskFactors.contains(.heavyPeriodsOrBloodLoss) { score += 2 }
+        if riskFactors.contains(.lowIronDiet) { score += 1 }
+        if profile.dietPattern == .vegetarian { score += 1 }
+
+        return ClinicalRiskInsight(
+            type: .ironDeficiencyAnemia,
+            level: riskLevel(score),
+            score: score,
+            title: "Iron and anemia risk screening",
+            explanationEnglish: "Low hemoglobin, blood loss, heavy periods, or low intake of iron, B12, and folate can raise anemia screening risk.",
+            actionSteps: [
+                "Review low hemoglobin, heavy bleeding, fatigue, dizziness, or breathlessness with your doctor.",
+                "Ask whether CBC, ferritin, B12, or folate labs are appropriate before taking supplements.",
+                "Add iron-rich Pakistani foods when suitable: saag, daal, chana, lobia, beef, eggs, fish, and vitamin C from lemon or fruit."
+            ],
+            sourceCategory: "NHLBI anemia causes and risk factor guidance"
+        )
+    }
+
+    private func riskLevel(_ score: Int) -> ClinicalRiskLevel {
+        if score >= 5 {
+            return .high
+        }
+        if score >= 3 {
+            return .moderate
+        }
+        return .low
+    }
+
+    private func bmi(_ profile: UserProfile) -> Double {
+        let heightMeters = Double(profile.heightCm) / 100
+        return profile.weightKg / (heightMeters * heightMeters)
+    }
+}
+
 public final class FoodSearchEngine {
     public init() {}
 

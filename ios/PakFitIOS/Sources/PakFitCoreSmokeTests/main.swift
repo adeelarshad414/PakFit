@@ -103,6 +103,35 @@ func runPakFitCoreSmokeTests() throws {
     try expect(coachReview.actions.first?.priority == .medicalReview, "medical-review actions should sort first")
     try expect(coachingAreas.isSuperset(of: [.hydration, .activity, .recovery, .healthSafety]), "coach review should cover lifestyle and health-safety actions")
 
+    let clinicalReport = ClinicalIntelligenceEngine().buildReport(
+        profile: UserProfile(age: 48, weightKg: 86, heightCm: 170, gender: .male, activityLevel: .sedentary),
+        labProfile: LabProfile(
+            totalCholesterolMgDl: 230,
+            ldlMgDl: 140,
+            hdlMgDl: 36,
+            triglyceridesMgDl: 190,
+            fastingBloodSugarMgDl: 132,
+            systolicBpMmHg: 148,
+            diastolicBpMmHg: 92,
+            hba1cPercent: 6.8,
+            diabetesStatus: .diabetes
+        ),
+        riskFactors: [.familyHistoryDiabetes, .familyHistoryHypertension, .familyHistoryEarlyHeartDisease, .smokingOrTobacco]
+    )
+    try expect(clinicalReport.insights.first?.level == .high, "clinical insights should sort highest risks first")
+    try expect(clinicalReport.insights.contains { $0.type == .type2Diabetes && $0.level == .high }, "clinical insights should include diabetes risk")
+    try expect(clinicalReport.insights.contains { $0.type == .cardiovascular && $0.level == .high }, "clinical insights should include cardiovascular risk")
+
+    let mentalReport = MentalWellnessEngine().buildReport(input: MentalWellnessInput(
+        phq9Score: 18,
+        gad7Score: 13,
+        supportFlags: [.selfHarmThoughts]
+    ))
+    try expect(mentalReport.phq9.severity == .moderatelySevere, "PHQ-9 severity should classify moderately severe scores")
+    try expect(mentalReport.gad7.severity == .moderate, "GAD-7 severity should classify moderate scores")
+    try expect(mentalReport.crisisEscalation, "self-harm flag should trigger crisis escalation")
+    try expect(mentalReport.crisisResources.contains { $0.name == "Rescue 1122" }, "mental crisis resources should include Pakistan emergency support")
+
     let searchURL = FoodSearchEngine().buildCalorieSearchUrl(query: "Chicken biryani")
     try expect(searchURL.hasPrefix("https://www.google.com/search?q="), "online search should use Google query URL")
     try expect(searchURL.contains("Pakistani"), "online search should include Pakistani food context")
