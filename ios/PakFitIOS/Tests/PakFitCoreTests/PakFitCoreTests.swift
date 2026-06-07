@@ -131,6 +131,40 @@ final class PakFitCoreTests: XCTestCase {
         XCTAssertTrue(plan.planFocus.contains("Blood pressure safety review"))
     }
 
+    func testKidneyDiseaseCautionCapsHighProteinTargetsAndUsesRenalReviewMovementPlan() {
+        let baseProfile = UserProfile(
+            weightKg: 80,
+            goal: .muscleGain,
+            trainingPlace: .gym
+        )
+        let ordinaryMuscleGainPlan = PakistaniRecommendationEngine().buildPlan(profile: baseProfile)
+        let kidneyRecommendation = PakistaniRecommendationEngine().buildRecommendation(
+            profile: UserProfile(
+                weightKg: 80,
+                goal: .muscleGain,
+                trainingPlace: .gym,
+                medicalCautions: [.kidneyDisease]
+            )
+        )
+
+        let plan = kidneyRecommendation.plan
+        let allGuidance = (plan.mealGuidance + plan.workout.sessions + plan.workout.scheduleNotes).joined(separator: " ")
+        let warning = kidneyRecommendation.warnings.first { $0.caution == .kidneyDisease }
+
+        XCTAssertEqual(warning?.action, .medicalReview)
+        XCTAssertTrue(warning?.sourceCategory.localizedCaseInsensitiveContains("NIDDK") == true)
+        XCTAssertTrue(plan.nutritionTargets.proteinGrams < ordinaryMuscleGainPlan.nutritionTargets.proteinGrams)
+        XCTAssertLessThanOrEqual(plan.nutritionTargets.proteinGrams, Int(baseProfile.weightKg))
+        XCTAssertTrue(plan.workout.title.localizedCaseInsensitiveContains("Kidney"))
+        XCTAssertFalse(plan.workout.title.localizedCaseInsensitiveContains("Muscle gain"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("renal dietitian"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("not a prescription"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("avoid self-starting high-protein diets"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("potassium"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("phosphorus"))
+        XCTAssertTrue(plan.planFocus.contains("Kidney safety review"))
+    }
+
     func testDailyTrackerSupportsMealHourlyAndManualCalories() {
         let engine = FoodRecordEngine()
         var catalog = engine.defaultCatalog()

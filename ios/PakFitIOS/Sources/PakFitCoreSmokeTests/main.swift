@@ -81,6 +81,31 @@ func runPakFitCoreSmokeTests() throws {
     try expect(bloodPressureGuidance.localizedCaseInsensitiveContains("do not self-adjust BP medicines"), "blood pressure guidance should preserve medicine boundary")
     try expect(bloodPressurePlan.planFocus.contains("Blood pressure safety review"), "blood pressure plan focus should flag safety review")
 
+    let ordinaryMuscleGainPlan = PakistaniRecommendationEngine().buildPlan(profile: UserProfile(
+        weightKg: 80,
+        goal: .muscleGain,
+        trainingPlace: .gym
+    ))
+    let kidneyRecommendation = PakistaniRecommendationEngine().buildRecommendation(profile: UserProfile(
+        weightKg: 80,
+        goal: .muscleGain,
+        trainingPlace: .gym,
+        medicalCautions: [.kidneyDisease]
+    ))
+    let kidneyPlan = kidneyRecommendation.plan
+    let kidneyGuidance = (kidneyPlan.mealGuidance + kidneyPlan.workout.sessions + kidneyPlan.workout.scheduleNotes).joined(separator: " ")
+    try expect(kidneyRecommendation.warnings.first { $0.caution == .kidneyDisease }?.action == .medicalReview, "kidney disease caution should require medical review")
+    try expect(kidneyRecommendation.warnings.first { $0.caution == .kidneyDisease }?.sourceCategory.localizedCaseInsensitiveContains("NIDDK") == true, "kidney disease caution should reference NIDDK source category")
+    try expect(kidneyPlan.nutritionTargets.proteinGrams < ordinaryMuscleGainPlan.nutritionTargets.proteinGrams, "kidney safety should cap high-protein muscle-gain targets")
+    try expect(kidneyPlan.nutritionTargets.proteinGrams <= 80, "kidney safety cap should not exceed bodyweight-based review cap")
+    try expect(kidneyPlan.workout.title.localizedCaseInsensitiveContains("Kidney"), "kidney workout should be clearly labeled")
+    try expect(!kidneyPlan.workout.title.localizedCaseInsensitiveContains("Muscle gain"), "kidney workout title should not present a muscle-gain plan")
+    try expect(kidneyGuidance.localizedCaseInsensitiveContains("renal dietitian"), "kidney guidance should require renal dietitian review")
+    try expect(kidneyGuidance.localizedCaseInsensitiveContains("not a prescription"), "kidney protein guidance should avoid prescription claims")
+    try expect(kidneyGuidance.localizedCaseInsensitiveContains("avoid self-starting high-protein diets"), "kidney guidance should block high-protein self-start behavior")
+    try expect(kidneyGuidance.localizedCaseInsensitiveContains("potassium") && kidneyGuidance.localizedCaseInsensitiveContains("phosphorus"), "kidney guidance should mention lab-dependent nutrients")
+    try expect(kidneyPlan.planFocus.contains("Kidney safety review"), "kidney plan focus should flag safety review")
+
     let foodEngine = FoodRecordEngine()
     var catalog = foodEngine.defaultCatalog()
     let manual = FoodItem(

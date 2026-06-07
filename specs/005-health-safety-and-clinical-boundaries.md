@@ -15,6 +15,9 @@ The current safety gate is conservative and based on these source categories:
 - American Heart Association sodium and salt guidance: https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/sodium/sodium-and-salt
 - CDC sodium and health context: https://www.cdc.gov/salt/about/index.html
 - NHLBI heart-healthy physical activity context: https://www.nhlbi.nih.gov/health/heart-healthy-living/physical-activity
+- NIDDK healthy eating for adults with CKD: https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd/eating-nutrition
+- NIDDK eating right with kidney failure: https://www.niddk.nih.gov/health-information/kidney-disease/kidney-failure/eating-right
+- National Kidney Foundation nutrition and kidney disease stages 1-5: https://www.kidney.org/kidney-topics/nutrition-and-kidney-disease-stages-1-5-not-dialysis
 - American Heart Association heart attack warning signs: https://www.heart.org/en/health-topics/heart-attack/warning-signs-of-a-heart-attack
 - CDC kidney disease self-care guidance: https://www.cdc.gov/kidney-disease/living-with/index.html
 - National Eating Disorders Association excessive exercise guidance: https://www.nationaleatingdisorders.org/excessive-exercise/
@@ -28,7 +31,7 @@ The current safety gate is conservative and based on these source categories:
 | Diabetes medication | Medical review warning | Exercise can affect blood glucose and some medicines increase low-glucose risk. |
 | High blood pressure | Plan modification warning | Lower-sodium food guidance and moderate conversational movement are safer defaults, while medicines and repeated readings require clinician review. |
 | Heart symptoms | Medical review warning | Chest discomfort, shortness of breath, and related symptoms require medical evaluation. |
-| Kidney disease | Medical review warning | Activity and protein targets may need clinician or dietitian tailoring. |
+| Kidney disease | Medical review warning plus plan modification | Activity, protein, sodium, potassium, phosphorus, and fluids may need clinician or renal dietitian tailoring. |
 | Eating disorder history | Medical review warning | Dieting, tracking, and exercise can worsen risk for some users. |
 | Recent surgery | Medical review warning | Return to training depends on surgical clearance and recovery. |
 | Knee pain or joint limitation | Plan modification warning | Workouts should reduce impact and aggressive knee loading. |
@@ -57,6 +60,14 @@ When the recommendation engine builds a plan
 Then the plan avoids salted-lassi hydration guidance
 And the workout title uses blood pressure clinician-reviewed movement
 And the guidance tells users not to self-adjust BP medicines
+
+### Scenario: Kidney disease modifies plan output
+
+Given a user selects kidney disease and muscle gain
+When the recommendation engine builds a plan
+Then high-protein targets are capped
+And the workout title does not present muscle gain
+And nutrition guidance requires renal dietitian review for protein, sodium, potassium, phosphorus, fluids, labs, kidney stage, and dialysis status
 
 ### Scenario: Warning language is calm
 

@@ -181,6 +181,36 @@ class PakistaniRecommendationEngineTest {
     }
 
     @Test
+    fun kidneyDiseaseCautionCapsHighProteinTargetsAndUsesRenalReviewMovementPlan() {
+        val baseProfile = UserProfile(
+            weightKg = 80.0,
+            goal = Goal.MUSCLE_GAIN,
+            trainingPlace = TrainingPlace.GYM
+        )
+        val ordinaryMuscleGainPlan = engine.buildPlan(baseProfile)
+        val kidneyRecommendation = engine.buildRecommendation(
+            baseProfile.copy(medicalCautions = setOf(MedicalCaution.KIDNEY_DISEASE))
+        )
+
+        val plan = kidneyRecommendation.plan
+        val allGuidance = (plan.mealGuidance + plan.workout.sessions + plan.workout.scheduleNotes).joinToString(" ")
+        val warning = kidneyRecommendation.warnings.single { it.caution == MedicalCaution.KIDNEY_DISEASE }
+
+        assertEquals(SafetyAction.MEDICAL_REVIEW, warning.action)
+        assertTrue(warning.sourceCategory.contains("NIDDK", ignoreCase = true))
+        assertTrue(plan.nutritionTargets.proteinGrams < ordinaryMuscleGainPlan.nutritionTargets.proteinGrams)
+        assertTrue(plan.nutritionTargets.proteinGrams <= baseProfile.weightKg.toInt())
+        assertTrue(plan.workout.title.contains("Kidney", ignoreCase = true))
+        assertFalse(plan.workout.title.contains("Muscle gain", ignoreCase = true))
+        assertTrue(allGuidance.contains("renal dietitian", ignoreCase = true))
+        assertTrue(allGuidance.contains("not a prescription", ignoreCase = true))
+        assertTrue(allGuidance.contains("avoid self-starting high-protein diets", ignoreCase = true))
+        assertTrue(allGuidance.contains("potassium", ignoreCase = true))
+        assertTrue(allGuidance.contains("phosphorus", ignoreCase = true))
+        assertTrue(plan.planFocus.contains("Kidney safety review"))
+    }
+
+    @Test
     fun kneePainModifiesHomeWorkoutAwayFromImpactAndAggressiveKneeLoading() {
         val recommendation = engine.buildRecommendation(
             UserProfile(

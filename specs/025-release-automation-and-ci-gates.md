@@ -37,6 +37,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Validate PCOS clinical safety before release evidence is accepted.
 - Validate pregnancy plan safety before release evidence is accepted.
 - Validate blood pressure plan safety before release evidence is accepted.
+- Validate kidney plan safety before release evidence is accepted.
 - Validate iOS analysis dashboard parity before release evidence is accepted.
 - Validate iOS application handoff artifact export before release evidence is accepted.
 - Provide export scripts that copy the built debug APK, release APK, release AAB, and iOS application handoff archive to versioned destinations using build metadata.
@@ -54,6 +55,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add PCOS clinical safety validation to CI.
 - Add pregnancy plan safety validation to CI.
 - Add blood pressure plan safety validation to CI.
+- Add kidney plan safety validation to CI.
 - Add iOS analysis dashboard parity validation to CI.
 - Add iOS application handoff artifact validation and upload to CI.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.

@@ -17,10 +17,11 @@ class PakistaniRecommendationEngine {
     private fun buildPlanInternal(profile: UserProfile): FitnessPlan {
         val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
         val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
+        val hasKidneyDiseaseCaution = MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions
         val maintenanceCalories = estimateMaintenanceCalories(profile)
         val calorieAdjustment = when (profile.goal) {
             Goal.FAT_LOSS -> if (hasPregnancyCaution) 0 else -400
-            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution) 0 else 250
+            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution || hasKidneyDiseaseCaution) 0 else 250
             Goal.GENERAL_FITNESS -> 0
         }
         val calories = (maintenanceCalories + calorieAdjustment).coerceAtLeast(1_400)
@@ -29,11 +30,17 @@ class PakistaniRecommendationEngine {
             Goal.MUSCLE_GAIN -> if (hasPregnancyCaution || hasBloodPressureCaution) 1.6 else 2.0
             Goal.GENERAL_FITNESS -> 1.5
         }
+        val proteinGrams = (profile.weightKg * proteinMultiplier).roundToInt()
+        val renalReviewProteinCap = (profile.weightKg * 1.0).roundToInt()
 
         return FitnessPlan(
             nutritionTargets = NutritionTargets(
                 calories = roundToNearest(calories, 25),
-                proteinGrams = (profile.weightKg * proteinMultiplier).roundToInt(),
+                proteinGrams = if (hasKidneyDiseaseCaution) {
+                    minOf(proteinGrams, renalReviewProteinCap)
+                } else {
+                    proteinGrams
+                },
                 fiberGrams = 28,
                 waterLiters = ((profile.weightKg * 0.035) * 10).roundToInt() / 10.0
             ),
@@ -103,9 +110,9 @@ class PakistaniRecommendationEngine {
                 MedicalCaution.KIDNEY_DISEASE -> SafetyWarning(
                     caution = caution,
                     action = SafetyAction.MEDICAL_REVIEW,
-                    title = "Kidney condition review recommended",
-                    message = "Please review protein targets and training changes with your doctor or renal dietitian because kidney needs can vary by condition.",
-                    sourceCategory = "CDC kidney disease self-care guidance"
+                    title = "Kidney safety review needed",
+                    message = "PakFit caps high-protein targets and avoids bulking labels, but kidney nutrition depends on labs, stage, dialysis status, medicines, and clinician guidance. Review protein, sodium, potassium, phosphorus, fluids, and training changes with your doctor or renal dietitian.",
+                    sourceCategory = "NIDDK CKD eating and nutrition guidance"
                 )
                 MedicalCaution.EATING_DISORDER_HISTORY -> SafetyWarning(
                     caution = caution,
@@ -156,6 +163,7 @@ class PakistaniRecommendationEngine {
         }
 
         val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
+        val hasKidneyDiseaseCaution = MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions
         val lassiSwap = if (hasBloodPressureCaution) {
             "Swap creamy or salty lassi for water, unsweetened dahi, plain raita, or fresh lemon water without added salt."
         } else {
@@ -189,6 +197,11 @@ class PakistaniRecommendationEngine {
         if (hasBloodPressureCaution) {
             guidance += "Blood pressure safety: keep achar, papad, packaged nimco, salty chutneys, restaurant karahi, and very salty raita as occasional portions rather than daily staples."
             guidance += "Blood pressure plate: use daal, chana, grilled fish or chicken, sabzi, fruit, oats or whole grains, and measured oil; do not self-adjust BP medicines from app guidance."
+        }
+        if (hasKidneyDiseaseCaution) {
+            guidance += "Kidney safety: PakFit caps high-protein targets and treats protein as a renal-dietitian review number, not a prescription."
+            guidance += "Kidney food review: ask your clinician or renal dietitian how much daal, chana, meat, dairy, sodium, potassium, phosphorus, and fluid fits your labs, kidney stage, and dialysis status."
+            guidance += "Kidney boundary: avoid self-starting high-protein diets, creatine, unreviewed herbal kidney products, detox drinks, or supplement stacks from app guidance."
         }
 
         return guidance
@@ -285,13 +298,19 @@ class PakistaniRecommendationEngine {
         if (MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions) {
             focus += "Blood pressure safety review"
         }
+        if (MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions) {
+            focus += "Kidney safety review"
+        }
         return focus
     }
 
     private fun buildWorkout(profile: UserProfile): WorkoutBlock {
         val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
         val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
+        val hasKidneyDiseaseCaution = MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions
         val days = if (hasPregnancyCaution) {
+            3
+        } else if (hasKidneyDiseaseCaution) {
             3
         } else if (hasBloodPressureCaution) {
             4
@@ -307,6 +326,11 @@ class PakistaniRecommendationEngine {
                 "Clinician-cleared walking at conversational pace, gentle mobility, and breathing work.",
                 "Gentle strength basics after obstetric clearance: wall push-ups, supported rows, light hip hinges, and posture work.",
                 "Restorative mobility and easy movement; stop exercise and seek care for bleeding, dizziness, chest pain, calf swelling, painful contractions, or fluid leakage."
+            )
+            hasKidneyDiseaseCaution -> listOf(
+                "Renal clinician-reviewed walking at conversational pace with easy warm-up and cool-down.",
+                "Light strength basics without bulking focus: smooth reps, relaxed breathing, supported rows, wall push-ups, hip hinges, and mobility.",
+                "Recovery mobility and easy movement; stop for chest pain, faintness, unusual breathlessness, severe swelling, or symptoms your kidney clinician has warned about."
             )
             hasBloodPressureCaution -> listOf(
                 "Moderate walking at conversational pace for 20 to 30 minutes; avoid all-out sprints or breath-holding efforts.",
@@ -372,6 +396,8 @@ class PakistaniRecommendationEngine {
 
         val titlePrefix = if (hasPregnancyCaution) {
             "Pregnancy clinician-reviewed"
+        } else if (hasKidneyDiseaseCaution) {
+            "Kidney clinician-reviewed"
         } else if (hasBloodPressureCaution) {
             "Blood pressure clinician-reviewed"
         } else if (hasJointLimit) {
@@ -381,7 +407,7 @@ class PakistaniRecommendationEngine {
         }
 
         return WorkoutBlock(
-            title = if (hasPregnancyCaution || hasBloodPressureCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
+            title = if (hasPregnancyCaution || hasKidneyDiseaseCaution || hasBloodPressureCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
             daysPerWeek = days,
             sessions = timedSessions.take(days),
             scheduleNotes = buildWorkoutScheduleNotes(profile)
@@ -400,6 +426,9 @@ class PakistaniRecommendationEngine {
         }
         if (MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions) {
             notes += "Blood pressure safety: keep intensity conversational, breathe continuously during strength work, avoid max lifts or all-out intervals, and review repeated high readings with a clinician."
+        }
+        if (MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions) {
+            notes += "Kidney safety: confirm activity, fluid, protein, potassium, phosphorus, and sodium limits with your doctor or renal dietitian before changing intensity."
         }
         return notes
     }

@@ -85,6 +85,9 @@ jobs:
       - name: Validate blood pressure plan safety
         run: bash scripts/validate-blood-pressure-plan-safety.sh
 
+      - name: Validate kidney plan safety
+        run: bash scripts/validate-kidney-plan-safety.sh
+
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh
 
@@ -269,6 +272,9 @@ jobs:
 
       - name: Validate blood pressure plan safety
         run: bash scripts/validate-blood-pressure-plan-safety.sh
+
+      - name: Validate kidney plan safety
+        run: bash scripts/validate-kidney-plan-safety.sh
 
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh

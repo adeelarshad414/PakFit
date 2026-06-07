@@ -6,6 +6,7 @@ public final class PakistaniRecommendationEngine {
     public func buildPlan(profile: UserProfile) -> FitnessPlan {
         let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
         let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
+        let hasKidneyDiseaseCaution = profile.medicalCautions.contains(.kidneyDisease)
         let maintenanceCalories = estimateMaintenanceCalories(profile)
         let calorieAdjustment: Int
         let proteinMultiplier: Double
@@ -15,7 +16,7 @@ public final class PakistaniRecommendationEngine {
             calorieAdjustment = hasPregnancyCaution ? 0 : -400
             proteinMultiplier = hasPregnancyCaution || hasBloodPressureCaution ? 1.5 : 1.8
         case .muscleGain:
-            calorieAdjustment = hasPregnancyCaution ? 0 : 250
+            calorieAdjustment = hasPregnancyCaution || hasKidneyDiseaseCaution ? 0 : 250
             proteinMultiplier = hasPregnancyCaution || hasBloodPressureCaution ? 1.6 : 2.0
         case .generalFitness:
             calorieAdjustment = 0
@@ -23,11 +24,13 @@ public final class PakistaniRecommendationEngine {
         }
 
         let calories = max(1_400, maintenanceCalories + calorieAdjustment)
+        let proteinGrams = Int((profile.weightKg * proteinMultiplier).rounded())
+        let renalReviewProteinCap = Int((profile.weightKg * 1.0).rounded())
 
         return FitnessPlan(
             nutritionTargets: NutritionTargets(
                 calories: roundToNearest(calories, step: 25),
-                proteinGrams: Int((profile.weightKg * proteinMultiplier).rounded()),
+                proteinGrams: hasKidneyDiseaseCaution ? min(proteinGrams, renalReviewProteinCap) : proteinGrams,
                 fiberGrams: 28,
                 waterLiters: ((profile.weightKg * 0.035) * 10).rounded() / 10
             ),
@@ -101,9 +104,9 @@ public final class PakistaniRecommendationEngine {
                 return SafetyWarning(
                     caution: caution,
                     action: .medicalReview,
-                    title: "Kidney condition review recommended",
-                    message: "Please review protein targets and training changes with your doctor or renal dietitian because kidney needs can vary by condition.",
-                    sourceCategory: "CDC kidney disease self-care guidance"
+                    title: "Kidney safety review needed",
+                    message: "PakFit caps high-protein targets and avoids bulking labels, but kidney nutrition depends on labs, stage, dialysis status, medicines, and clinician guidance. Review protein, sodium, potassium, phosphorus, fluids, and training changes with your doctor or renal dietitian.",
+                    sourceCategory: "NIDDK CKD eating and nutrition guidance"
                 )
             case .eatingDisorderHistory:
                 return SafetyWarning(
@@ -167,6 +170,7 @@ public final class PakistaniRecommendationEngine {
         }
 
         let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
+        let hasKidneyDiseaseCaution = profile.medicalCautions.contains(.kidneyDisease)
         let lassiSwap = hasBloodPressureCaution
             ? "Swap creamy or salty lassi for water, unsweetened dahi, plain raita, or fresh lemon water without added salt."
             : "Swap creamy lassi for unsweetened dahi, salted lassi, or water most days."
@@ -199,6 +203,11 @@ public final class PakistaniRecommendationEngine {
             guidance.append("Blood pressure safety: keep achar, papad, packaged nimco, salty chutneys, restaurant karahi, and very salty raita as occasional portions rather than daily staples.")
             guidance.append("Blood pressure plate: use daal, chana, grilled fish or chicken, sabzi, fruit, oats or whole grains, and measured oil; do not self-adjust BP medicines from app guidance.")
         }
+        if hasKidneyDiseaseCaution {
+            guidance.append("Kidney safety: PakFit caps high-protein targets and treats protein as a renal-dietitian review number, not a prescription.")
+            guidance.append("Kidney food review: ask your clinician or renal dietitian how much daal, chana, meat, dairy, sodium, potassium, phosphorus, and fluid fits your labs, kidney stage, and dialysis status.")
+            guidance.append("Kidney boundary: avoid self-starting high-protein diets, creatine, unreviewed herbal kidney products, detox drinks, or supplement stacks from app guidance.")
+        }
 
         return guidance
     }
@@ -206,8 +215,11 @@ public final class PakistaniRecommendationEngine {
     private func buildWorkout(_ profile: UserProfile) -> WorkoutBlock {
         let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
         let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
+        let hasKidneyDiseaseCaution = profile.medicalCautions.contains(.kidneyDisease)
         let days: Int
         if hasPregnancyCaution {
+            days = 3
+        } else if hasKidneyDiseaseCaution {
             days = 3
         } else if hasBloodPressureCaution {
             days = 4
@@ -227,6 +239,12 @@ public final class PakistaniRecommendationEngine {
                 "Clinician-cleared walking at conversational pace, gentle mobility, and breathing work.",
                 "Gentle strength basics after obstetric clearance: wall push-ups, supported rows, light hip hinges, and posture work.",
                 "Restorative mobility and easy movement; stop exercise and seek care for bleeding, dizziness, chest pain, calf swelling, painful contractions, or fluid leakage."
+            ]
+        } else if hasKidneyDiseaseCaution {
+            sessions = [
+                "Renal clinician-reviewed walking at conversational pace with easy warm-up and cool-down.",
+                "Light strength basics without bulking focus: smooth reps, relaxed breathing, supported rows, wall push-ups, hip hinges, and mobility.",
+                "Recovery mobility and easy movement; stop for chest pain, faintness, unusual breathlessness, severe swelling, or symptoms your kidney clinician has warned about."
             ]
         } else if hasBloodPressureCaution {
             sessions = [
@@ -268,6 +286,8 @@ public final class PakistaniRecommendationEngine {
         let titlePrefix: String
         if hasPregnancyCaution {
             titlePrefix = "Pregnancy clinician-reviewed"
+        } else if hasKidneyDiseaseCaution {
+            titlePrefix = "Kidney clinician-reviewed"
         } else if hasBloodPressureCaution {
             titlePrefix = "Blood pressure clinician-reviewed"
         } else if hasJointLimit {
@@ -277,7 +297,7 @@ public final class PakistaniRecommendationEngine {
         }
 
         return WorkoutBlock(
-            title: hasPregnancyCaution || hasBloodPressureCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
+            title: hasPregnancyCaution || hasKidneyDiseaseCaution || hasBloodPressureCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
             daysPerWeek: days,
             sessions: Array(sessions.prefix(days)),
             scheduleNotes: buildWorkoutScheduleNotes(profile)
@@ -297,6 +317,9 @@ public final class PakistaniRecommendationEngine {
         }
         if profile.medicalCautions.contains(.highBloodPressure) {
             notes.append("Blood pressure safety: keep intensity conversational, breathe continuously during strength work, avoid max lifts or all-out intervals, and review repeated high readings with a clinician.")
+        }
+        if profile.medicalCautions.contains(.kidneyDisease) {
+            notes.append("Kidney safety: confirm activity, fluid, protein, potassium, phosphorus, and sodium limits with your doctor or renal dietitian before changing intensity.")
         }
         return notes
     }
@@ -353,6 +376,9 @@ public final class PakistaniRecommendationEngine {
         }
         if profile.medicalCautions.contains(.highBloodPressure) {
             focus.append("Blood pressure safety review")
+        }
+        if profile.medicalCautions.contains(.kidneyDisease) {
+            focus.append("Kidney safety review")
         }
         return focus
     }
