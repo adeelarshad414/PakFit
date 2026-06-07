@@ -70,6 +70,9 @@ jobs:
       - name: Validate iOS health marker parity
         run: bash scripts/validate-ios-health-marker-parity.sh
 
+      - name: Validate iOS lifestyle coach parity
+        run: bash scripts/validate-ios-lifestyle-coach-parity.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -223,3 +226,6 @@ jobs:
 
       - name: Validate iOS health marker parity
         run: bash scripts/validate-ios-health-marker-parity.sh
+
+      - name: Validate iOS lifestyle coach parity
+        run: bash scripts/validate-ios-lifestyle-coach-parity.sh

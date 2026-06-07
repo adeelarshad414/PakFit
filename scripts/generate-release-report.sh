@@ -36,6 +36,7 @@ DIAGNOSTIC_PRIVACY_DOC_FILE="$ROOT_DIR/docs/diagnostics-privacy.md"
 ADULT_USE_SAFETY_DOC_FILE="$ROOT_DIR/docs/adult-use-safety.md"
 IOS_SETUP_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-setup-parity.md"
 IOS_HEALTH_MARKER_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-health-marker-parity.md"
+IOS_LIFESTYLE_COACH_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-lifestyle-coach-parity.md"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -460,6 +461,16 @@ if [[ -f "$IOS_HEALTH_MARKER_PARITY_DOC_FILE" ]]; then
   IOS_HEALTH_MARKER_PARITY_DOC_STATUS="$IOS_HEALTH_MARKER_PARITY_DOC_FILE"
   IOS_HEALTH_MARKER_PARITY_DOC_SHA256="$(sha256_file "$IOS_HEALTH_MARKER_PARITY_DOC_FILE")"
 fi
+IOS_LIFESTYLE_COACH_PARITY_STATUS="not checked"
+if bash scripts/validate-ios-lifestyle-coach-parity.sh >/dev/null 2>&1; then
+  IOS_LIFESTYLE_COACH_PARITY_STATUS="passed"
+fi
+IOS_LIFESTYLE_COACH_PARITY_DOC_STATUS="missing"
+IOS_LIFESTYLE_COACH_PARITY_DOC_SHA256=""
+if [[ -f "$IOS_LIFESTYLE_COACH_PARITY_DOC_FILE" ]]; then
+  IOS_LIFESTYLE_COACH_PARITY_DOC_STATUS="$IOS_LIFESTYLE_COACH_PARITY_DOC_FILE"
+  IOS_LIFESTYLE_COACH_PARITY_DOC_SHA256="$(sha256_file "$IOS_LIFESTYLE_COACH_PARITY_DOC_FILE")"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -630,6 +641,14 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS health marker parity policy: Health marker input panel, diabetes status, lipid profile, uric acid, fasting blood sugar, blood pressure, HbA1c, hemoglobin, emergency symptom toggle, lab-profile writeback, docs, and store listing copy checked"
   echo "- iOS health marker parity boundary: iPhone device QA, VoiceOver, large-text review, signed production build review, and clinical copy review remain external before public release"
   echo
+  echo "## iOS Lifestyle Coach Parity"
+  echo
+  echo "- iOS lifestyle coach parity doc: $IOS_LIFESTYLE_COACH_PARITY_DOC_STATUS"
+  echo "- iOS lifestyle coach parity doc SHA-256: ${IOS_LIFESTYLE_COACH_PARITY_DOC_SHA256:-missing}"
+  echo "- iOS lifestyle coach parity gate: $IOS_LIFESTYLE_COACH_PARITY_STATUS"
+  echo "- iOS lifestyle coach parity policy: Swift coach models, coach review engine, smoke tests, calories burned input, water, steps, sleep, workout minutes, stress, Daily Coach Review, strengths, next actions, docs, and store listing copy checked"
+  echo "- iOS lifestyle coach parity boundary: iPhone device QA, VoiceOver, large-text review, signed production build review, and health/coach copy review remain external before public release"
+  echo
   echo "## Android APK"
   echo
   echo "- Application ID: $APPLICATION_ID"
@@ -785,6 +804,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Adult-use safety: age floor, under-18 warning behavior, iOS warning display, and adult audience listing copy checked"
   echo "- iOS setup parity: editable iOS Setup tab, profile controls, lifestyle/caution toggles, and profile writeback checked"
   echo "- iOS health marker parity: editable iOS clinical marker controls, emergency symptom input, lab-profile writeback, docs, and store listing copy checked"
+  echo "- iOS lifestyle coach parity: editable daily burn/lifestyle controls, Swift coach review engine, dynamic strengths/actions, docs, and store listing copy checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -821,6 +841,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Adult-use safety manual QA still requires store rating questionnaire review and final legal/privacy review for age suitability."
   echo "- iOS Setup manual QA still requires iPhone device review for layout, VoiceOver, and large text."
   echo "- iOS Health marker manual QA still requires iPhone device review, VoiceOver, large text, and clinical copy review."
+  echo "- iOS Lifestyle Coach manual QA still requires iPhone device review, VoiceOver, large text, and health/coach copy review."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

@@ -599,6 +599,193 @@ public final class HealthReportCalculator {
     }
 }
 
+public final class CoachReviewEngine {
+    public init() {}
+
+    public func buildReview(
+        profile: UserProfile,
+        dailyTracker: DailyCalorieTracker,
+        nutritionTargets: NutritionTargets,
+        healthReport: HealthReport,
+        lifestyle: DailyLifestyleRecord
+    ) -> CoachReview {
+        var actions: [CoachingAction] = []
+        var strengths: [String] = []
+        let entries = dailyTracker.entriesNewestFirst
+        let mealCount = dailyTracker.summary.mealCount
+        let hasProtein = entries.contains { proteinCategories.contains($0.foodItem.category) }
+        let hasSabzi = entries.contains { $0.foodItem.category == .sabziSalad }
+        let sweetLoad = entries.filter { isSweetOrSugaryDrink($0.foodItem) }.count
+
+        if mealCount < 2 {
+            actions.append(CoachingAction(
+                area: .nutrition,
+                priority: .needsAction,
+                title: "Log at least two meals",
+                message: "A coach review is more useful when breakfast, lunch, dinner, or snacks are captured."
+            ))
+        }
+
+        if hasProtein {
+            strengths.append("Protein anchor logged today.")
+        } else {
+            actions.append(CoachingAction(
+                area: .nutrition,
+                priority: .needsAction,
+                title: "Add a protein anchor",
+                message: "Add eggs, chicken, fish, daal, chana, dahi, paneer, or another suitable protein to a main meal."
+            ))
+        }
+
+        if hasSabzi {
+            strengths.append("Sabzi or salad is present today.")
+        } else {
+            actions.append(CoachingAction(
+                area: .nutrition,
+                priority: .watch,
+                title: "Add sabzi or salad",
+                message: "Add kachumber, cooked sabzi, saag, or a simple salad to improve fiber and meal volume."
+            ))
+        }
+
+        if sweetLoad > 0 {
+            actions.append(CoachingAction(
+                area: .nutrition,
+                priority: .needsAction,
+                title: "Plan sweets and sugary drinks",
+                message: "Desserts and sweet drinks can fit occasionally; pair them with planned portions and protein instead of letting them replace meals."
+            ))
+        }
+
+        if let firstLoggedHour = dailyTracker.hourlyBreakdown.first?.hour, !entries.isEmpty, firstLoggedHour > 10 {
+            actions.append(CoachingAction(
+                area: .mealTiming,
+                priority: .watch,
+                title: "Move first protein earlier",
+                message: "A morning or early-day protein anchor can reduce evening hunger and improve daily consistency."
+            ))
+        }
+
+        if lifestyle.waterLiters < nutritionTargets.waterLiters * 0.75 {
+            actions.append(CoachingAction(
+                area: .hydration,
+                priority: .needsAction,
+                title: "Improve hydration",
+                message: "Aim closer to today's \(nutritionTargets.waterLiters) L water target unless your clinician has given fluid limits."
+            ))
+        } else {
+            strengths.append("Hydration is close to target.")
+        }
+
+        if lifestyle.steps < 5_000 && lifestyle.workoutMinutes < 20 {
+            actions.append(CoachingAction(
+                area: .activity,
+                priority: .needsAction,
+                title: "Add low-friction movement",
+                message: "Add a 10 to 20 minute walk, post-meal walk, or low-impact session that fits your current health status."
+            ))
+        } else {
+            strengths.append("Activity target is moving in the right direction.")
+        }
+
+        if lifestyle.sleepHours < 6.5 || lifestyle.stressLevel >= 4 {
+            actions.append(CoachingAction(
+                area: .recovery,
+                priority: .needsAction,
+                title: "Protect recovery",
+                message: "Short sleep or high stress can make hunger, cravings, and training harder. Keep today's workout easier if recovery is low."
+            ))
+        } else {
+            strengths.append("Recovery looks steady today.")
+        }
+
+        if !healthReport.flags.isEmpty {
+            actions.append(CoachingAction(
+                area: .healthSafety,
+                priority: .medicalReview,
+                title: "Review health flags",
+                message: "Health flags are screening prompts. Review repeated abnormal readings, symptoms, and medication questions with a clinician."
+            ))
+        }
+
+        let score = min(max(100 - actions.reduce(0) { $0 + $1.priority.penalty }, 0), 100)
+        let sortedActions = actions.sorted {
+            if $0.priority.penalty != $1.priority.penalty {
+                return $0.priority.penalty > $1.priority.penalty
+            }
+            return areaSortOrder($0.area) < areaSortOrder($1.area)
+        }
+
+        return CoachReview(
+            score: score,
+            title: titleForScore(score),
+            summary: summaryForScore(score, goal: profile.goal),
+            strengths: strengths.isEmpty ? ["Start with one small logged action today."] : strengths,
+            actions: sortedActions
+        )
+    }
+
+    private func isSweetOrSugaryDrink(_ food: FoodItem) -> Bool {
+        if food.category == .dessert {
+            return true
+        }
+        if food.category == .drink && food.calories >= 100 {
+            return true
+        }
+        return false
+    }
+
+    private func titleForScore(_ score: Int) -> String {
+        switch score {
+        case 85...:
+            return "Strong day"
+        case 70...:
+            return "Solid foundation"
+        case 50...:
+            return "Needs attention"
+        default:
+            return "Reset day"
+        }
+    }
+
+    private func summaryForScore(_ score: Int, goal: Goal) -> String {
+        switch score {
+        case 85...:
+            return "Keep the same rhythm for \(goal.rawValue.lowercased()) and avoid over-correcting."
+        case 70...:
+            return "One or two focused fixes can make today strong."
+        case 50...:
+            return "Pick the top action first and keep the plan realistic."
+        default:
+            return "Keep today gentle: food structure, hydration, movement, and safety first."
+        }
+    }
+
+    private func areaSortOrder(_ area: CoachingArea) -> Int {
+        switch area {
+        case .nutrition:
+            return 0
+        case .mealTiming:
+            return 1
+        case .activity:
+            return 2
+        case .hydration:
+            return 3
+        case .recovery:
+            return 4
+        case .healthSafety:
+            return 5
+        }
+    }
+
+    private let proteinCategories: Set<FoodCategory> = [
+        .protein,
+        .daalLegumes,
+        .dairy,
+        .desiDish
+    ]
+}
+
 public final class FoodSearchEngine {
     public init() {}
 

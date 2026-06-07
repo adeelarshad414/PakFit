@@ -85,6 +85,24 @@ func runPakFitCoreSmokeTests() throws {
     try expect(healthReport.bmi.category == .overweight, "BMI should use South Asian overweight cutoff")
     try expect(markerTypes.isSuperset(of: [.lipidProfile, .uricAcid, .bloodSugar, .bloodPressure, .hba1c, .hemoglobin, .diabetesStatus]), "health report should cover requested lab markers")
 
+    let coachReview = CoachReviewEngine().buildReview(
+        profile: planProfile,
+        dailyTracker: tracker,
+        nutritionTargets: plan.nutritionTargets,
+        healthReport: healthReport,
+        lifestyle: DailyLifestyleRecord(
+            waterLiters: 1.0,
+            steps: 1_500,
+            sleepHours: 5.8,
+            workoutMinutes: 5,
+            stressLevel: 5
+        )
+    )
+    let coachingAreas = Set(coachReview.actions.map(\.area))
+    try expect(coachReview.score < 70, "coach review should penalize poor lifestyle and health flags")
+    try expect(coachReview.actions.first?.priority == .medicalReview, "medical-review actions should sort first")
+    try expect(coachingAreas.isSuperset(of: [.hydration, .activity, .recovery, .healthSafety]), "coach review should cover lifestyle and health-safety actions")
+
     let searchURL = FoodSearchEngine().buildCalorieSearchUrl(query: "Chicken biryani")
     try expect(searchURL.hasPrefix("https://www.google.com/search?q="), "online search should use Google query URL")
     try expect(searchURL.contains("Pakistani"), "online search should include Pakistani food context")

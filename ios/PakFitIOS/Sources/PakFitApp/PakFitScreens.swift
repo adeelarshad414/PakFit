@@ -93,6 +93,7 @@ final class PakFitViewModel: ObservableObject {
     private let planEngine = PakistaniRecommendationEngine()
     private let foodEngine = FoodRecordEngine()
     private let healthEngine = HealthReportCalculator()
+    private let coachEngine = CoachReviewEngine()
     private let searchEngine = FoodSearchEngine()
     private let photoEstimator = FoodPhotoEstimator()
     private let snapshotCodec = PakFitSnapshotCodec()
@@ -161,6 +162,16 @@ final class PakFitViewModel: ObservableObject {
             sleepHours: sleepHours,
             workoutMinutes: workoutMinutes,
             stressLevel: stressLevel
+        )
+    }
+
+    var coachReview: CoachReview {
+        coachEngine.buildReview(
+            profile: profile,
+            dailyTracker: tracker,
+            nutritionTargets: plan.nutritionTargets,
+            healthReport: healthReport,
+            lifestyle: lifestyleRecord
         )
     }
 
@@ -414,13 +425,9 @@ struct DashboardScreen: View {
                         }
                     }
 
-                    Panel(title: "Coach Todo") {
-                        VStack(alignment: .leading, spacing: 10) {
-                            TodoRow(text: model.tracker.summary.netCalories > model.plan.nutritionTargets.calories ? "Reduce late-day snacks or add a 20 minute walk." : "Keep today controlled and finish dinner with protein plus sabzi.")
-                            TodoRow(text: "Review cholesterol, uric acid, glucose, HbA1c, and BP flags with a clinician.")
-                            TodoRow(text: "Use the photo estimate only as a starting point; verify calories online for new foods.")
-                        }
-                    }
+                    DailyLifestyleInputsPanel(model: model)
+
+                    CoachReviewPanel(review: model.coachReview)
                 }
                 .padding(16)
             }
@@ -1196,6 +1203,141 @@ struct TodoRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(text)
+    }
+}
+
+struct DailyLifestyleInputsPanel: View {
+    @ObservedObject var model: PakFitViewModel
+
+    var body: some View {
+        Panel(title: "Daily Lifestyle Inputs") {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Daily burn and lifestyle values update the coach review and secure local snapshot.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Stepper("Calories burned today: \(model.caloriesBurned) kcal", value: $model.caloriesBurned, in: 0...1_200, step: 25)
+                Stepper("Water: \(model.waterLiters, specifier: "%.1f") L", value: $model.waterLiters, in: 0...5, step: 0.1)
+                Stepper("Steps: \(model.steps)", value: $model.steps, in: 0...20_000, step: 500)
+                Stepper("Sleep: \(model.sleepHours, specifier: "%.1f") hours", value: $model.sleepHours, in: 3...10, step: 0.1)
+                Stepper("Workout: \(model.workoutMinutes) min", value: $model.workoutMinutes, in: 0...120, step: 5)
+                Stepper("Stress: \(model.stressLevel) / 5", value: $model.stressLevel, in: 1...5)
+            }
+        }
+    }
+}
+
+struct CoachReviewPanel: View {
+    let review: CoachReview
+
+    var body: some View {
+        Panel(title: "Daily Coach Review") {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(review.title)
+                            .font(.headline)
+                        Text(review.summary)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Text("\(review.score)/100")
+                        .font(.headline.monospacedDigit())
+                        .foregroundStyle(scoreColor)
+                }
+
+                ProgressView(value: Double(review.score), total: 100)
+                    .tint(scoreColor)
+                    .accessibilityLabel("Coach score \(review.score) out of 100")
+
+                Text("Strengths")
+                    .font(.subheadline.weight(.semibold))
+                ForEach(review.strengths, id: \.self) { strength in
+                    Label(strength, systemImage: "checkmark.circle.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .accessibilityElement(children: .combine)
+                }
+
+                Text("Next Actions")
+                    .font(.subheadline.weight(.semibold))
+                ForEach(review.actions) { action in
+                    CoachActionRow(action: action)
+                }
+            }
+        }
+    }
+
+    private var scoreColor: Color {
+        switch review.score {
+        case 85...:
+            return .teal
+        case 70...:
+            return .green
+        case 50...:
+            return .orange
+        default:
+            return .red
+        }
+    }
+}
+
+struct CoachActionRow: View {
+    let action: CoachingAction
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Label(action.area.rawValue, systemImage: iconName)
+                    .font(.caption.weight(.semibold))
+                Spacer()
+                Text(action.priority.rawValue)
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(priorityColor.opacity(0.14), in: Capsule())
+                    .foregroundStyle(priorityColor)
+            }
+            Text(action.title)
+                .font(.subheadline.weight(.semibold))
+            Text(action.message)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(action.area.rawValue), \(action.priority.rawValue), \(action.title). \(action.message)")
+    }
+
+    private var priorityColor: Color {
+        switch action.priority {
+        case .good:
+            return .teal
+        case .watch:
+            return .orange
+        case .needsAction:
+            return .red
+        case .medicalReview:
+            return .blue
+        }
+    }
+
+    private var iconName: String {
+        switch action.area {
+        case .nutrition:
+            return "fork.knife"
+        case .mealTiming:
+            return "clock.fill"
+        case .activity:
+            return "figure.walk"
+        case .hydration:
+            return "drop.fill"
+        case .recovery:
+            return "moon.zzz.fill"
+        case .healthSafety:
+            return "cross.case.fill"
+        }
     }
 }
 

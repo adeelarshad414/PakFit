@@ -350,6 +350,51 @@ public struct HealthReport: Equatable, Codable {
     public let medicalDisclaimer: String
 }
 
+public enum CoachingArea: String, CaseIterable, Hashable, Codable {
+    case nutrition = "Nutrition"
+    case mealTiming = "Meal timing"
+    case activity = "Activity"
+    case hydration = "Hydration"
+    case recovery = "Recovery"
+    case healthSafety = "Health safety"
+}
+
+public enum CoachingPriority: String, CaseIterable, Hashable, Codable {
+    case good = "Good"
+    case watch = "Watch"
+    case needsAction = "Needs action"
+    case medicalReview = "Medical review"
+
+    public var penalty: Int {
+        switch self {
+        case .good:
+            return 0
+        case .watch:
+            return 8
+        case .needsAction:
+            return 14
+        case .medicalReview:
+            return 20
+        }
+    }
+}
+
+public struct CoachingAction: Equatable, Identifiable, Codable {
+    public var id: String { "\(area.rawValue)-\(title)" }
+    public let area: CoachingArea
+    public let priority: CoachingPriority
+    public let title: String
+    public let message: String
+}
+
+public struct CoachReview: Equatable, Codable {
+    public let score: Int
+    public let title: String
+    public let summary: String
+    public let strengths: [String]
+    public let actions: [CoachingAction]
+}
+
 public enum FoodPhotoPortion: String, CaseIterable, Hashable, Codable {
     case small = "Small"
     case medium = "Medium"

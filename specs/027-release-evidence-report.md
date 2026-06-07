@@ -31,6 +31,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include adult-use safety documentation, checksum, gate status, and store age-suitability review boundary.
 - Include iOS setup parity documentation, checksum, gate status, and device QA boundary.
 - Include iOS health marker parity documentation, checksum, gate status, and clinical/device QA boundary.
+- Include iOS lifestyle coach parity documentation, checksum, gate status, and coach/device QA boundary.
 - Include Android Auto Backup and backup/data-extraction sensitive snapshot exclusion status.
 - Include Android declared permission count, permission policy, and camera hardware feature posture.
 - Include Android exported component count, exported component policy, and exported surface gate status.
@@ -73,6 +74,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes adult-use safety evidence.
 - The report includes iOS setup parity evidence.
 - The report includes iOS health marker parity evidence.
+- The report includes iOS lifestyle coach parity evidence.
 - The report includes Android backup privacy status.
 - The report includes Android permission privacy status.
 - The report includes Android exported surface status.
