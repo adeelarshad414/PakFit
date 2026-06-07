@@ -109,6 +109,9 @@ bash scripts/validate-ios-lifestyle-coach-parity.sh
 echo "== iOS clinical and mental wellness parity gate =="
 bash scripts/validate-ios-clinical-mental-parity.sh
 
+echo "== iOS analysis dashboard parity gate =="
+bash scripts/validate-ios-analysis-dashboard-parity.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 

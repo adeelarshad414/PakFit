@@ -76,6 +76,9 @@ jobs:
       - name: Validate iOS clinical and mental wellness parity
         run: bash scripts/validate-ios-clinical-mental-parity.sh
 
+      - name: Validate iOS analysis dashboard parity
+        run: bash scripts/validate-ios-analysis-dashboard-parity.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -235,3 +238,6 @@ jobs:
 
       - name: Validate iOS clinical and mental wellness parity
         run: bash scripts/validate-ios-clinical-mental-parity.sh
+
+      - name: Validate iOS analysis dashboard parity
+        run: bash scripts/validate-ios-analysis-dashboard-parity.sh

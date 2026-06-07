@@ -419,6 +419,197 @@ public final class FoodRecordEngine {
     }
 }
 
+public final class AnalysisDashboardEngine {
+    private let foodRecordEngine: FoodRecordEngine
+
+    public init(foodRecordEngine: FoodRecordEngine = FoodRecordEngine()) {
+        self.foodRecordEngine = foodRecordEngine
+    }
+
+    public func buildDashboard(
+        records: [DailyFoodRecord],
+        today: DailyFoodRecord,
+        nutritionTargets: NutritionTargets,
+        burnTarget: Int,
+        healthReport: HealthReport,
+        proteinGramsLogged: Int
+    ) -> AnalysisDashboard {
+        let safeRecords = (records.filter { $0.date != today.date } + [today]).sorted { $0.date < $1.date }
+        let todaySummary = foodRecordEngine.dailySummary(record: today)
+        let weeklyRecords = Array(safeRecords.suffix(7))
+        let monthlyRecords = Array(safeRecords.suffix(30))
+        let rawCalorieProgress = nutritionTargets.calories > 0
+            ? Double(todaySummary.calorieIntake) / Double(nutritionTargets.calories)
+            : 0
+        let calorieProgress = progress(todaySummary.calorieIntake, nutritionTargets.calories)
+        let burnProgress = progress(todaySummary.caloriesBurned, burnTarget)
+        let proteinProgress = progress(proteinGramsLogged, nutritionTargets.proteinGrams)
+        let todos = buildTodos(
+            todaySummary: todaySummary,
+            calorieProgress: calorieProgress,
+            burnProgress: burnProgress,
+            proteinProgress: proteinProgress,
+            healthFlagCount: healthReport.flags.count
+        )
+
+        return AnalysisDashboard(
+            todaySummary: todaySummary,
+            weeklySummary: foodRecordEngine.periodSummary(records: weeklyRecords),
+            monthlySummary: foodRecordEngine.periodSummary(records: monthlyRecords),
+            calorieProgress: calorieProgress,
+            burnProgress: burnProgress,
+            proteinProgress: proteinProgress,
+            healthFlagCount: healthReport.flags.count,
+            adherenceScore: adherenceScore(
+                calorieProgress: rawCalorieProgress,
+                burnProgress: burnProgress,
+                proteinProgress: proteinProgress,
+                todos: todos
+            ),
+            calorieTrend: calorieTrend(records: weeklyRecords, calorieTarget: nutritionTargets.calories),
+            burnTrend: burnTrend(records: weeklyRecords, burnTarget: burnTarget),
+            chartPoints: buildChartPoints(records: weeklyRecords),
+            todos: todos,
+            history: safeRecords
+                .sorted { $0.date > $1.date }
+                .prefix(10)
+                .map { HistoryEntry(date: $0.date, summary: foodRecordEngine.dailySummary(record: $0)) }
+        )
+    }
+
+    private func progress(_ value: Int, _ target: Int) -> Double {
+        guard target > 0 else { return 0 }
+        return min(max(Double(value) / Double(target), 0), 1)
+    }
+
+    private func buildTodos(
+        todaySummary: CalorieSummary,
+        calorieProgress: Double,
+        burnProgress: Double,
+        proteinProgress: Double,
+        healthFlagCount: Int
+    ) -> [AnalysisTodo] {
+        var todos: [AnalysisTodo] = [
+            AnalysisTodo(
+                type: .logMeals,
+                title: "Log at least two meals",
+                detail: "Meal history is more useful when breakfast, lunch, dinner, or snacks are captured.",
+                completed: todaySummary.mealCount >= 2
+            ),
+            AnalysisTodo(
+                type: .addWalk,
+                title: "Add a short walk",
+                detail: "A 10 to 20 minute walk can improve today's burn and post-meal routine.",
+                completed: burnProgress >= 0.7
+            ),
+            AnalysisTodo(
+                type: .addProtein,
+                title: "Add protein anchor",
+                detail: "Add eggs, daal, chana, dahi, fish, chicken, or paneer to improve protein progress.",
+                completed: proteinProgress >= 0.6
+            )
+        ]
+
+        if healthFlagCount > 0 {
+            todos.append(AnalysisTodo(
+                type: .reviewHealthFlags,
+                title: "Review health flags",
+                detail: "Health marker flags are screening prompts. Review them with your doctor.",
+                completed: false
+            ))
+        }
+
+        todos.append(AnalysisTodo(
+            type: .planTomorrow,
+            title: "Plan tomorrow's first meal",
+            detail: "Pick a simple breakfast or lunch protein before the day starts.",
+            completed: calorieProgress >= 0.5 && calorieProgress <= 1.0
+        ))
+
+        return todos
+    }
+
+    private func adherenceScore(
+        calorieProgress: Double,
+        burnProgress: Double,
+        proteinProgress: Double,
+        todos: [AnalysisTodo]
+    ) -> Int {
+        let calorieScore: Int
+        if calorieProgress >= 0.75 && calorieProgress <= 1.05 {
+            calorieScore = 30
+        } else if calorieProgress >= 0.5 && calorieProgress <= 1.2 {
+            calorieScore = 20
+        } else {
+            calorieScore = 10
+        }
+        let burnScore = Int((min(burnProgress, 1.0) * 25).rounded())
+        let proteinScore = Int((min(proteinProgress, 1.0) * 25).rounded())
+        let todoScore = todos.isEmpty
+            ? 20
+            : Int(((Double(todos.filter(\.completed).count) / Double(todos.count)) * 20).rounded())
+        return min(max(calorieScore + burnScore + proteinScore + todoScore, 0), 100)
+    }
+
+    private func calorieTrend(records: [DailyFoodRecord], calorieTarget: Int) -> TrendInsight {
+        let summaries = records.map { foodRecordEngine.dailySummary(record: $0) }
+        let averageIntake = average(summaries.map(\.calorieIntake))
+        let status: TrendStatus
+        if calorieTarget <= 0 {
+            status = .steady
+        } else if averageIntake > Double(calorieTarget) * 1.1 || averageIntake < Double(calorieTarget) * 0.75 {
+            status = .needsAttention
+        } else {
+            status = .improving
+        }
+
+        return TrendInsight(
+            status: status,
+            title: "Calorie trend",
+            message: "Recent average intake: \(Int(averageIntake.rounded())) kcal against \(calorieTarget) kcal target."
+        )
+    }
+
+    private func burnTrend(records: [DailyFoodRecord], burnTarget: Int) -> TrendInsight {
+        let summaries = records.map { foodRecordEngine.dailySummary(record: $0) }
+        let averageBurn = average(summaries.map(\.caloriesBurned))
+        let status: TrendStatus
+        if burnTarget <= 0 {
+            status = .steady
+        } else if averageBurn < Double(burnTarget) * 0.7 {
+            status = .needsAttention
+        } else if averageBurn < Double(burnTarget) {
+            status = .steady
+        } else {
+            status = .improving
+        }
+
+        return TrendInsight(
+            status: status,
+            title: "Burn trend",
+            message: "Recent average burn: \(Int(averageBurn.rounded())) kcal against \(burnTarget) kcal target."
+        )
+    }
+
+    private func buildChartPoints(records: [DailyFoodRecord]) -> [ChartPoint] {
+        records.map { record in
+            let summary = foodRecordEngine.dailySummary(record: record)
+            return ChartPoint(
+                label: String(record.date.suffix(5)),
+                date: record.date,
+                intakeCalories: summary.calorieIntake,
+                burnCalories: summary.caloriesBurned,
+                netCalories: summary.netCalories
+            )
+        }
+    }
+
+    private func average(_ values: [Int]) -> Double {
+        guard !values.isEmpty else { return 0 }
+        return Double(values.reduce(0, +)) / Double(values.count)
+    }
+}
+
 public final class HealthReportCalculator {
     public static let medicalDisclaimer = "This is screening information, not medical advice. Always review health concerns with your doctor."
 

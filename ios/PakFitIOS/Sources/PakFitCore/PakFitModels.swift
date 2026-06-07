@@ -254,6 +254,65 @@ public struct DailyCalorieTracker: Equatable, Codable {
     public let entriesNewestFirst: [MealEntry]
 }
 
+public enum TrendStatus: String, CaseIterable, Hashable, Codable {
+    case improving = "Improving"
+    case steady = "Steady"
+    case needsAttention = "Needs attention"
+}
+
+public enum TodoType: String, CaseIterable, Hashable, Codable {
+    case logMeals = "Log meals"
+    case addWalk = "Add walk"
+    case reviewHealthFlags = "Review health flags"
+    case addProtein = "Add protein"
+    case planTomorrow = "Plan tomorrow"
+}
+
+public struct ChartPoint: Equatable, Identifiable, Codable {
+    public var id: String { date }
+    public let label: String
+    public let date: String
+    public let intakeCalories: Int
+    public let burnCalories: Int
+    public let netCalories: Int
+}
+
+public struct TrendInsight: Equatable, Codable {
+    public let status: TrendStatus
+    public let title: String
+    public let message: String
+}
+
+public struct AnalysisTodo: Equatable, Identifiable, Codable {
+    public var id: TodoType { type }
+    public let type: TodoType
+    public let title: String
+    public let detail: String
+    public let completed: Bool
+}
+
+public struct HistoryEntry: Equatable, Identifiable, Codable {
+    public var id: String { date }
+    public let date: String
+    public let summary: CalorieSummary
+}
+
+public struct AnalysisDashboard: Equatable, Codable {
+    public let todaySummary: CalorieSummary
+    public let weeklySummary: CalorieSummary
+    public let monthlySummary: CalorieSummary
+    public let calorieProgress: Double
+    public let burnProgress: Double
+    public let proteinProgress: Double
+    public let healthFlagCount: Int
+    public let adherenceScore: Int
+    public let calorieTrend: TrendInsight
+    public let burnTrend: TrendInsight
+    public let chartPoints: [ChartPoint]
+    public let todos: [AnalysisTodo]
+    public let history: [HistoryEntry]
+}
+
 public enum DiabetesStatus: String, CaseIterable, Hashable, Codable {
     case notDiabetic = "No diabetes"
     case prediabetes = "Prediabetes"

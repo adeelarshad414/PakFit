@@ -65,6 +65,35 @@ func runPakFitCoreSmokeTests() throws {
     try expect(tracker.hourlyBreakdown.map(\.hour) == [8, 10, 20], "hourly tracker should preserve meal times")
     try expect(tracker.entriesNewestFirst.first?.foodItem.name == "Homemade chicken salan", "history should be newest first")
 
+    let dashboard = AnalysisDashboardEngine(foodRecordEngine: foodEngine).buildDashboard(
+        records: [
+            DailyFoodRecord(
+                date: "2026-06-01",
+                mealEntries: [MealEntry(mealName: "Lunch", foodItem: roti, servings: 1, timeLabel: "13:00")],
+                caloriesBurned: 150
+            ),
+            DailyFoodRecord(
+                date: "2026-06-02",
+                mealEntries: [MealEntry(mealName: "Dinner", foodItem: chai, servings: 1, timeLabel: "20:00")],
+                caloriesBurned: 180
+            )
+        ],
+        today: DailyFoodRecord(
+            date: "2026-06-03",
+            mealEntries: tracker.entriesNewestFirst,
+            caloriesBurned: 400
+        ),
+        nutritionTargets: plan.nutritionTargets,
+        burnTarget: 400,
+        healthReport: HealthReportCalculator().buildReport(profile: planProfile, labProfile: LabProfile()),
+        proteinGramsLogged: 42
+    )
+    try expect(dashboard.weeklySummary.days == 3, "analysis dashboard should include weekly records")
+    try expect(dashboard.monthlySummary.calorieIntake > dashboard.todaySummary.calorieIntake, "monthly summary should include historical intake")
+    try expect(dashboard.chartPoints.count == 3, "analysis dashboard should expose chart points")
+    try expect(dashboard.todos.contains { $0.type == .logMeals }, "analysis dashboard should include meal logging todo")
+    try expect(dashboard.history.first?.date == "2026-06-03", "analysis dashboard history should be newest first")
+
     let healthReport = HealthReportCalculator().buildReport(
         profile: UserProfile(age: 40, weightKg: 75, heightCm: 170, gender: .male),
         labProfile: LabProfile(

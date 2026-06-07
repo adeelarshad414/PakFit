@@ -92,6 +92,7 @@ final class PakFitViewModel: ObservableObject {
 
     private let planEngine = PakistaniRecommendationEngine()
     private let foodEngine = FoodRecordEngine()
+    private let analysisEngine = AnalysisDashboardEngine()
     private let healthEngine = HealthReportCalculator()
     private let coachEngine = CoachReviewEngine()
     private let clinicalEngine = ClinicalIntelligenceEngine()
@@ -155,6 +156,36 @@ final class PakFitViewModel: ObservableObject {
 
     var tracker: DailyCalorieTracker {
         foodEngine.buildDailyTracker(record: todayRecord)
+    }
+
+    var historyRecords: [DailyFoodRecord] {
+        sampleHistoryRecords()
+    }
+
+    var proteinGramsLogged: Int {
+        entries.reduce(0) { total, entry in
+            let perServing: Int
+            switch entry.foodItem.category {
+            case .protein:
+                perServing = 25
+            case .daalLegumes, .dairy, .desiDish:
+                perServing = 14
+            default:
+                perServing = 4
+            }
+            return total + Int((Double(perServing) * entry.servings).rounded())
+        }
+    }
+
+    var analysisDashboard: AnalysisDashboard {
+        analysisEngine.buildDashboard(
+            records: historyRecords,
+            today: todayRecord,
+            nutritionTargets: plan.nutritionTargets,
+            burnTarget: 400,
+            healthReport: healthReport,
+            proteinGramsLogged: proteinGramsLogged
+        )
     }
 
     var lifestyleRecord: DailyLifestyleRecord {
@@ -360,6 +391,64 @@ final class PakFitViewModel: ObservableObject {
         )
     }
 
+    private func sampleHistoryRecords() -> [DailyFoodRecord] {
+        let currentCatalog = catalog
+        let defaultCatalog = foodEngine.defaultCatalog()
+        let food = { (id: String) -> FoodItem in
+            currentCatalog.first(where: { $0.id == id })
+                ?? defaultCatalog.first(where: { $0.id == id })
+                ?? currentCatalog.first
+                ?? defaultCatalog[0]
+        }
+        let roti = food("roti-medium")
+        let daal = food("daal")
+        let tikka = food("chicken-tikka")
+        let chai = food("chai")
+
+        return [
+            DailyFoodRecord(
+                date: "2026-05-27",
+                mealEntries: [
+                    MealEntry(mealName: "Breakfast", foodItem: chai, servings: 1, timeLabel: "08:30"),
+                    MealEntry(mealName: "Lunch", foodItem: daal, servings: 1, timeLabel: "13:00")
+                ],
+                caloriesBurned: 240
+            ),
+            DailyFoodRecord(
+                date: "2026-05-28",
+                mealEntries: [
+                    MealEntry(mealName: "Lunch", foodItem: roti, servings: 2, timeLabel: "13:30"),
+                    MealEntry(mealName: "Dinner", foodItem: tikka, servings: 1, timeLabel: "20:00")
+                ],
+                caloriesBurned: 320
+            ),
+            DailyFoodRecord(
+                date: "2026-05-29",
+                mealEntries: [
+                    MealEntry(mealName: "Lunch", foodItem: daal, servings: 1, timeLabel: "13:15"),
+                    MealEntry(mealName: "Dinner", foodItem: roti, servings: 2, timeLabel: "20:15")
+                ],
+                caloriesBurned: 280
+            ),
+            DailyFoodRecord(
+                date: "2026-05-30",
+                mealEntries: [
+                    MealEntry(mealName: "Breakfast", foodItem: chai, servings: 1, timeLabel: "08:15"),
+                    MealEntry(mealName: "Dinner", foodItem: tikka, servings: 1, timeLabel: "20:30")
+                ],
+                caloriesBurned: 350
+            ),
+            DailyFoodRecord(
+                date: "2026-05-31",
+                mealEntries: [
+                    MealEntry(mealName: "Lunch", foodItem: roti, servings: 2, timeLabel: "13:00"),
+                    MealEntry(mealName: "Lunch", foodItem: daal, servings: 1, timeLabel: "13:10")
+                ],
+                caloriesBurned: 300
+            )
+        ]
+    }
+
     private func apply(_ snapshot: PakFitUserSnapshot) {
         profile = snapshot.profile
         labProfile = snapshot.labProfile
@@ -438,6 +527,8 @@ struct DashboardScreen: View {
                             TrendBars(entries: model.tracker.hourlyBreakdown.map { ($0.label, $0.calorieIntake) })
                         }
                     }
+
+                    AnalysisDashboardPanel(dashboard: model.analysisDashboard)
 
                     DailyLifestyleInputsPanel(model: model)
 
@@ -1252,6 +1343,214 @@ struct TodoRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(text)
+    }
+}
+
+struct AnalysisDashboardPanel: View {
+    let dashboard: AnalysisDashboard
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Panel(title: "Analysis Dashboard") {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Adherence score")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text("\(dashboard.adherenceScore)/100")
+                            .font(.headline.monospacedDigit())
+                            .foregroundStyle(scoreColor)
+                    }
+                    Text("Health review flags: \(dashboard.healthFlagCount)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    SummaryLine(title: "Today", summary: dashboard.todaySummary)
+                    SummaryLine(title: "This week", summary: dashboard.weeklySummary)
+                    SummaryLine(title: "This month", summary: dashboard.monthlySummary)
+                    DashboardProgressRow(title: "Calorie target", progress: dashboard.calorieProgress, tint: .teal)
+                    DashboardProgressRow(title: "Burn target", progress: dashboard.burnProgress, tint: .orange)
+                    DashboardProgressRow(title: "Protein progress", progress: dashboard.proteinProgress, tint: .blue)
+                }
+            }
+
+            Panel(title: "Charts & Graphs") {
+                VStack(alignment: .leading, spacing: 14) {
+                    AnalysisBarChart(
+                        title: "Recent calorie intake",
+                        points: dashboard.chartPoints,
+                        value: { $0.intakeCalories },
+                        tint: .teal
+                    )
+                    AnalysisBarChart(
+                        title: "Recent calories burned",
+                        points: dashboard.chartPoints,
+                        value: { $0.burnCalories },
+                        tint: .orange
+                    )
+                    AnalysisBarChart(
+                        title: "Net calorie trend",
+                        points: dashboard.chartPoints,
+                        value: { max($0.netCalories, 0) },
+                        tint: .blue
+                    )
+                }
+            }
+
+            Panel(title: "Trends") {
+                VStack(alignment: .leading, spacing: 12) {
+                    TrendInsightRow(trend: dashboard.calorieTrend)
+                    TrendInsightRow(trend: dashboard.burnTrend)
+                }
+            }
+
+            Panel(title: "Todo") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("\(dashboard.todos.filter(\.completed).count)/\(dashboard.todos.count) completed")
+                        .font(.subheadline.weight(.semibold))
+                    ForEach(dashboard.todos) { todo in
+                        AnalysisTodoRow(todo: todo)
+                    }
+                }
+            }
+
+            Panel(title: "History") {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(dashboard.history.prefix(6)) { item in
+                        SummaryLine(title: item.date, summary: item.summary)
+                    }
+                }
+            }
+        }
+    }
+
+    private var scoreColor: Color {
+        switch dashboard.adherenceScore {
+        case 85...:
+            return .teal
+        case 70...:
+            return .green
+        case 50...:
+            return .orange
+        default:
+            return .red
+        }
+    }
+}
+
+struct SummaryLine: View {
+    let title: String
+    let summary: CalorieSummary
+
+    var body: some View {
+        Text("\(title): \(summary.calorieIntake) kcal in / \(summary.caloriesBurned) kcal burned / \(summary.netCalories) net / \(summary.mealCount) meals")
+            .font(.footnote)
+            .accessibilityLabel("\(title), \(summary.calorieIntake) calories in, \(summary.caloriesBurned) calories burned, \(summary.netCalories) net calories, \(summary.mealCount) meals")
+    }
+}
+
+struct DashboardProgressRow: View {
+    let title: String
+    let progress: Double
+    let tint: Color
+
+    private var safeProgress: Double {
+        min(max(progress, 0), 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(title)
+                Spacer()
+                Text("\(Int((safeProgress * 100).rounded()))%")
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .font(.footnote)
+            ProgressView(value: safeProgress)
+                .tint(tint)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(Int((safeProgress * 100).rounded())) percent")
+    }
+}
+
+struct AnalysisBarChart: View {
+    let title: String
+    let points: [ChartPoint]
+    let value: (ChartPoint) -> Int
+    let tint: Color
+
+    private var maxValue: Int {
+        max(points.map { max(value($0), 0) }.max() ?? 1, 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+            ForEach(points) { point in
+                let pointValue = max(value(point), 0)
+                HStack(spacing: 8) {
+                    Text(point.label)
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 46, alignment: .leading)
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(.secondary.opacity(0.14))
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(tint.gradient)
+                                .frame(width: max(8, geometry.size.width * CGFloat(pointValue) / CGFloat(maxValue)))
+                        }
+                    }
+                    .frame(height: 10)
+                    Text("\(pointValue)")
+                        .font(.caption2.monospacedDigit().weight(.semibold))
+                        .frame(width: 48, alignment: .trailing)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(title), \(point.label), \(pointValue)")
+            }
+        }
+    }
+}
+
+struct TrendInsightRow: View {
+    let trend: TrendInsight
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("\(trend.title): \(trend.status.rawValue)")
+                .font(.subheadline.weight(.semibold))
+            Text(trend.message)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(trend.title), \(trend.status.rawValue). \(trend.message)")
+    }
+}
+
+struct AnalysisTodoRow: View {
+    let todo: AnalysisTodo
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(todo.completed ? .teal : .secondary)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(todo.title)
+                    .font(.subheadline.weight(.semibold))
+                Text(todo.detail)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(todo.completed ? "Completed" : "Open") todo, \(todo.title). \(todo.detail)")
     }
 }
 
