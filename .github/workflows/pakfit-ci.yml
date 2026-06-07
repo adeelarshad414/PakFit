@@ -82,6 +82,9 @@ jobs:
       - name: Validate pregnancy plan safety
         run: bash scripts/validate-pregnancy-plan-safety.sh
 
+      - name: Validate blood pressure plan safety
+        run: bash scripts/validate-blood-pressure-plan-safety.sh
+
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh
 
@@ -263,6 +266,9 @@ jobs:
 
       - name: Validate pregnancy plan safety
         run: bash scripts/validate-pregnancy-plan-safety.sh
+
+      - name: Validate blood pressure plan safety
+        run: bash scripts/validate-blood-pressure-plan-safety.sh
 
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh

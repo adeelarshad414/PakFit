@@ -47,6 +47,7 @@ enum class EquipmentAccess(val label: String) {
 enum class MedicalCaution(val label: String) {
     PREGNANCY("Pregnancy"),
     DIABETES_MEDICATION("Diabetes medication"),
+    HIGH_BLOOD_PRESSURE("High blood pressure"),
     HEART_SYMPTOMS("Heart symptoms"),
     KIDNEY_DISEASE("Kidney disease"),
     EATING_DISORDER_HISTORY("Eating disorder history"),

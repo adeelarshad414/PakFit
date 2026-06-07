@@ -58,6 +58,7 @@ public enum EquipmentAccess: String, CaseIterable, Hashable, Codable {
 public enum MedicalCaution: String, CaseIterable, Hashable, Codable {
     case pregnancy = "Pregnancy"
     case diabetesMedication = "Diabetes medication"
+    case highBloodPressure = "High blood pressure"
     case heartSymptoms = "Heart symptoms"
     case kidneyDisease = "Kidney disease"
     case eatingDisorderHistory = "Eating disorder history"

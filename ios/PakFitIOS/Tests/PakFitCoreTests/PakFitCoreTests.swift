@@ -104,6 +104,33 @@ final class PakFitCoreTests: XCTestCase {
         )
     }
 
+    func testHighBloodPressureCautionAddsLowerSodiumGuidanceAndModerateMovementPlan() {
+        let recommendation = PakistaniRecommendationEngine().buildRecommendation(
+            profile: UserProfile(
+                goal: .fatLoss,
+                lifestyleModes: [.ramadanFasting],
+                medicalCautions: [.highBloodPressure]
+            )
+        )
+
+        let plan = recommendation.plan
+        let allGuidance = (plan.mealGuidance + plan.mealTiming + plan.workout.sessions + plan.workout.scheduleNotes).joined(separator: " ")
+        let warning = recommendation.warnings.first { $0.caution == .highBloodPressure }
+
+        XCTAssertEqual(warning?.action, .modifyPlan)
+        XCTAssertTrue(warning?.sourceCategory.localizedCaseInsensitiveContains("AHA") == true)
+        XCTAssertTrue(plan.workout.title.localizedCaseInsensitiveContains("Blood pressure"))
+        XCTAssertFalse(plan.workout.title.localizedCaseInsensitiveContains("Fat loss"))
+        XCTAssertTrue(
+            allGuidance.localizedCaseInsensitiveContains("lower-sodium") ||
+            allGuidance.localizedCaseInsensitiveContains("Blood pressure safety")
+        )
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("avoid salted lassi"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("conversational"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("do not self-adjust BP medicines"))
+        XCTAssertTrue(plan.planFocus.contains("Blood pressure safety review"))
+    }
+
     func testDailyTrackerSupportsMealHourlyAndManualCalories() {
         let engine = FoodRecordEngine()
         var catalog = engine.defaultCatalog()

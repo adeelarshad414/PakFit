@@ -65,6 +65,22 @@ func runPakFitCoreSmokeTests() throws {
     try expect(pregnancyGuidance.localizedCaseInsensitiveContains("stop exercise") || pregnancyGuidance.localizedCaseInsensitiveContains("stop for warning"), "pregnancy movement plan should include stop-warning guidance")
     try expect(pregnancyPlan.planFocus.contains("Pregnancy safety review"), "pregnancy plan focus should flag safety review")
 
+    let bloodPressureRecommendation = PakistaniRecommendationEngine().buildRecommendation(profile: UserProfile(
+        goal: .fatLoss,
+        lifestyleModes: [.ramadanFasting],
+        medicalCautions: [.highBloodPressure]
+    ))
+    let bloodPressurePlan = bloodPressureRecommendation.plan
+    let bloodPressureGuidance = (bloodPressurePlan.mealGuidance + bloodPressurePlan.mealTiming + bloodPressurePlan.workout.sessions + bloodPressurePlan.workout.scheduleNotes).joined(separator: " ")
+    try expect(bloodPressureRecommendation.warnings.first { $0.caution == .highBloodPressure }?.action == .modifyPlan, "blood pressure caution should modify the plan")
+    try expect(bloodPressureRecommendation.warnings.first { $0.caution == .highBloodPressure }?.sourceCategory.localizedCaseInsensitiveContains("AHA") == true, "blood pressure caution should reference AHA source category")
+    try expect(bloodPressurePlan.workout.title.localizedCaseInsensitiveContains("Blood pressure"), "blood pressure workout should be clearly labeled")
+    try expect(!bloodPressurePlan.workout.title.localizedCaseInsensitiveContains("Fat loss"), "blood pressure workout title should not present a fat-loss plan")
+    try expect(bloodPressureGuidance.localizedCaseInsensitiveContains("avoid salted lassi"), "blood pressure Ramadan hydration should avoid salted lassi")
+    try expect(bloodPressureGuidance.localizedCaseInsensitiveContains("conversational"), "blood pressure movement should keep conversational intensity")
+    try expect(bloodPressureGuidance.localizedCaseInsensitiveContains("do not self-adjust BP medicines"), "blood pressure guidance should preserve medicine boundary")
+    try expect(bloodPressurePlan.planFocus.contains("Blood pressure safety review"), "blood pressure plan focus should flag safety review")
+
     let foodEngine = FoodRecordEngine()
     var catalog = foodEngine.defaultCatalog()
     let manual = FoodItem(

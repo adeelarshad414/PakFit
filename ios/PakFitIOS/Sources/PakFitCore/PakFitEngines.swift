@@ -5,6 +5,7 @@ public final class PakistaniRecommendationEngine {
 
     public func buildPlan(profile: UserProfile) -> FitnessPlan {
         let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
+        let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
         let maintenanceCalories = estimateMaintenanceCalories(profile)
         let calorieAdjustment: Int
         let proteinMultiplier: Double
@@ -12,10 +13,10 @@ public final class PakistaniRecommendationEngine {
         switch profile.goal {
         case .fatLoss:
             calorieAdjustment = hasPregnancyCaution ? 0 : -400
-            proteinMultiplier = hasPregnancyCaution ? 1.5 : 1.8
+            proteinMultiplier = hasPregnancyCaution || hasBloodPressureCaution ? 1.5 : 1.8
         case .muscleGain:
             calorieAdjustment = hasPregnancyCaution ? 0 : 250
-            proteinMultiplier = hasPregnancyCaution ? 1.5 : 2.0
+            proteinMultiplier = hasPregnancyCaution || hasBloodPressureCaution ? 1.6 : 2.0
         case .generalFitness:
             calorieAdjustment = 0
             proteinMultiplier = 1.5
@@ -79,6 +80,14 @@ public final class PakistaniRecommendationEngine {
                         ? "Please review fasting, suhoor, iftar, activity, and medication timing with your doctor or diabetes clinician before fasting."
                         : "Please review this plan with your doctor or diabetes clinician because activity and meal timing can affect blood glucose and medication needs.",
                     sourceCategory: ramadan ? "IDF-DAR Ramadan diabetes fasting guidance" : "ADA blood glucose and exercise guidance"
+                )
+            case .highBloodPressure:
+                return SafetyWarning(
+                    caution: caution,
+                    action: .modifyPlan,
+                    title: "Blood pressure safety plan",
+                    message: "The plan uses lower-sodium food guidance and moderate activity. Review repeated high BP readings, medicines, and exercise limits with your doctor.",
+                    sourceCategory: "AHA high blood pressure physical activity and sodium guidance"
                 )
             case .heartSymptoms:
                 return SafetyWarning(
@@ -157,10 +166,15 @@ public final class PakistaniRecommendationEngine {
             goalPortion = "Use one to two palms of protein, one to two rotis, and a visible serving of sabzi."
         }
 
+        let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
+        let lassiSwap = hasBloodPressureCaution
+            ? "Swap creamy or salty lassi for water, unsweetened dahi, plain raita, or fresh lemon water without added salt."
+            : "Swap creamy lassi for unsweetened dahi, salted lassi, or water most days."
+
         var guidance = [
             proteinAnchor,
             goalPortion,
-            "Swap creamy lassi for unsweetened dahi, salted lassi, or water most days.",
+            lassiSwap,
             "Keep biryani and karahi portions realistic by adding raita, salad, and a lean protein serving.",
             "Choose grilled tikka, daal, chana chaat, fruit chaat without sugar, or omelette when eating outside."
         ]
@@ -181,15 +195,22 @@ public final class PakistaniRecommendationEngine {
             guidance.append("Pregnancy safety: pause weight-loss calorie deficits and review nutrition targets with your obstetric clinician; use steady meals with protein, daal or chana, sabzi, fruit, dairy when suitable, and safe hydration.")
             guidance.append("Pregnancy food safety: avoid self-prescribed supplements or restrictive dieting from app guidance and ask your clinician about prenatal nutrition, iron, folate, vitamin D, and B12 needs.")
         }
+        if hasBloodPressureCaution {
+            guidance.append("Blood pressure safety: keep achar, papad, packaged nimco, salty chutneys, restaurant karahi, and very salty raita as occasional portions rather than daily staples.")
+            guidance.append("Blood pressure plate: use daal, chana, grilled fish or chicken, sabzi, fruit, oats or whole grains, and measured oil; do not self-adjust BP medicines from app guidance.")
+        }
 
         return guidance
     }
 
     private func buildWorkout(_ profile: UserProfile) -> WorkoutBlock {
         let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
+        let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
         let days: Int
         if hasPregnancyCaution {
             days = 3
+        } else if hasBloodPressureCaution {
+            days = 4
         } else {
             switch profile.goal {
             case .fatLoss, .muscleGain:
@@ -206,6 +227,13 @@ public final class PakistaniRecommendationEngine {
                 "Clinician-cleared walking at conversational pace, gentle mobility, and breathing work.",
                 "Gentle strength basics after obstetric clearance: wall push-ups, supported rows, light hip hinges, and posture work.",
                 "Restorative mobility and easy movement; stop exercise and seek care for bleeding, dizziness, chest pain, calf swelling, painful contractions, or fluid leakage."
+            ]
+        } else if hasBloodPressureCaution {
+            sessions = [
+                "Moderate walking at conversational pace for 20 to 30 minutes; avoid all-out sprints or breath-holding efforts.",
+                "Clinician-reviewed strength basics: smooth reps, lighter loads, relaxed breathing, rows, presses, hip hinges, and core control.",
+                "Easy cycling or low-impact cardio with a long warm-up and cool-down; stop for chest pain, severe breathlessness, faintness, or headache.",
+                "Mobility, breathing practice, and recovery walk to support stress and blood pressure routine."
             ]
         } else if hasJointLimit {
             sessions = [
@@ -237,10 +265,19 @@ public final class PakistaniRecommendationEngine {
             ]
         }
 
-        let titlePrefix = hasPregnancyCaution ? "Pregnancy clinician-reviewed" : (hasJointLimit ? "Low-impact \(profile.trainingPlace.rawValue)" : profile.trainingPlace.rawValue)
+        let titlePrefix: String
+        if hasPregnancyCaution {
+            titlePrefix = "Pregnancy clinician-reviewed"
+        } else if hasBloodPressureCaution {
+            titlePrefix = "Blood pressure clinician-reviewed"
+        } else if hasJointLimit {
+            titlePrefix = "Low-impact \(profile.trainingPlace.rawValue)"
+        } else {
+            titlePrefix = profile.trainingPlace.rawValue
+        }
 
         return WorkoutBlock(
-            title: hasPregnancyCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
+            title: hasPregnancyCaution || hasBloodPressureCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
             daysPerWeek: days,
             sessions: Array(sessions.prefix(days)),
             scheduleNotes: buildWorkoutScheduleNotes(profile)
@@ -257,6 +294,9 @@ public final class PakistaniRecommendationEngine {
         }
         if profile.medicalCautions.contains(.pregnancy) {
             notes.append("Pregnancy safety: use only clinician-cleared activity, keep intensity conversational, avoid overheating, and stop for warning symptoms.")
+        }
+        if profile.medicalCautions.contains(.highBloodPressure) {
+            notes.append("Blood pressure safety: keep intensity conversational, breathe continuously during strength work, avoid max lifts or all-out intervals, and review repeated high readings with a clinician.")
         }
         return notes
     }
@@ -281,6 +321,11 @@ public final class PakistaniRecommendationEngine {
         if profile.lifestyleModes.contains(.ramadanFasting) {
             timing.append("Suhoor: choose slow-digesting protein and fiber such as eggs, dahi, daal, oats, roti, chana, or fruit.")
             timing.append("Iftar: start with water, then protein, salad or fruit, and a controlled rice or roti portion before fried snacks.")
+            if profile.medicalCautions.contains(.highBloodPressure) {
+                timing.append("Hydration: spread water between iftar and suhoor; avoid salted lassi or salty electrolyte drinks unless your clinician specifically recommends them.")
+            } else {
+                timing.append("Hydration: spread water between iftar and suhoor; include salted lassi or electrolytes only when appropriate.")
+            }
         }
         if profile.lifestyleModes.contains(.officeRoutine) {
             timing.append("Office routine: keep chai planned, add a protein snack, and take a short walk after lunch.")
@@ -305,6 +350,9 @@ public final class PakistaniRecommendationEngine {
         var focus = [profile.goal.rawValue, profile.trainingPlace.rawValue] + profile.lifestyleModes.map(\.rawValue).sorted()
         if profile.medicalCautions.contains(.pregnancy) {
             focus.append("Pregnancy safety review")
+        }
+        if profile.medicalCautions.contains(.highBloodPressure) {
+            focus.append("Blood pressure safety review")
         }
         return focus
     }

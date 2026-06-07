@@ -16,6 +16,7 @@ class PakistaniRecommendationEngine {
 
     private fun buildPlanInternal(profile: UserProfile): FitnessPlan {
         val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
+        val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
         val maintenanceCalories = estimateMaintenanceCalories(profile)
         val calorieAdjustment = when (profile.goal) {
             Goal.FAT_LOSS -> if (hasPregnancyCaution) 0 else -400
@@ -24,8 +25,8 @@ class PakistaniRecommendationEngine {
         }
         val calories = (maintenanceCalories + calorieAdjustment).coerceAtLeast(1_400)
         val proteinMultiplier = when (profile.goal) {
-            Goal.FAT_LOSS -> if (hasPregnancyCaution) 1.5 else 1.8
-            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution) 1.5 else 2.0
+            Goal.FAT_LOSS -> if (hasPregnancyCaution || hasBloodPressureCaution) 1.5 else 1.8
+            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution || hasBloodPressureCaution) 1.6 else 2.0
             Goal.GENERAL_FITNESS -> 1.5
         }
 
@@ -84,6 +85,13 @@ class PakistaniRecommendationEngine {
                     } else {
                         "ADA blood glucose and exercise guidance"
                     }
+                )
+                MedicalCaution.HIGH_BLOOD_PRESSURE -> SafetyWarning(
+                    caution = caution,
+                    action = SafetyAction.MODIFY_PLAN,
+                    title = "Blood pressure safety plan",
+                    message = "The plan uses lower-sodium food guidance and moderate activity. Review repeated high BP readings, medicines, and exercise limits with your doctor.",
+                    sourceCategory = "AHA high blood pressure physical activity and sodium guidance"
                 )
                 MedicalCaution.HEART_SYMPTOMS -> SafetyWarning(
                     caution = caution,
@@ -147,10 +155,17 @@ class PakistaniRecommendationEngine {
             Goal.GENERAL_FITNESS -> "Use one to two palms of protein, one to two rotis, and a visible serving of sabzi."
         }
 
+        val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
+        val lassiSwap = if (hasBloodPressureCaution) {
+            "Swap creamy or salty lassi for water, unsweetened dahi, plain raita, or fresh lemon water without added salt."
+        } else {
+            "Swap creamy lassi for unsweetened dahi, salted lassi, or water most days."
+        }
+
         val guidance = mutableListOf(
             proteinAnchor,
             goalPortion,
-            "Swap creamy lassi for unsweetened dahi, salted lassi, or water most days.",
+            lassiSwap,
             "Keep biryani and karahi portions realistic by adding raita, salad, and a lean protein serving.",
             "Choose grilled tikka, daal, chana chaat, fruit chaat without sugar, or omelette when eating outside."
         )
@@ -170,6 +185,10 @@ class PakistaniRecommendationEngine {
         if (MedicalCaution.PREGNANCY in profile.medicalCautions) {
             guidance += "Pregnancy safety: pause weight-loss calorie deficits and review nutrition targets with your obstetric clinician; use steady meals with protein, daal or chana, sabzi, fruit, dairy when suitable, and safe hydration."
             guidance += "Pregnancy food safety: avoid self-prescribed supplements or restrictive dieting from app guidance and ask your clinician about prenatal nutrition, iron, folate, vitamin D, and B12 needs."
+        }
+        if (hasBloodPressureCaution) {
+            guidance += "Blood pressure safety: keep achar, papad, packaged nimco, salty chutneys, restaurant karahi, and very salty raita as occasional portions rather than daily staples."
+            guidance += "Blood pressure plate: use daal, chana, grilled fish or chicken, sabzi, fruit, oats or whole grains, and measured oil; do not self-adjust BP medicines from app guidance."
         }
 
         return guidance
@@ -202,7 +221,11 @@ class PakistaniRecommendationEngine {
         if (LifestyleMode.RAMADAN_FASTING in profile.lifestyleModes) {
             timing += "Suhoor: choose slow-digesting protein and fiber such as eggs, dahi, daal, oats, roti, chana, or fruit."
             timing += "Iftar: start with water, then protein, salad or fruit, and a controlled rice or roti portion before fried snacks."
-            timing += "Hydration: spread water between iftar and suhoor; include salted lassi or electrolytes only when appropriate."
+            timing += if (MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions) {
+                "Hydration: spread water between iftar and suhoor; avoid salted lassi or salty electrolyte drinks unless your clinician specifically recommends them."
+            } else {
+                "Hydration: spread water between iftar and suhoor; include salted lassi or electrolytes only when appropriate."
+            }
             timing += "Training: keep strength or cardio after iftar when energy and hydration are better."
         }
 
@@ -259,13 +282,19 @@ class PakistaniRecommendationEngine {
         if (MedicalCaution.PREGNANCY in profile.medicalCautions) {
             focus += "Pregnancy safety review"
         }
+        if (MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions) {
+            focus += "Blood pressure safety review"
+        }
         return focus
     }
 
     private fun buildWorkout(profile: UserProfile): WorkoutBlock {
         val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
+        val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
         val days = if (hasPregnancyCaution) {
             3
+        } else if (hasBloodPressureCaution) {
+            4
         } else when (profile.goal) {
             Goal.FAT_LOSS -> 4
             Goal.MUSCLE_GAIN -> 4
@@ -278,6 +307,12 @@ class PakistaniRecommendationEngine {
                 "Clinician-cleared walking at conversational pace, gentle mobility, and breathing work.",
                 "Gentle strength basics after obstetric clearance: wall push-ups, supported rows, light hip hinges, and posture work.",
                 "Restorative mobility and easy movement; stop exercise and seek care for bleeding, dizziness, chest pain, calf swelling, painful contractions, or fluid leakage."
+            )
+            hasBloodPressureCaution -> listOf(
+                "Moderate walking at conversational pace for 20 to 30 minutes; avoid all-out sprints or breath-holding efforts.",
+                "Clinician-reviewed strength basics: smooth reps, lighter loads, relaxed breathing, rows, presses, hip hinges, and core control.",
+                "Easy cycling or low-impact cardio with a long warm-up and cool-down; stop for chest pain, severe breathlessness, faintness, or headache.",
+                "Mobility, breathing practice, and recovery walk to support stress and blood pressure routine."
             )
             hasJointLimit && profile.trainingPlace == TrainingPlace.HOME -> listOf(
                 "Low-impact walk intervals, wall push-ups, hip hinges, and gentle core.",
@@ -337,6 +372,8 @@ class PakistaniRecommendationEngine {
 
         val titlePrefix = if (hasPregnancyCaution) {
             "Pregnancy clinician-reviewed"
+        } else if (hasBloodPressureCaution) {
+            "Blood pressure clinician-reviewed"
         } else if (hasJointLimit) {
             "Low-impact ${profile.trainingPlace.label}"
         } else {
@@ -344,7 +381,7 @@ class PakistaniRecommendationEngine {
         }
 
         return WorkoutBlock(
-            title = if (hasPregnancyCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
+            title = if (hasPregnancyCaution || hasBloodPressureCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
             daysPerWeek = days,
             sessions = timedSessions.take(days),
             scheduleNotes = buildWorkoutScheduleNotes(profile)
@@ -360,6 +397,9 @@ class PakistaniRecommendationEngine {
         }
         if (MedicalCaution.PREGNANCY in profile.medicalCautions) {
             notes += "Pregnancy safety: use only clinician-cleared activity, keep intensity conversational, avoid overheating, and stop for warning symptoms."
+        }
+        if (MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions) {
+            notes += "Blood pressure safety: keep intensity conversational, breathe continuously during strength work, avoid max lifts or all-out intervals, and review repeated high readings with a clinician."
         }
         return notes
     }

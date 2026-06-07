@@ -156,6 +156,31 @@ class PakistaniRecommendationEngineTest {
     }
 
     @Test
+    fun highBloodPressureCautionAddsLowerSodiumGuidanceAndModerateMovementPlan() {
+        val recommendation = engine.buildRecommendation(
+            UserProfile(
+                goal = Goal.FAT_LOSS,
+                lifestyleModes = setOf(LifestyleMode.RAMADAN_FASTING),
+                medicalCautions = setOf(MedicalCaution.HIGH_BLOOD_PRESSURE)
+            )
+        )
+
+        val plan = recommendation.plan
+        val allGuidance = (plan.mealGuidance + plan.mealTiming + plan.workout.sessions + plan.workout.scheduleNotes).joinToString(" ")
+        val warning = recommendation.warnings.single { it.caution == MedicalCaution.HIGH_BLOOD_PRESSURE }
+
+        assertEquals(SafetyAction.MODIFY_PLAN, warning.action)
+        assertTrue(warning.sourceCategory.contains("AHA", ignoreCase = true))
+        assertTrue(plan.workout.title.contains("Blood pressure", ignoreCase = true))
+        assertFalse(plan.workout.title.contains("Fat loss", ignoreCase = true))
+        assertTrue(allGuidance.contains("lower-sodium", ignoreCase = true) || allGuidance.contains("Blood pressure safety", ignoreCase = true))
+        assertTrue(allGuidance.contains("avoid salted lassi", ignoreCase = true))
+        assertTrue(allGuidance.contains("conversational", ignoreCase = true))
+        assertTrue(allGuidance.contains("do not self-adjust BP medicines", ignoreCase = true))
+        assertTrue(plan.planFocus.contains("Blood pressure safety review"))
+    }
+
+    @Test
     fun kneePainModifiesHomeWorkoutAwayFromImpactAndAggressiveKneeLoading() {
         val recommendation = engine.buildRecommendation(
             UserProfile(

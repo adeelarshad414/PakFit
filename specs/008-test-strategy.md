@@ -14,6 +14,7 @@
 - Safe user receives a plan and no warnings.
 - Pregnancy creates medical review warning.
 - Pregnancy removes ordinary fat-loss calorie deficit behavior and switches to clinician-reviewed gentle movement.
+- High blood pressure modifies sodium, Ramadan hydration, and moderate movement guidance.
 - Diabetes medication creates medical review warning.
 - Heart symptoms create medical review warning.
 - Kidney disease creates medical review warning.

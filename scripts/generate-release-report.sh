@@ -40,6 +40,7 @@ IOS_LIFESTYLE_COACH_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-lifestyle-coach-parity.m
 IOS_CLINICAL_MENTAL_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-clinical-mental-parity.md"
 PCOS_CLINICAL_SAFETY_DOC_FILE="$ROOT_DIR/docs/pcos-clinical-safety.md"
 PREGNANCY_PLAN_SAFETY_DOC_FILE="$ROOT_DIR/docs/pregnancy-plan-safety.md"
+BLOOD_PRESSURE_PLAN_SAFETY_DOC_FILE="$ROOT_DIR/docs/blood-pressure-plan-safety.md"
 IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-analysis-dashboard-parity.md"
 IOS_APP_HANDOFF_DOC_FILE="$ROOT_DIR/docs/ios-app-handoff-artifact.md"
 
@@ -507,6 +508,16 @@ if [[ -f "$PREGNANCY_PLAN_SAFETY_DOC_FILE" ]]; then
   PREGNANCY_PLAN_SAFETY_DOC_STATUS="$PREGNANCY_PLAN_SAFETY_DOC_FILE"
   PREGNANCY_PLAN_SAFETY_DOC_SHA256="$(sha256_file "$PREGNANCY_PLAN_SAFETY_DOC_FILE")"
 fi
+BLOOD_PRESSURE_PLAN_SAFETY_STATUS="not checked"
+if bash scripts/validate-blood-pressure-plan-safety.sh >/dev/null 2>&1; then
+  BLOOD_PRESSURE_PLAN_SAFETY_STATUS="passed"
+fi
+BLOOD_PRESSURE_PLAN_SAFETY_DOC_STATUS="missing"
+BLOOD_PRESSURE_PLAN_SAFETY_DOC_SHA256=""
+if [[ -f "$BLOOD_PRESSURE_PLAN_SAFETY_DOC_FILE" ]]; then
+  BLOOD_PRESSURE_PLAN_SAFETY_DOC_STATUS="$BLOOD_PRESSURE_PLAN_SAFETY_DOC_FILE"
+  BLOOD_PRESSURE_PLAN_SAFETY_DOC_SHA256="$(sha256_file "$BLOOD_PRESSURE_PLAN_SAFETY_DOC_FILE")"
+fi
 IOS_ANALYSIS_DASHBOARD_PARITY_STATUS="not checked"
 if bash scripts/validate-ios-analysis-dashboard-parity.sh >/dev/null 2>&1; then
   IOS_ANALYSIS_DASHBOARD_PARITY_STATUS="passed"
@@ -737,6 +748,14 @@ mkdir -p "$REPORT_DIR"
   echo "- Pregnancy plan safety policy: Android/iOS pregnancy caution removes weight-loss calorie deficits, uses clinician-reviewed nutrition copy, switches to gentle movement, keeps stop-warning symptoms, and preserves structured pregnancy warning"
   echo "- Pregnancy plan safety boundary: obstetric/clinical copy review, device QA, legal/privacy review, and store age-suitability review remain external before public release"
   echo
+  echo "## Blood Pressure Plan Safety"
+  echo
+  echo "- Blood pressure plan safety doc: $BLOOD_PRESSURE_PLAN_SAFETY_DOC_STATUS"
+  echo "- Blood pressure plan safety doc SHA-256: ${BLOOD_PRESSURE_PLAN_SAFETY_DOC_SHA256:-missing}"
+  echo "- Blood pressure plan safety gate: $BLOOD_PRESSURE_PLAN_SAFETY_STATUS"
+  echo "- Blood pressure plan safety policy: Android/iOS high blood pressure caution adds lower-sodium Pakistani food guidance, avoids salted-lassi hydration, switches to moderate clinician-review movement, and preserves medicine-boundary copy"
+  echo "- Blood pressure plan safety boundary: clinical copy review, device QA, medication-safety review, legal/privacy review, and store age-suitability review remain external before public release"
+  echo
   echo "## iOS Analysis Dashboard Parity"
   echo
   echo "- iOS analysis dashboard parity doc: $IOS_ANALYSIS_DASHBOARD_PARITY_DOC_STATUS"
@@ -919,6 +938,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS clinical and mental wellness parity: editable risk factors, PHQ-9, GAD-7, crisis flags, Pakistan support resources, clinical/mental engines, smoke tests, docs, and store listing copy checked"
   echo "- PCOS clinical safety: Android/iOS PCOS review signs, non-diagnostic screening insight, clinician-review actions, source categories, and no self-start medicine/supplement boundary checked"
   echo "- Pregnancy plan safety: Android/iOS pregnancy caution removes weight-loss calorie deficits, switches to clinician-reviewed nutrition and gentle movement guidance, and preserves structured warning behavior"
+  echo "- Blood pressure plan safety: Android/iOS high blood pressure caution lowers sodium guidance, avoids salted-lassi hydration, switches to moderate clinician-review movement, and preserves BP medicine self-adjustment boundary"
   echo "- iOS analysis dashboard parity: local analysis models, dashboard engine, weekly/monthly summaries, charts, trends, todos, history, accessibility labels, docs, and store listing copy checked"
   echo "- iOS app handoff artifact gate: versioned Xcode project, SwiftUI app source, core module, tests, app icons, manifest, checksums, and signing boundary checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
@@ -961,6 +981,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS Clinical and Mental Wellness manual QA still requires iPhone device review, VoiceOver, large text, clinical copy review, mental health safety review, and store age-suitability review."
   echo "- PCOS Clinical Safety manual QA still requires clinical copy review, fertility/medication boundary review, device QA, legal/privacy review, and store age-suitability review."
   echo "- Pregnancy Plan Safety manual QA still requires obstetric/clinical copy review, device QA, legal/privacy review, and store age-suitability review."
+  echo "- Blood Pressure Plan Safety manual QA still requires clinical copy review, medication-safety review, device QA, legal/privacy review, and store age-suitability review."
   echo "- iOS Analysis Dashboard manual QA still requires iPhone device review, VoiceOver, large text, and product analytics copy review."
   echo "- iOS application handoff archive is local release evidence only; signed IPA, simulator .app, archive validation, TestFlight, and App Store Connect submission require full Xcode.app and external Apple signing assets."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."

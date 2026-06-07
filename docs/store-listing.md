@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.48.0
+Listing version: 0.49.0
 
 ## App Identity
 
@@ -29,6 +29,7 @@ Edit daily calories burned, water, steps, sleep, workout minutes, stress, and co
 Review PHQ-9, GAD-7, crisis support, diabetes risk, BP risk, heart risk, vitamin D risk, and anemia risk on Android and iOS.
 Review PCOS metabolic and reproductive screening signs on Android and iOS with non-diagnostic clinician-review guidance.
 Pregnancy safety mode pauses weight-loss calorie deficits and switches to clinician-reviewed food and gentle movement guidance on Android and iOS.
+Blood pressure safety mode lowers sodium guidance and switches to moderate clinician-review movement guidance on Android and iOS.
 Review analysis dashboard, weekly summaries, monthly summaries, charts, graphs, trends, todos, and history on Android and iOS.
 Use versioned Android APK/AAB and iOS application handoff artifacts for local release review before store submission.
 
