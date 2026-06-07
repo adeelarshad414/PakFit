@@ -11,6 +11,10 @@ The current safety gate is conservative and based on these source categories:
 - CDC physical activity guidance for chronic conditions: https://www.cdc.gov/physical-activity-basics/guidelines/chronic-health-conditions-and-disabilities.html
 - ACOG physical activity guidance for pregnancy: https://www.acog.org/womens-health/faqs/exercise-during-pregnancy
 - ADA blood glucose and exercise guidance: https://diabetes.org/health-wellness/fitness/blood-glucose-and-exercise
+- ADA hypoglycemia symptoms and 15-15 rule: https://diabetes.org/living-with-diabetes/hypoglycemia-low-blood-glucose/symptoms-treatment
+- CDC low blood sugar hypoglycemia guidance: https://www.cdc.gov/diabetes/about/low-blood-sugar-hypoglycemia.html
+- CDC diabetes physical activity guidance: https://www.cdc.gov/diabetes/living-with/physical-activity.html
+- IDF-DAR Ramadan diabetes fasting guidance: https://www.idf.org/media/uploads/2022/12/IDF_DaR_Practical_Guidelines_2021_web.pdf
 - American Heart Association getting active to control high blood pressure: https://www.heart.org/en/health-topics/high-blood-pressure/changes-you-can-make-to-manage-high-blood-pressure/getting-active-to-control-high-blood-pressure
 - American Heart Association sodium and salt guidance: https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/sodium/sodium-and-salt
 - CDC sodium and health context: https://www.cdc.gov/salt/about/index.html
@@ -28,7 +32,7 @@ The current safety gate is conservative and based on these source categories:
 | Caution | App Action | Reason |
 | --- | --- | --- |
 | Pregnancy | Medical review warning plus plan modification | Pregnancy can be safe for activity, but complications require clinician evaluation; ordinary fat-loss deficits and aggressive workout labels should pause. |
-| Diabetes medication | Medical review warning | Exercise can affect blood glucose and some medicines increase low-glucose risk. |
+| Diabetes medication | Medical review warning plus plan modification | Exercise, fasting, meal timing, and some medicines can affect blood glucose and low-glucose risk; medicine changes require clinician review. |
 | High blood pressure | Plan modification warning | Lower-sodium food guidance and moderate conversational movement are safer defaults, while medicines and repeated readings require clinician review. |
 | Heart symptoms | Medical review warning | Chest discomfort, shortness of breath, and related symptoms require medical evaluation. |
 | Kidney disease | Medical review warning plus plan modification | Activity, protein, sodium, potassium, phosphorus, and fluids may need clinician or renal dietitian tailoring. |
@@ -60,6 +64,14 @@ When the recommendation engine builds a plan
 Then the plan avoids salted-lassi hydration guidance
 And the workout title uses blood pressure clinician-reviewed movement
 And the guidance tells users not to self-adjust BP medicines
+
+### Scenario: Diabetes medication modifies plan output
+
+Given a user selects diabetes medication and fat loss
+When the recommendation engine builds a plan
+Then the plan pauses the ordinary fat-loss calorie deficit
+And the workout title uses diabetes medication clinician-reviewed movement
+And the guidance tells users not to self-adjust diabetes medicines from app guidance
 
 ### Scenario: Kidney disease modifies plan output
 

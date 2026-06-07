@@ -42,6 +42,7 @@ PCOS_CLINICAL_SAFETY_DOC_FILE="$ROOT_DIR/docs/pcos-clinical-safety.md"
 PREGNANCY_PLAN_SAFETY_DOC_FILE="$ROOT_DIR/docs/pregnancy-plan-safety.md"
 BLOOD_PRESSURE_PLAN_SAFETY_DOC_FILE="$ROOT_DIR/docs/blood-pressure-plan-safety.md"
 KIDNEY_PLAN_SAFETY_DOC_FILE="$ROOT_DIR/docs/kidney-plan-safety.md"
+DIABETES_MEDICATION_PLAN_SAFETY_DOC_FILE="$ROOT_DIR/docs/diabetes-medication-plan-safety.md"
 IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-analysis-dashboard-parity.md"
 IOS_APP_HANDOFF_DOC_FILE="$ROOT_DIR/docs/ios-app-handoff-artifact.md"
 
@@ -529,6 +530,16 @@ if [[ -f "$KIDNEY_PLAN_SAFETY_DOC_FILE" ]]; then
   KIDNEY_PLAN_SAFETY_DOC_STATUS="$KIDNEY_PLAN_SAFETY_DOC_FILE"
   KIDNEY_PLAN_SAFETY_DOC_SHA256="$(sha256_file "$KIDNEY_PLAN_SAFETY_DOC_FILE")"
 fi
+DIABETES_MEDICATION_PLAN_SAFETY_STATUS="not checked"
+if bash scripts/validate-diabetes-medication-plan-safety.sh >/dev/null 2>&1; then
+  DIABETES_MEDICATION_PLAN_SAFETY_STATUS="passed"
+fi
+DIABETES_MEDICATION_PLAN_SAFETY_DOC_STATUS="missing"
+DIABETES_MEDICATION_PLAN_SAFETY_DOC_SHA256=""
+if [[ -f "$DIABETES_MEDICATION_PLAN_SAFETY_DOC_FILE" ]]; then
+  DIABETES_MEDICATION_PLAN_SAFETY_DOC_STATUS="$DIABETES_MEDICATION_PLAN_SAFETY_DOC_FILE"
+  DIABETES_MEDICATION_PLAN_SAFETY_DOC_SHA256="$(sha256_file "$DIABETES_MEDICATION_PLAN_SAFETY_DOC_FILE")"
+fi
 IOS_ANALYSIS_DASHBOARD_PARITY_STATUS="not checked"
 if bash scripts/validate-ios-analysis-dashboard-parity.sh >/dev/null 2>&1; then
   IOS_ANALYSIS_DASHBOARD_PARITY_STATUS="passed"
@@ -775,6 +786,14 @@ mkdir -p "$REPORT_DIR"
   echo "- Kidney plan safety policy: Android/iOS kidney disease caution caps high-protein targets, removes muscle-gain workout labels, requires renal clinician review, and blocks self-started high-protein/supplement behavior"
   echo "- Kidney plan safety boundary: nephrology/renal dietitian copy review, device QA, medication/supplement boundary review, legal/privacy review, and store age-suitability review remain external before public release"
   echo
+  echo "## Diabetes Medication Plan Safety"
+  echo
+  echo "- Diabetes medication plan safety doc: $DIABETES_MEDICATION_PLAN_SAFETY_DOC_STATUS"
+  echo "- Diabetes medication plan safety doc SHA-256: ${DIABETES_MEDICATION_PLAN_SAFETY_DOC_SHA256:-missing}"
+  echo "- Diabetes medication plan safety gate: $DIABETES_MEDICATION_PLAN_SAFETY_STATUS"
+  echo "- Diabetes medication plan safety policy: Android/iOS diabetes medication caution pauses aggressive calorie targets, requires clinician-reviewed suhoor/iftar and medication-timing guidance, switches to moderate movement, and preserves medicine self-adjustment boundaries"
+  echo "- Diabetes medication plan safety boundary: diabetes clinician/dietitian/pharmacist copy review, Ramadan fasting review, device QA, legal/privacy review, and store age-suitability review remain external before public release"
+  echo
   echo "## iOS Analysis Dashboard Parity"
   echo
   echo "- iOS analysis dashboard parity doc: $IOS_ANALYSIS_DASHBOARD_PARITY_DOC_STATUS"
@@ -959,6 +978,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Pregnancy plan safety: Android/iOS pregnancy caution removes weight-loss calorie deficits, switches to clinician-reviewed nutrition and gentle movement guidance, and preserves structured warning behavior"
   echo "- Blood pressure plan safety: Android/iOS high blood pressure caution lowers sodium guidance, avoids salted-lassi hydration, switches to moderate clinician-review movement, and preserves BP medicine self-adjustment boundary"
   echo "- Kidney plan safety: Android/iOS kidney disease caution caps high-protein targets, removes muscle-gain workout labels, keeps renal clinician-review copy, and blocks self-started high-protein/supplement behavior"
+  echo "- Diabetes medication plan safety: Android/iOS diabetes medication caution pauses aggressive calorie targets, removes fat-loss/muscle-gain workout labels, keeps Ramadan timing clinician-reviewed, and blocks app-guided medicine self-adjustment"
   echo "- iOS analysis dashboard parity: local analysis models, dashboard engine, weekly/monthly summaries, charts, trends, todos, history, accessibility labels, docs, and store listing copy checked"
   echo "- iOS app handoff artifact gate: versioned Xcode project, SwiftUI app source, core module, tests, app icons, manifest, checksums, and signing boundary checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
@@ -1003,6 +1023,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Pregnancy Plan Safety manual QA still requires obstetric/clinical copy review, device QA, legal/privacy review, and store age-suitability review."
   echo "- Blood Pressure Plan Safety manual QA still requires clinical copy review, medication-safety review, device QA, legal/privacy review, and store age-suitability review."
   echo "- Kidney Plan Safety manual QA still requires nephrology/renal dietitian copy review, medication/supplement boundary review, device QA, legal/privacy review, and store age-suitability review."
+  echo "- Diabetes Medication Plan Safety manual QA still requires diabetes clinician/dietitian/pharmacist copy review, Ramadan fasting review, device QA, legal/privacy review, and store age-suitability review."
   echo "- iOS Analysis Dashboard manual QA still requires iPhone device review, VoiceOver, large text, and product analytics copy review."
   echo "- iOS application handoff archive is local release evidence only; signed IPA, simulator .app, archive validation, TestFlight, and App Store Connect submission require full Xcode.app and external Apple signing assets."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."

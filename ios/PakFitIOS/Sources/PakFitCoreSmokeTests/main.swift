@@ -106,6 +106,39 @@ func runPakFitCoreSmokeTests() throws {
     try expect(kidneyGuidance.localizedCaseInsensitiveContains("potassium") && kidneyGuidance.localizedCaseInsensitiveContains("phosphorus"), "kidney guidance should mention lab-dependent nutrients")
     try expect(kidneyPlan.planFocus.contains("Kidney safety review"), "kidney plan focus should flag safety review")
 
+    let ordinaryDiabetesFatLossPlan = PakistaniRecommendationEngine().buildPlan(profile: UserProfile(
+        age: 29,
+        weightKg: 72,
+        heightCm: 162,
+        gender: .female,
+        goal: .fatLoss,
+        trainingPlace: .home,
+        lifestyleModes: [.ramadanFasting]
+    ))
+    let diabetesMedicationRecommendation = PakistaniRecommendationEngine().buildRecommendation(profile: UserProfile(
+        age: 29,
+        weightKg: 72,
+        heightCm: 162,
+        gender: .female,
+        goal: .fatLoss,
+        trainingPlace: .home,
+        lifestyleModes: [.ramadanFasting],
+        medicalCautions: [.diabetesMedication]
+    ))
+    let diabetesMedicationPlan = diabetesMedicationRecommendation.plan
+    let diabetesMedicationGuidance = (diabetesMedicationPlan.mealGuidance + diabetesMedicationPlan.mealTiming + diabetesMedicationPlan.workout.sessions + diabetesMedicationPlan.workout.scheduleNotes).joined(separator: " ")
+    try expect(diabetesMedicationRecommendation.warnings.first { $0.caution == .diabetesMedication }?.action == .medicalReview, "diabetes medication caution should require medical review")
+    try expect(diabetesMedicationRecommendation.warnings.first { $0.caution == .diabetesMedication }?.sourceCategory.localizedCaseInsensitiveContains("Ramadan") == true, "diabetes medication Ramadan warning should reference Ramadan guidance")
+    try expect(diabetesMedicationPlan.nutritionTargets.calories > ordinaryDiabetesFatLossPlan.nutritionTargets.calories, "diabetes medication safety should pause ordinary fat-loss deficit")
+    try expect(diabetesMedicationPlan.workout.title.localizedCaseInsensitiveContains("Diabetes medication"), "diabetes medication workout should be clearly labeled")
+    try expect(!diabetesMedicationPlan.workout.title.localizedCaseInsensitiveContains("Fat loss"), "diabetes medication workout title should not present a fat-loss plan")
+    try expect(diabetesMedicationGuidance.localizedCaseInsensitiveContains("pauses aggressive calorie deficits"), "diabetes medication guidance should pause aggressive targets")
+    try expect(diabetesMedicationGuidance.localizedCaseInsensitiveContains("consistent carbohydrate portions"), "diabetes medication guidance should cover consistent carbohydrates")
+    try expect(diabetesMedicationGuidance.localizedCaseInsensitiveContains("do not self-adjust diabetes medicines"), "diabetes medication guidance should preserve medicine boundary")
+    try expect(diabetesMedicationGuidance.localizedCaseInsensitiveContains("low-glucose symptoms") || diabetesMedicationGuidance.localizedCaseInsensitiveContains("Low glucose"), "diabetes medication guidance should cover low glucose risk")
+    try expect(diabetesMedicationGuidance.localizedCaseInsensitiveContains("avoid hard fasted training"), "diabetes medication Ramadan timing should avoid hard fasted training")
+    try expect(diabetesMedicationPlan.planFocus.contains("Diabetes medication safety review"), "diabetes medication plan focus should flag safety review")
+
     let foodEngine = FoodRecordEngine()
     var catalog = foodEngine.defaultCatalog()
     let manual = FoodItem(

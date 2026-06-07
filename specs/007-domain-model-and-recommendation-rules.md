@@ -25,13 +25,14 @@
 - Knee or joint limitation modifies workout selection.
 - Equipment access modifies workout selection.
 - Safety warnings are returned separately from plan content.
+- Pregnancy, blood pressure, kidney disease, and diabetes medication cautions can also modify plan targets, titles, or guidance while keeping structured warnings.
 
 ## Warning Rule Table
 
 | Caution | Warning Action |
 | --- | --- |
 | Pregnancy | Medical review |
-| Diabetes medication | Medical review |
+| Diabetes medication | Medical review plus plan modification |
 | Heart symptoms | Medical review |
 | Kidney disease | Medical review |
 | Eating disorder history | Medical review |

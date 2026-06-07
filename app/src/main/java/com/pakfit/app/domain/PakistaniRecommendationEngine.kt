@@ -18,10 +18,11 @@ class PakistaniRecommendationEngine {
         val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
         val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
         val hasKidneyDiseaseCaution = MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions
+        val hasDiabetesMedicationCaution = MedicalCaution.DIABETES_MEDICATION in profile.medicalCautions
         val maintenanceCalories = estimateMaintenanceCalories(profile)
         val calorieAdjustment = when (profile.goal) {
-            Goal.FAT_LOSS -> if (hasPregnancyCaution) 0 else -400
-            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution || hasKidneyDiseaseCaution) 0 else 250
+            Goal.FAT_LOSS -> if (hasPregnancyCaution || hasDiabetesMedicationCaution) 0 else -400
+            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution || hasKidneyDiseaseCaution || hasDiabetesMedicationCaution) 0 else 250
             Goal.GENERAL_FITNESS -> 0
         }
         val calories = (maintenanceCalories + calorieAdjustment).coerceAtLeast(1_400)
@@ -164,6 +165,7 @@ class PakistaniRecommendationEngine {
 
         val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
         val hasKidneyDiseaseCaution = MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions
+        val hasDiabetesMedicationCaution = MedicalCaution.DIABETES_MEDICATION in profile.medicalCautions
         val lassiSwap = if (hasBloodPressureCaution) {
             "Swap creamy or salty lassi for water, unsweetened dahi, plain raita, or fresh lemon water without added salt."
         } else {
@@ -203,6 +205,11 @@ class PakistaniRecommendationEngine {
             guidance += "Kidney food review: ask your clinician or renal dietitian how much daal, chana, meat, dairy, sodium, potassium, phosphorus, and fluid fits your labs, kidney stage, and dialysis status."
             guidance += "Kidney boundary: avoid self-starting high-protein diets, creatine, unreviewed herbal kidney products, detox drinks, or supplement stacks from app guidance."
         }
+        if (hasDiabetesMedicationCaution) {
+            guidance += "Diabetes medication safety: PakFit pauses aggressive calorie deficits or surpluses and treats meal timing as diabetes-clinician review guidance, not a medicine plan."
+            guidance += "Glucose-aware plate: keep roti, rice, fruit, dates, desserts, and sweet drinks as consistent carbohydrate portions with protein, fiber, and clinician-reviewed medication timing."
+            guidance += "Low glucose boundary: do not self-adjust diabetes medicines from app guidance; follow your clinician's glucose monitoring and hypo plan, and seek urgent care for severe confusion, fainting, seizures, or very high glucose symptoms."
+        }
 
         return guidance
     }
@@ -240,6 +247,10 @@ class PakistaniRecommendationEngine {
                 "Hydration: spread water between iftar and suhoor; include salted lassi or electrolytes only when appropriate."
             }
             timing += "Training: keep strength or cardio after iftar when energy and hydration are better."
+            if (MedicalCaution.DIABETES_MEDICATION in profile.medicalCautions) {
+                timing += "Diabetes Ramadan safety: fast only after diabetes-clinician review of glucose checks, low-glucose symptoms, suhoor and iftar carbohydrate portions, hydration, medication timing, and when to break the fast."
+                timing += "Diabetes training timing: avoid hard fasted training unless your clinician clears it; keep movement easy while fasting and move structured sessions after iftar."
+            }
         }
 
         if (LifestyleMode.OFFICE_ROUTINE in profile.lifestyleModes) {
@@ -301,6 +312,9 @@ class PakistaniRecommendationEngine {
         if (MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions) {
             focus += "Kidney safety review"
         }
+        if (MedicalCaution.DIABETES_MEDICATION in profile.medicalCautions) {
+            focus += "Diabetes medication safety review"
+        }
         return focus
     }
 
@@ -308,11 +322,14 @@ class PakistaniRecommendationEngine {
         val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
         val hasBloodPressureCaution = MedicalCaution.HIGH_BLOOD_PRESSURE in profile.medicalCautions
         val hasKidneyDiseaseCaution = MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions
+        val hasDiabetesMedicationCaution = MedicalCaution.DIABETES_MEDICATION in profile.medicalCautions
         val days = if (hasPregnancyCaution) {
             3
         } else if (hasKidneyDiseaseCaution) {
             3
         } else if (hasBloodPressureCaution) {
+            4
+        } else if (hasDiabetesMedicationCaution) {
             4
         } else when (profile.goal) {
             Goal.FAT_LOSS -> 4
@@ -337,6 +354,12 @@ class PakistaniRecommendationEngine {
                 "Clinician-reviewed strength basics: smooth reps, lighter loads, relaxed breathing, rows, presses, hip hinges, and core control.",
                 "Easy cycling or low-impact cardio with a long warm-up and cool-down; stop for chest pain, severe breathlessness, faintness, or headache.",
                 "Mobility, breathing practice, and recovery walk to support stress and blood pressure routine."
+            )
+            hasDiabetesMedicationCaution -> listOf(
+                "Diabetes clinician-reviewed walking at conversational pace with glucose checks as directed and an easy warm-up and cool-down.",
+                "Post-meal movement option: 8 to 12 minutes of easy walking after lunch or dinner when your diabetes clinician says it fits your glucose plan.",
+                "Light strength basics without fasted hard intervals: smooth reps, relaxed breathing, rows, presses, hip hinges, carries, and core control.",
+                "Mobility and recovery walk; stop for low-glucose symptoms, unusual weakness, confusion, dizziness, chest pain, faintness, or symptoms your clinician has warned about."
             )
             hasJointLimit && profile.trainingPlace == TrainingPlace.HOME -> listOf(
                 "Low-impact walk intervals, wall push-ups, hip hinges, and gentle core.",
@@ -400,6 +423,8 @@ class PakistaniRecommendationEngine {
             "Kidney clinician-reviewed"
         } else if (hasBloodPressureCaution) {
             "Blood pressure clinician-reviewed"
+        } else if (hasDiabetesMedicationCaution) {
+            "Diabetes medication clinician-reviewed"
         } else if (hasJointLimit) {
             "Low-impact ${profile.trainingPlace.label}"
         } else {
@@ -407,7 +432,7 @@ class PakistaniRecommendationEngine {
         }
 
         return WorkoutBlock(
-            title = if (hasPregnancyCaution || hasKidneyDiseaseCaution || hasBloodPressureCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
+            title = if (hasPregnancyCaution || hasKidneyDiseaseCaution || hasBloodPressureCaution || hasDiabetesMedicationCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
             daysPerWeek = days,
             sessions = timedSessions.take(days),
             scheduleNotes = buildWorkoutScheduleNotes(profile)
@@ -429,6 +454,9 @@ class PakistaniRecommendationEngine {
         }
         if (MedicalCaution.KIDNEY_DISEASE in profile.medicalCautions) {
             notes += "Kidney safety: confirm activity, fluid, protein, potassium, phosphorus, and sodium limits with your doctor or renal dietitian before changing intensity."
+        }
+        if (MedicalCaution.DIABETES_MEDICATION in profile.medicalCautions) {
+            notes += "Diabetes medication safety: review glucose monitoring, low-glucose symptoms, medication timing, fasted exercise, and post-meal activity with your doctor, diabetes educator, dietitian, or pharmacist before changing intensity."
         }
         return notes
     }

@@ -17,6 +17,7 @@
 - High blood pressure modifies sodium, Ramadan hydration, and moderate movement guidance.
 - Kidney disease caps high-protein targets and switches to renal clinician-review movement guidance.
 - Diabetes medication creates medical review warning.
+- Diabetes medication pauses aggressive calorie targets and switches to clinician-reviewed meal timing and moderate movement guidance.
 - Heart symptoms create medical review warning.
 - Kidney disease creates medical review warning.
 - Eating disorder history creates medical review warning.
@@ -24,6 +25,7 @@
 - Knee pain modifies workout away from high-impact sessions.
 - Ramadan mode adds suhoor, iftar, hydration, and after-iftar training guidance.
 - Ramadan plus diabetes medication creates a fasting-specific warning.
+- Ramadan plus diabetes medication adds clinician-reviewed suhoor, iftar, glucose-check, medication-timing, and fasted-training boundaries.
 - Daawat mode avoids shame-based words.
 - Budget vegetarian mode adds affordable local grocery suggestions.
 - Office routine mode adds chai, walking, and sitting-break habit anchors.

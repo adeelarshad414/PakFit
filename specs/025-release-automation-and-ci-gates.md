@@ -38,6 +38,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Validate pregnancy plan safety before release evidence is accepted.
 - Validate blood pressure plan safety before release evidence is accepted.
 - Validate kidney plan safety before release evidence is accepted.
+- Validate diabetes medication plan safety before release evidence is accepted.
 - Validate iOS analysis dashboard parity before release evidence is accepted.
 - Validate iOS application handoff artifact export before release evidence is accepted.
 - Provide export scripts that copy the built debug APK, release APK, release AAB, and iOS application handoff archive to versioned destinations using build metadata.
@@ -56,6 +57,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add pregnancy plan safety validation to CI.
 - Add blood pressure plan safety validation to CI.
 - Add kidney plan safety validation to CI.
+- Add diabetes medication plan safety validation to CI.
 - Add iOS analysis dashboard parity validation to CI.
 - Add iOS application handoff artifact validation and upload to CI.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
@@ -104,6 +106,9 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - iOS clinical and mental wellness parity validation is part of the required validation path.
 - PCOS clinical safety validation is part of the required validation path.
 - Pregnancy plan safety validation is part of the required validation path.
+- Blood pressure plan safety validation is part of the required validation path.
+- Kidney plan safety validation is part of the required validation path.
+- Diabetes medication plan safety validation is part of the required validation path.
 - iOS analysis dashboard parity validation is part of the required validation path.
 - iOS application handoff artifact validation is part of the required validation path.
 - Dependency inventory and dynamic/SNAPSHOT dependency blocking are part of the required validation path.

@@ -121,6 +121,9 @@ bash scripts/validate-blood-pressure-plan-safety.sh
 echo "== kidney plan safety gate =="
 bash scripts/validate-kidney-plan-safety.sh
 
+echo "== diabetes medication plan safety gate =="
+bash scripts/validate-diabetes-medication-plan-safety.sh
+
 echo "== iOS analysis dashboard parity gate =="
 bash scripts/validate-ios-analysis-dashboard-parity.sh
 

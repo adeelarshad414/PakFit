@@ -211,6 +211,39 @@ class PakistaniRecommendationEngineTest {
     }
 
     @Test
+    fun diabetesMedicationCautionPausesAggressiveTargetsAndUsesClinicianReviewedMovementPlan() {
+        val baseProfile = UserProfile(
+            gender = Gender.FEMALE,
+            age = 29,
+            heightCm = 162,
+            weightKg = 72.0,
+            goal = Goal.FAT_LOSS,
+            trainingPlace = TrainingPlace.HOME,
+            lifestyleModes = setOf(LifestyleMode.RAMADAN_FASTING)
+        )
+        val ordinaryFatLossPlan = engine.buildPlan(baseProfile)
+        val diabetesRecommendation = engine.buildRecommendation(
+            baseProfile.copy(medicalCautions = setOf(MedicalCaution.DIABETES_MEDICATION))
+        )
+
+        val plan = diabetesRecommendation.plan
+        val allGuidance = (plan.mealGuidance + plan.mealTiming + plan.workout.sessions + plan.workout.scheduleNotes).joinToString(" ")
+        val warning = diabetesRecommendation.warnings.single { it.caution == MedicalCaution.DIABETES_MEDICATION }
+
+        assertEquals(SafetyAction.MEDICAL_REVIEW, warning.action)
+        assertTrue(warning.sourceCategory.contains("Ramadan", ignoreCase = true))
+        assertTrue(plan.nutritionTargets.calories > ordinaryFatLossPlan.nutritionTargets.calories)
+        assertTrue(plan.workout.title.contains("Diabetes medication", ignoreCase = true))
+        assertFalse(plan.workout.title.contains("Fat loss", ignoreCase = true))
+        assertTrue(allGuidance.contains("pauses aggressive calorie deficits", ignoreCase = true))
+        assertTrue(allGuidance.contains("consistent carbohydrate portions", ignoreCase = true))
+        assertTrue(allGuidance.contains("do not self-adjust diabetes medicines", ignoreCase = true))
+        assertTrue(allGuidance.contains("low-glucose symptoms", ignoreCase = true) || allGuidance.contains("Low glucose", ignoreCase = true))
+        assertTrue(allGuidance.contains("avoid hard fasted training", ignoreCase = true))
+        assertTrue(plan.planFocus.contains("Diabetes medication safety review"))
+    }
+
+    @Test
     fun kneePainModifiesHomeWorkoutAwayFromImpactAndAggressiveKneeLoading() {
         val recommendation = engine.buildRecommendation(
             UserProfile(

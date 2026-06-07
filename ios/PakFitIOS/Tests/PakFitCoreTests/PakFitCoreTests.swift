@@ -165,6 +165,50 @@ final class PakFitCoreTests: XCTestCase {
         XCTAssertTrue(plan.planFocus.contains("Kidney safety review"))
     }
 
+    func testDiabetesMedicationCautionPausesAggressiveTargetsAndUsesClinicianReviewedMovementPlan() {
+        let baseProfile = UserProfile(
+            age: 29,
+            weightKg: 72,
+            heightCm: 162,
+            gender: .female,
+            goal: .fatLoss,
+            trainingPlace: .home,
+            lifestyleModes: [.ramadanFasting]
+        )
+        let ordinaryFatLossPlan = PakistaniRecommendationEngine().buildPlan(profile: baseProfile)
+        let diabetesRecommendation = PakistaniRecommendationEngine().buildRecommendation(
+            profile: UserProfile(
+                age: 29,
+                weightKg: 72,
+                heightCm: 162,
+                gender: .female,
+                goal: .fatLoss,
+                trainingPlace: .home,
+                lifestyleModes: [.ramadanFasting],
+                medicalCautions: [.diabetesMedication]
+            )
+        )
+
+        let plan = diabetesRecommendation.plan
+        let allGuidance = (plan.mealGuidance + plan.mealTiming + plan.workout.sessions + plan.workout.scheduleNotes).joined(separator: " ")
+        let warning = diabetesRecommendation.warnings.first { $0.caution == .diabetesMedication }
+
+        XCTAssertEqual(warning?.action, .medicalReview)
+        XCTAssertTrue(warning?.sourceCategory.localizedCaseInsensitiveContains("Ramadan") == true)
+        XCTAssertTrue(plan.nutritionTargets.calories > ordinaryFatLossPlan.nutritionTargets.calories)
+        XCTAssertTrue(plan.workout.title.localizedCaseInsensitiveContains("Diabetes medication"))
+        XCTAssertFalse(plan.workout.title.localizedCaseInsensitiveContains("Fat loss"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("pauses aggressive calorie deficits"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("consistent carbohydrate portions"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("do not self-adjust diabetes medicines"))
+        XCTAssertTrue(
+            allGuidance.localizedCaseInsensitiveContains("low-glucose symptoms") ||
+            allGuidance.localizedCaseInsensitiveContains("Low glucose")
+        )
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("avoid hard fasted training"))
+        XCTAssertTrue(plan.planFocus.contains("Diabetes medication safety review"))
+    }
+
     func testDailyTrackerSupportsMealHourlyAndManualCalories() {
         let engine = FoodRecordEngine()
         var catalog = engine.defaultCatalog()

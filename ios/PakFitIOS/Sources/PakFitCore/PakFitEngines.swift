@@ -7,16 +7,17 @@ public final class PakistaniRecommendationEngine {
         let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
         let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
         let hasKidneyDiseaseCaution = profile.medicalCautions.contains(.kidneyDisease)
+        let hasDiabetesMedicationCaution = profile.medicalCautions.contains(.diabetesMedication)
         let maintenanceCalories = estimateMaintenanceCalories(profile)
         let calorieAdjustment: Int
         let proteinMultiplier: Double
 
         switch profile.goal {
         case .fatLoss:
-            calorieAdjustment = hasPregnancyCaution ? 0 : -400
+            calorieAdjustment = hasPregnancyCaution || hasDiabetesMedicationCaution ? 0 : -400
             proteinMultiplier = hasPregnancyCaution || hasBloodPressureCaution ? 1.5 : 1.8
         case .muscleGain:
-            calorieAdjustment = hasPregnancyCaution || hasKidneyDiseaseCaution ? 0 : 250
+            calorieAdjustment = hasPregnancyCaution || hasKidneyDiseaseCaution || hasDiabetesMedicationCaution ? 0 : 250
             proteinMultiplier = hasPregnancyCaution || hasBloodPressureCaution ? 1.6 : 2.0
         case .generalFitness:
             calorieAdjustment = 0
@@ -171,6 +172,7 @@ public final class PakistaniRecommendationEngine {
 
         let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
         let hasKidneyDiseaseCaution = profile.medicalCautions.contains(.kidneyDisease)
+        let hasDiabetesMedicationCaution = profile.medicalCautions.contains(.diabetesMedication)
         let lassiSwap = hasBloodPressureCaution
             ? "Swap creamy or salty lassi for water, unsweetened dahi, plain raita, or fresh lemon water without added salt."
             : "Swap creamy lassi for unsweetened dahi, salted lassi, or water most days."
@@ -208,6 +210,11 @@ public final class PakistaniRecommendationEngine {
             guidance.append("Kidney food review: ask your clinician or renal dietitian how much daal, chana, meat, dairy, sodium, potassium, phosphorus, and fluid fits your labs, kidney stage, and dialysis status.")
             guidance.append("Kidney boundary: avoid self-starting high-protein diets, creatine, unreviewed herbal kidney products, detox drinks, or supplement stacks from app guidance.")
         }
+        if hasDiabetesMedicationCaution {
+            guidance.append("Diabetes medication safety: PakFit pauses aggressive calorie deficits or surpluses and treats meal timing as diabetes-clinician review guidance, not a medicine plan.")
+            guidance.append("Glucose-aware plate: keep roti, rice, fruit, dates, desserts, and sweet drinks as consistent carbohydrate portions with protein, fiber, and clinician-reviewed medication timing.")
+            guidance.append("Low glucose boundary: do not self-adjust diabetes medicines from app guidance; follow your clinician's glucose monitoring and hypo plan, and seek urgent care for severe confusion, fainting, seizures, or very high glucose symptoms.")
+        }
 
         return guidance
     }
@@ -216,12 +223,15 @@ public final class PakistaniRecommendationEngine {
         let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
         let hasBloodPressureCaution = profile.medicalCautions.contains(.highBloodPressure)
         let hasKidneyDiseaseCaution = profile.medicalCautions.contains(.kidneyDisease)
+        let hasDiabetesMedicationCaution = profile.medicalCautions.contains(.diabetesMedication)
         let days: Int
         if hasPregnancyCaution {
             days = 3
         } else if hasKidneyDiseaseCaution {
             days = 3
         } else if hasBloodPressureCaution {
+            days = 4
+        } else if hasDiabetesMedicationCaution {
             days = 4
         } else {
             switch profile.goal {
@@ -252,6 +262,13 @@ public final class PakistaniRecommendationEngine {
                 "Clinician-reviewed strength basics: smooth reps, lighter loads, relaxed breathing, rows, presses, hip hinges, and core control.",
                 "Easy cycling or low-impact cardio with a long warm-up and cool-down; stop for chest pain, severe breathlessness, faintness, or headache.",
                 "Mobility, breathing practice, and recovery walk to support stress and blood pressure routine."
+            ]
+        } else if hasDiabetesMedicationCaution {
+            sessions = [
+                "Diabetes clinician-reviewed walking at conversational pace with glucose checks as directed and an easy warm-up and cool-down.",
+                "Post-meal movement option: 8 to 12 minutes of easy walking after lunch or dinner when your diabetes clinician says it fits your glucose plan.",
+                "Light strength basics without fasted hard intervals: smooth reps, relaxed breathing, rows, presses, hip hinges, carries, and core control.",
+                "Mobility and recovery walk; stop for low-glucose symptoms, unusual weakness, confusion, dizziness, chest pain, faintness, or symptoms your clinician has warned about."
             ]
         } else if hasJointLimit {
             sessions = [
@@ -290,6 +307,8 @@ public final class PakistaniRecommendationEngine {
             titlePrefix = "Kidney clinician-reviewed"
         } else if hasBloodPressureCaution {
             titlePrefix = "Blood pressure clinician-reviewed"
+        } else if hasDiabetesMedicationCaution {
+            titlePrefix = "Diabetes medication clinician-reviewed"
         } else if hasJointLimit {
             titlePrefix = "Low-impact \(profile.trainingPlace.rawValue)"
         } else {
@@ -297,7 +316,7 @@ public final class PakistaniRecommendationEngine {
         }
 
         return WorkoutBlock(
-            title: hasPregnancyCaution || hasKidneyDiseaseCaution || hasBloodPressureCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
+            title: hasPregnancyCaution || hasKidneyDiseaseCaution || hasBloodPressureCaution || hasDiabetesMedicationCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
             daysPerWeek: days,
             sessions: Array(sessions.prefix(days)),
             scheduleNotes: buildWorkoutScheduleNotes(profile)
@@ -320,6 +339,9 @@ public final class PakistaniRecommendationEngine {
         }
         if profile.medicalCautions.contains(.kidneyDisease) {
             notes.append("Kidney safety: confirm activity, fluid, protein, potassium, phosphorus, and sodium limits with your doctor or renal dietitian before changing intensity.")
+        }
+        if profile.medicalCautions.contains(.diabetesMedication) {
+            notes.append("Diabetes medication safety: review glucose monitoring, low-glucose symptoms, medication timing, fasted exercise, and post-meal activity with your doctor, diabetes educator, dietitian, or pharmacist before changing intensity.")
         }
         return notes
     }
@@ -348,6 +370,11 @@ public final class PakistaniRecommendationEngine {
                 timing.append("Hydration: spread water between iftar and suhoor; avoid salted lassi or salty electrolyte drinks unless your clinician specifically recommends them.")
             } else {
                 timing.append("Hydration: spread water between iftar and suhoor; include salted lassi or electrolytes only when appropriate.")
+            }
+            timing.append("Training: keep strength or cardio after iftar when energy and hydration are better.")
+            if profile.medicalCautions.contains(.diabetesMedication) {
+                timing.append("Diabetes Ramadan safety: fast only after diabetes-clinician review of glucose checks, low-glucose symptoms, suhoor and iftar carbohydrate portions, hydration, medication timing, and when to break the fast.")
+                timing.append("Diabetes training timing: avoid hard fasted training unless your clinician clears it; keep movement easy while fasting and move structured sessions after iftar.")
             }
         }
         if profile.lifestyleModes.contains(.officeRoutine) {
@@ -379,6 +406,9 @@ public final class PakistaniRecommendationEngine {
         }
         if profile.medicalCautions.contains(.kidneyDisease) {
             focus.append("Kidney safety review")
+        }
+        if profile.medicalCautions.contains(.diabetesMedication) {
+            focus.append("Diabetes medication safety review")
         }
         return focus
     }

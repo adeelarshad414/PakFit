@@ -15,6 +15,7 @@ Functional requirements:
 - Emphasize hydration between iftar and suhoor.
 - Suggest lighter training while fasting and strength/cardio after iftar when appropriate.
 - If diabetes medication is also selected, show a Ramadan-specific medical review warning.
+- If diabetes medication is also selected, pause aggressive calorie targets, require clinician-reviewed suhoor/iftar and medication timing, and avoid hard fasted training guidance.
 
 Acceptance criteria:
 
@@ -32,6 +33,13 @@ Given the user selects Ramadan fasting and diabetes medication
 When the app generates warnings  
 Then a warning mentions fasting safety  
 And the source category references Ramadan diabetes guidance
+
+### Scenario: Diabetes medication plus Ramadan modifies plan timing
+
+Given the user selects Ramadan fasting and diabetes medication
+When the app generates a plan
+Then meal timing requires diabetes-clinician review of suhoor, iftar, hydration, glucose checks, and medication timing
+And the workout guidance avoids hard fasted training unless a clinician clears it
 
 ## Use Case 2: Daawat and Wedding Week Mode
 

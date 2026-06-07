@@ -88,6 +88,9 @@ jobs:
       - name: Validate kidney plan safety
         run: bash scripts/validate-kidney-plan-safety.sh
 
+      - name: Validate diabetes medication plan safety
+        run: bash scripts/validate-diabetes-medication-plan-safety.sh
+
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh
 
@@ -275,6 +278,9 @@ jobs:
 
       - name: Validate kidney plan safety
         run: bash scripts/validate-kidney-plan-safety.sh
+
+      - name: Validate diabetes medication plan safety
+        run: bash scripts/validate-diabetes-medication-plan-safety.sh
 
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh

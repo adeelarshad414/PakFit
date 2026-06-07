@@ -12,6 +12,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Pregnancy safety mode that pauses weight-loss calorie deficits and switches to clinician-reviewed nutrition and gentle movement guidance
 - Blood pressure safety mode that lowers sodium guidance and switches to moderate clinician-review movement guidance
 - Kidney safety mode that caps high-protein targets and switches to renal clinician-review nutrition and movement guidance
+- Diabetes medication safety mode that pauses aggressive calorie targets and switches to clinician-reviewed meal timing and moderate movement guidance
 - Low-impact workout adjustment for knee pain or joint limitation
 - Advanced Pakistani lifestyle modes for Ramadan fasting, daawat/wedding weeks, budget groceries, office routines, and eating out
 - Equipment-aware workouts for walking routes, no equipment, dumbbells, resistance bands, and gym machines
@@ -77,6 +78,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - Pregnancy plan safety gate for clinician-reviewed nutrition, gentle movement, and no weight-loss deficit behavior on Android and iOS
 - Blood pressure plan safety gate for lower-sodium guidance, moderated movement, and BP medicine self-adjustment boundaries on Android and iOS
 - Kidney plan safety gate for capped high-protein targets, renal clinician-review guidance, and high-protein/supplement self-treatment boundaries on Android and iOS
+- Diabetes medication plan safety gate for paused aggressive calorie targets, clinician-reviewed Ramadan timing, moderated movement, and medicine self-adjustment boundaries on Android and iOS
 - iOS analysis dashboard parity gate for local summaries, charts, trends, todos, and history reporting
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
 - iOS app handoff artifact gate for local review evidence while signed IPA/App Store archive creation remains external
