@@ -617,6 +617,35 @@ struct HealthScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    Panel(title: "Health Marker Inputs") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Use lab report units and review abnormal values with a qualified clinician.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+
+                            Picker("Diabetes status", selection: diabetesStatusBinding) {
+                                ForEach(DiabetesStatus.allCases, id: \.self) { status in
+                                    Text(status.rawValue).tag(status)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+
+                            Stepper("Total cholesterol: \(labValue(\.totalCholesterolMgDl, fallback: 180)) mg/dL", value: labIntBinding(\.totalCholesterolMgDl, fallback: 180, range: 120...300), in: 120...300)
+                            Stepper("LDL: \(labValue(\.ldlMgDl, fallback: 100)) mg/dL", value: labIntBinding(\.ldlMgDl, fallback: 100, range: 50...220), in: 50...220)
+                            Stepper("HDL: \(labValue(\.hdlMgDl, fallback: 45)) mg/dL", value: labIntBinding(\.hdlMgDl, fallback: 45, range: 25...90), in: 25...90)
+                            Stepper("Triglycerides: \(labValue(\.triglyceridesMgDl, fallback: 140)) mg/dL", value: labIntBinding(\.triglyceridesMgDl, fallback: 140, range: 60...350), in: 60...350)
+                            Stepper("Uric acid: \(labValue(\.uricAcidMgDl, fallback: 6.0), specifier: "%.1f") mg/dL", value: labDoubleBinding(\.uricAcidMgDl, fallback: 6.0, range: 2...12), in: 2...12, step: 0.1)
+                            Stepper("Fasting blood sugar: \(labValue(\.fastingBloodSugarMgDl, fallback: 95)) mg/dL", value: labIntBinding(\.fastingBloodSugarMgDl, fallback: 95, range: 70...450), in: 70...450)
+                            Stepper("Systolic BP: \(labValue(\.systolicBpMmHg, fallback: 120)) mmHg", value: labIntBinding(\.systolicBpMmHg, fallback: 120, range: 90...220), in: 90...220)
+                            Stepper("Diastolic BP: \(labValue(\.diastolicBpMmHg, fallback: 80)) mmHg", value: labIntBinding(\.diastolicBpMmHg, fallback: 80, range: 55...130), in: 55...130)
+                            Stepper("HbA1c: \(labValue(\.hba1cPercent, fallback: 5.4), specifier: "%.1f")%", value: labDoubleBinding(\.hba1cPercent, fallback: 5.4, range: 4.5...10), in: 4.5...10, step: 0.1)
+                            Stepper("Hemoglobin: \(labValue(\.hemoglobinGdl, fallback: 14.0), specifier: "%.1f") g/dL", value: labDoubleBinding(\.hemoglobinGdl, fallback: 14.0, range: 8...18), in: 8...18, step: 0.1)
+
+                            Toggle("Chest pain or severe symptoms", isOn: chestPainBinding)
+                                .toggleStyle(.switch)
+                        }
+                    }
+
                     Panel(title: "BMI Report") {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(String(format: "%.1f", model.healthReport.bmi.value))
@@ -648,6 +677,66 @@ struct HealthScreen: View {
             .background(AppBackground())
             .navigationTitle("Health")
         }
+    }
+
+    private var diabetesStatusBinding: Binding<DiabetesStatus> {
+        Binding(
+            get: { model.labProfile.diabetesStatus },
+            set: { newValue in
+                var updated = model.labProfile
+                updated.diabetesStatus = newValue
+                model.labProfile = updated
+            }
+        )
+    }
+
+    private var chestPainBinding: Binding<Bool> {
+        Binding(
+            get: { model.labProfile.chestPainOrSevereSymptoms },
+            set: { newValue in
+                var updated = model.labProfile
+                updated.chestPainOrSevereSymptoms = newValue
+                model.labProfile = updated
+            }
+        )
+    }
+
+    private func labValue(_ keyPath: KeyPath<LabProfile, Int?>, fallback: Int) -> Int {
+        model.labProfile[keyPath: keyPath] ?? fallback
+    }
+
+    private func labValue(_ keyPath: KeyPath<LabProfile, Double?>, fallback: Double) -> Double {
+        model.labProfile[keyPath: keyPath] ?? fallback
+    }
+
+    private func labIntBinding(
+        _ keyPath: WritableKeyPath<LabProfile, Int?>,
+        fallback: Int,
+        range: ClosedRange<Int>
+    ) -> Binding<Int> {
+        Binding(
+            get: { min(max(model.labProfile[keyPath: keyPath] ?? fallback, range.lowerBound), range.upperBound) },
+            set: { newValue in
+                var updated = model.labProfile
+                updated[keyPath: keyPath] = min(max(newValue, range.lowerBound), range.upperBound)
+                model.labProfile = updated
+            }
+        )
+    }
+
+    private func labDoubleBinding(
+        _ keyPath: WritableKeyPath<LabProfile, Double?>,
+        fallback: Double,
+        range: ClosedRange<Double>
+    ) -> Binding<Double> {
+        Binding(
+            get: { min(max(model.labProfile[keyPath: keyPath] ?? fallback, range.lowerBound), range.upperBound) },
+            set: { newValue in
+                var updated = model.labProfile
+                updated[keyPath: keyPath] = min(max(newValue, range.lowerBound), range.upperBound)
+                model.labProfile = updated
+            }
+        )
     }
 }
 

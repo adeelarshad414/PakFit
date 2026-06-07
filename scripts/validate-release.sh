@@ -100,6 +100,9 @@ bash scripts/validate-adult-use-safety.sh
 echo "== iOS setup parity gate =="
 bash scripts/validate-ios-setup-parity.sh
 
+echo "== iOS health marker parity gate =="
+bash scripts/validate-ios-health-marker-parity.sh
+
 echo "== Cross-platform version alignment gate =="
 bash scripts/validate-version-alignment.sh
 

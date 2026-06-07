@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.41.0
+Listing version: 0.42.0
 
 ## App Identity
 
@@ -24,6 +24,7 @@ Track daily meals by time or meal type, review intake, burn, net calories, weekl
 Use on-device health reports for BMI, blood pressure, lipid profile, uric acid, fasting blood sugar, HbA1c, hemoglobin, diabetes status, lifestyle habits, mental wellness screeners, and coach-style next actions.
 
 Setup profile, goals, diet pattern, lifestyle modes, and medical cautions on Android and iOS.
+Edit BMI inputs, blood pressure, lipid profile, uric acid, blood sugar, HbA1c, hemoglobin, and diabetes status on Android and iOS.
 
 Food photo estimates stay local in this build. PakFit uses your selected photo preview, food hint, and portion choice to estimate visible calories and encourages manual confirmation when confidence is limited.
 
