@@ -34,6 +34,7 @@ CODEOWNERS_FILE="$ROOT_DIR/.github/CODEOWNERS"
 ACCESSIBILITY_DOC_FILE="$ROOT_DIR/docs/accessibility-readability.md"
 DIAGNOSTIC_PRIVACY_DOC_FILE="$ROOT_DIR/docs/diagnostics-privacy.md"
 ADULT_USE_SAFETY_DOC_FILE="$ROOT_DIR/docs/adult-use-safety.md"
+IOS_SETUP_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-setup-parity.md"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -438,6 +439,16 @@ if [[ -f "$ADULT_USE_SAFETY_DOC_FILE" ]]; then
   ADULT_USE_SAFETY_DOC_STATUS="$ADULT_USE_SAFETY_DOC_FILE"
   ADULT_USE_SAFETY_DOC_SHA256="$(sha256_file "$ADULT_USE_SAFETY_DOC_FILE")"
 fi
+IOS_SETUP_PARITY_STATUS="not checked"
+if bash scripts/validate-ios-setup-parity.sh >/dev/null 2>&1; then
+  IOS_SETUP_PARITY_STATUS="passed"
+fi
+IOS_SETUP_PARITY_DOC_STATUS="missing"
+IOS_SETUP_PARITY_DOC_SHA256=""
+if [[ -f "$IOS_SETUP_PARITY_DOC_FILE" ]]; then
+  IOS_SETUP_PARITY_DOC_STATUS="$IOS_SETUP_PARITY_DOC_FILE"
+  IOS_SETUP_PARITY_DOC_SHA256="$(sha256_file "$IOS_SETUP_PARITY_DOC_FILE")"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -592,6 +603,14 @@ mkdir -p "$REPORT_DIR"
   echo "- Adult-use safety policy: Android age floor, restored-value slider clamping, Android/iOS under-18 warnings, iOS safety warning display, and adult audience listing copy checked"
   echo "- Adult-use safety boundary: store rating questionnaire, legal/privacy review, and age-suitability listing review remain external before public release"
   echo
+  echo "## iOS Setup Parity"
+  echo
+  echo "- iOS setup parity doc: $IOS_SETUP_PARITY_DOC_STATUS"
+  echo "- iOS setup parity doc SHA-256: ${IOS_SETUP_PARITY_DOC_SHA256:-missing}"
+  echo "- iOS setup parity gate: $IOS_SETUP_PARITY_STATUS"
+  echo "- iOS setup parity policy: Setup tab, theme/profile/goal/routine/diet/training controls, lifestyle toggles, medical caution toggles, adult age range, profile writeback, docs, and store listing copy checked"
+  echo "- iOS setup parity boundary: iPhone device QA, VoiceOver, large-text review, and signed production build review remain external before public release"
+  echo
   echo "## Android APK"
   echo
   echo "- Application ID: $APPLICATION_ID"
@@ -745,6 +764,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Accessibility and readability: Android/iOS semantic headings, custom chart/progress labels, Dynamic Type-friendly iOS fonts, and documentation checked"
   echo "- Diagnostic privacy: runtime logging, crash/analytics/telemetry SDK patterns, and privacy disclosure alignment checked"
   echo "- Adult-use safety: age floor, under-18 warning behavior, iOS warning display, and adult audience listing copy checked"
+  echo "- iOS setup parity: editable iOS Setup tab, profile controls, lifestyle/caution toggles, and profile writeback checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -779,6 +799,7 @@ mkdir -p "$REPORT_DIR"
   echo "- Accessibility manual QA still requires TalkBack, VoiceOver, large-text, keyboard, and switch-control review on target devices."
   echo "- Diagnostic privacy manual QA still requires signed-binary SDK declaration review and any external monitoring console review."
   echo "- Adult-use safety manual QA still requires store rating questionnaire review and final legal/privacy review for age suitability."
+  echo "- iOS Setup manual QA still requires iPhone device review for layout, VoiceOver, and large text."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

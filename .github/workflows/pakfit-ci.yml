@@ -64,6 +64,9 @@ jobs:
       - name: Validate adult-use safety
         run: bash scripts/validate-adult-use-safety.sh
 
+      - name: Validate iOS setup parity
+        run: bash scripts/validate-ios-setup-parity.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -211,3 +214,6 @@ jobs:
 
       - name: Validate adult-use safety
         run: bash scripts/validate-adult-use-safety.sh
+
+      - name: Validate iOS setup parity
+        run: bash scripts/validate-ios-setup-parity.sh

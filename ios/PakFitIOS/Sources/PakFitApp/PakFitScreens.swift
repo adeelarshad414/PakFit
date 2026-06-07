@@ -374,6 +374,9 @@ struct PakFitRootView: View {
 
             PlanScreen(model: model)
                 .tabItem { Label("Plan", systemImage: "figure.strengthtraining.traditional") }
+
+            SetupScreen(model: model)
+                .tabItem { Label("Setup", systemImage: "person.crop.circle.badge.gearshape.fill") }
         }
         .preferredColorScheme(model.themeMode.colorScheme)
         .tint(.teal)
@@ -704,6 +707,160 @@ struct PlanScreen: View {
     }
 }
 
+struct SetupScreen: View {
+    @ObservedObject var model: PakFitViewModel
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    Panel(title: "Display") {
+                        Picker("Theme", selection: $model.themeMode) {
+                            ForEach(ThemeMode.allCases) { theme in
+                                Text(theme.rawValue).tag(theme)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    Panel(title: "Profile") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Picker("Gender", selection: profileBinding(\.gender)) {
+                                ForEach(Gender.allCases, id: \.self) { gender in
+                                    Text(gender.rawValue).tag(gender)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+
+                            Stepper("Age: \(model.profile.age) years", value: profileBinding(\.age, clamp: { min(max($0, 18), 75) }), in: 18...75)
+                            Stepper("Height: \(model.profile.heightCm) cm", value: profileBinding(\.heightCm, clamp: { min(max($0, 140), 205) }), in: 140...205)
+                            Stepper("Weight: \(model.profile.weightKg, specifier: "%.1f") kg", value: profileBinding(\.weightKg, clamp: { min(max($0, 45), 140) }), in: 45...140, step: 0.5)
+                        }
+                    }
+
+                    Panel(title: "Goal & Routine") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Picker("Goal", selection: profileBinding(\.goal)) {
+                                ForEach(Goal.allCases, id: \.self) { goal in
+                                    Text(goal.rawValue).tag(goal)
+                                }
+                            }
+                            .pickerStyle(.menu)
+
+                            Picker("Activity", selection: profileBinding(\.activityLevel)) {
+                                ForEach(ActivityLevel.allCases, id: \.self) { level in
+                                    Text(level.rawValue).tag(level)
+                                }
+                            }
+                            .pickerStyle(.menu)
+
+                            Picker("Diet", selection: profileBinding(\.dietPattern)) {
+                                ForEach(DietPattern.allCases, id: \.self) { diet in
+                                    Text(diet.rawValue).tag(diet)
+                                }
+                            }
+                            .pickerStyle(.menu)
+
+                            Picker("Training place", selection: profileBinding(\.trainingPlace)) {
+                                ForEach(TrainingPlace.allCases, id: \.self) { place in
+                                    Text(place.rawValue).tag(place)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                    }
+
+                    Panel(title: "Lifestyle Modes") {
+                        ToggleGrid(
+                            items: LifestyleMode.allCases,
+                            selected: model.profile.lifestyleModes,
+                            title: { $0.rawValue },
+                            onToggle: toggleLifestyleMode
+                        )
+                    }
+
+                    Panel(title: "Medical Cautions") {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ToggleGrid(
+                                items: MedicalCaution.allCases,
+                                selected: model.profile.medicalCautions,
+                                title: { $0.rawValue },
+                                onToggle: toggleMedicalCaution
+                            )
+                            Text("PakFit keeps these as safety flags only; review symptoms, pregnancy, medication, kidney disease, surgery recovery, or eating-disorder history with a qualified clinician.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    Panel(title: "Profile Summary") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("\(model.plan.nutritionTargets.calories) kcal target")
+                                .font(.title3.weight(.semibold))
+                            Text("\(model.plan.nutritionTargets.proteinGrams)g protein, \(model.plan.workout.daysPerWeek) workout days, \(model.safetyWarnings.count) safety warning(s)")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Text("PakFit is designed for adults 18 and older. Under-18 profiles show a guardian and clinician review warning.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .background(AppBackground())
+            .navigationTitle("Setup")
+        }
+    }
+
+    private func profileBinding<Value>(
+        _ keyPath: WritableKeyPath<UserProfile, Value>
+    ) -> Binding<Value> {
+        Binding(
+            get: { model.profile[keyPath: keyPath] },
+            set: { newValue in
+                var updated = model.profile
+                updated[keyPath: keyPath] = newValue
+                model.profile = updated
+            }
+        )
+    }
+
+    private func profileBinding<Value>(
+        _ keyPath: WritableKeyPath<UserProfile, Value>,
+        clamp: @escaping (Value) -> Value
+    ) -> Binding<Value> {
+        Binding(
+            get: { model.profile[keyPath: keyPath] },
+            set: { newValue in
+                var updated = model.profile
+                updated[keyPath: keyPath] = clamp(newValue)
+                model.profile = updated
+            }
+        )
+    }
+
+    private func toggleLifestyleMode(_ mode: LifestyleMode) {
+        var updated = model.profile
+        if updated.lifestyleModes.contains(mode) {
+            updated.lifestyleModes.remove(mode)
+        } else {
+            updated.lifestyleModes.insert(mode)
+        }
+        model.profile = updated
+    }
+
+    private func toggleMedicalCaution(_ caution: MedicalCaution) {
+        var updated = model.profile
+        if updated.medicalCautions.contains(caution) {
+            updated.medicalCautions.remove(caution)
+        } else {
+            updated.medicalCautions.insert(caution)
+        }
+        model.profile = updated
+    }
+}
+
 struct HeaderView: View {
     @ObservedObject var model: PakFitViewModel
 
@@ -969,6 +1126,37 @@ struct SafetyWarningRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(warning.title). \(warning.message). \(warning.action.rawValue)")
+    }
+}
+
+struct ToggleGrid<Item: Hashable>: View {
+    let items: [Item]
+    let selected: Set<Item>
+    let title: (Item) -> String
+    let onToggle: (Item) -> Void
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 8)], alignment: .leading, spacing: 8) {
+            ForEach(items, id: \.self) { item in
+                Button {
+                    onToggle(item)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: selected.contains(item) ? "checkmark.circle.fill" : "circle")
+                            .accessibilityHidden(true)
+                        Text(title(item))
+                            .font(.caption.weight(.semibold))
+                            .lineLimit(2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                }
+                .buttonStyle(.bordered)
+                .tint(selected.contains(item) ? .teal : .secondary)
+                .accessibilityLabel("\(title(item)), \(selected.contains(item) ? "selected" : "not selected")")
+            }
+        }
     }
 }
 

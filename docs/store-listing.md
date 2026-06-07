@@ -1,6 +1,6 @@
 # PakFit Store Listing Draft
 
-Listing version: 0.40.0
+Listing version: 0.41.0
 
 ## App Identity
 
@@ -22,6 +22,8 @@ PakFit helps Pakistani users plan food, workouts, daily calories, and health che
 Track daily meals by time or meal type, review intake, burn, net calories, weekly and monthly trends, and build custom food entries for family recipes, desserts, drinks, snacks, roti, rice, daal, sabzi, protein dishes, and other Pakistani foods.
 
 Use on-device health reports for BMI, blood pressure, lipid profile, uric acid, fasting blood sugar, HbA1c, hemoglobin, diabetes status, lifestyle habits, mental wellness screeners, and coach-style next actions.
+
+Setup profile, goals, diet pattern, lifestyle modes, and medical cautions on Android and iOS.
 
 Food photo estimates stay local in this build. PakFit uses your selected photo preview, food hint, and portion choice to estimate visible calories and encourages manual confirmation when confidence is limited.
 
