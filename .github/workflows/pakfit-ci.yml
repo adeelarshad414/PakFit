@@ -79,6 +79,9 @@ jobs:
       - name: Validate PCOS clinical safety
         run: bash scripts/validate-pcos-clinical-safety.sh
 
+      - name: Validate pregnancy plan safety
+        run: bash scripts/validate-pregnancy-plan-safety.sh
+
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh
 
@@ -257,6 +260,9 @@ jobs:
 
       - name: Validate PCOS clinical safety
         run: bash scripts/validate-pcos-clinical-safety.sh
+
+      - name: Validate pregnancy plan safety
+        run: bash scripts/validate-pregnancy-plan-safety.sh
 
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh

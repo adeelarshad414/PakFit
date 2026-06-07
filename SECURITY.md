@@ -4,7 +4,7 @@
 
 | Version | Status |
 | --- | --- |
-| 0.47.x | Current local release evidence |
+| 0.48.x | Current local release evidence |
 | Earlier local evidence builds | Superseded by the latest release evidence |
 
 ## Reporting A Vulnerability

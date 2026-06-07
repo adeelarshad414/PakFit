@@ -38,6 +38,32 @@ func runPakFitCoreSmokeTests() throws {
     let underageRecommendation = PakistaniRecommendationEngine().buildRecommendation(profile: UserProfile(age: 17))
     try expect(underageRecommendation.warnings.count == 1, "under-18 profile should create an adult-use safety warning")
     try expect(underageRecommendation.warnings[0].message.localizedCaseInsensitiveContains("under 18"), "adult-use warning should name the under-18 boundary")
+    let ordinaryFatLossPlan = PakistaniRecommendationEngine().buildPlan(profile: UserProfile(
+        age: 29,
+        weightKg: 72,
+        heightCm: 162,
+        gender: .female,
+        goal: .fatLoss,
+        trainingPlace: .home
+    ))
+    let pregnancyRecommendation = PakistaniRecommendationEngine().buildRecommendation(profile: UserProfile(
+        age: 29,
+        weightKg: 72,
+        heightCm: 162,
+        gender: .female,
+        goal: .fatLoss,
+        trainingPlace: .home,
+        medicalCautions: [.pregnancy]
+    ))
+    let pregnancyPlan = pregnancyRecommendation.plan
+    let pregnancyGuidance = (pregnancyPlan.mealGuidance + pregnancyPlan.workout.sessions + pregnancyPlan.workout.scheduleNotes).joined(separator: " ")
+    try expect(pregnancyPlan.nutritionTargets.calories > ordinaryFatLossPlan.nutritionTargets.calories, "pregnancy safety should remove the fat-loss calorie deficit")
+    try expect(pregnancyPlan.workout.title.localizedCaseInsensitiveContains("Pregnancy"), "pregnancy workout should be clearly labeled")
+    try expect(!pregnancyPlan.workout.title.localizedCaseInsensitiveContains("Fat loss"), "pregnancy workout title should not present a fat-loss plan")
+    try expect(pregnancyGuidance.localizedCaseInsensitiveContains("clinician"), "pregnancy plan should require clinician review")
+    try expect(pregnancyGuidance.localizedCaseInsensitiveContains("pause weight-loss calorie deficits"), "pregnancy plan should pause weight-loss deficits")
+    try expect(pregnancyGuidance.localizedCaseInsensitiveContains("stop exercise") || pregnancyGuidance.localizedCaseInsensitiveContains("stop for warning"), "pregnancy movement plan should include stop-warning guidance")
+    try expect(pregnancyPlan.planFocus.contains("Pregnancy safety review"), "pregnancy plan focus should flag safety review")
 
     let foodEngine = FoodRecordEngine()
     var catalog = foodEngine.defaultCatalog()

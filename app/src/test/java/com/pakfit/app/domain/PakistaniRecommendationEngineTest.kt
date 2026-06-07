@@ -128,6 +128,34 @@ class PakistaniRecommendationEngineTest {
     }
 
     @Test
+    fun pregnancyCautionRemovesFatLossDeficitAndUsesClinicianReviewedMovementPlan() {
+        val baseProfile = UserProfile(
+            gender = Gender.FEMALE,
+            age = 29,
+            heightCm = 162,
+            weightKg = 72.0,
+            goal = Goal.FAT_LOSS,
+            trainingPlace = TrainingPlace.HOME
+        )
+        val ordinaryFatLossPlan = engine.buildRecommendation(baseProfile).plan
+        val pregnancyRecommendation = engine.buildRecommendation(
+            baseProfile.copy(medicalCautions = setOf(MedicalCaution.PREGNANCY))
+        )
+
+        val plan = pregnancyRecommendation.plan
+        val allGuidance = (plan.mealGuidance + plan.workout.sessions + plan.workout.scheduleNotes).joinToString(" ")
+
+        assertTrue(plan.nutritionTargets.calories > ordinaryFatLossPlan.nutritionTargets.calories)
+        assertTrue(plan.workout.title.contains("Pregnancy", ignoreCase = true))
+        assertFalse(plan.workout.title.contains("Fat loss", ignoreCase = true))
+        assertTrue(allGuidance.contains("clinician", ignoreCase = true))
+        assertTrue(allGuidance.contains("pause weight-loss calorie deficits", ignoreCase = true))
+        assertTrue(allGuidance.contains("stop exercise", ignoreCase = true) || allGuidance.contains("stop for warning", ignoreCase = true))
+        assertTrue(plan.planFocus.contains("Pregnancy safety review"))
+        assertTrue(pregnancyRecommendation.warnings.single { it.caution == MedicalCaution.PREGNANCY }.message.contains("obstetric", ignoreCase = true))
+    }
+
+    @Test
     fun kneePainModifiesHomeWorkoutAwayFromImpactAndAggressiveKneeLoading() {
         val recommendation = engine.buildRecommendation(
             UserProfile(

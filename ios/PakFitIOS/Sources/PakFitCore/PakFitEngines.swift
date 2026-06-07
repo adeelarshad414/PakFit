@@ -4,17 +4,18 @@ public final class PakistaniRecommendationEngine {
     public init() {}
 
     public func buildPlan(profile: UserProfile) -> FitnessPlan {
+        let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
         let maintenanceCalories = estimateMaintenanceCalories(profile)
         let calorieAdjustment: Int
         let proteinMultiplier: Double
 
         switch profile.goal {
         case .fatLoss:
-            calorieAdjustment = -400
-            proteinMultiplier = 1.8
+            calorieAdjustment = hasPregnancyCaution ? 0 : -400
+            proteinMultiplier = hasPregnancyCaution ? 1.5 : 1.8
         case .muscleGain:
-            calorieAdjustment = 250
-            proteinMultiplier = 2.0
+            calorieAdjustment = hasPregnancyCaution ? 0 : 250
+            proteinMultiplier = hasPregnancyCaution ? 1.5 : 2.0
         case .generalFitness:
             calorieAdjustment = 0
             proteinMultiplier = 1.5
@@ -176,22 +177,37 @@ public final class PakistaniRecommendationEngine {
         if profile.lifestyleModes.contains(.budgetFriendly) {
             guidance.append("Build low-cost plates around daal, chana, lobia, eggs or dahi when suitable, seasonal sabzi, and measured roti or rice.")
         }
+        if profile.medicalCautions.contains(.pregnancy) {
+            guidance.append("Pregnancy safety: pause weight-loss calorie deficits and review nutrition targets with your obstetric clinician; use steady meals with protein, daal or chana, sabzi, fruit, dairy when suitable, and safe hydration.")
+            guidance.append("Pregnancy food safety: avoid self-prescribed supplements or restrictive dieting from app guidance and ask your clinician about prenatal nutrition, iron, folate, vitamin D, and B12 needs.")
+        }
 
         return guidance
     }
 
     private func buildWorkout(_ profile: UserProfile) -> WorkoutBlock {
+        let hasPregnancyCaution = profile.medicalCautions.contains(.pregnancy)
         let days: Int
-        switch profile.goal {
-        case .fatLoss, .muscleGain:
-            days = 4
-        case .generalFitness:
+        if hasPregnancyCaution {
             days = 3
+        } else {
+            switch profile.goal {
+            case .fatLoss, .muscleGain:
+                days = 4
+            case .generalFitness:
+                days = 3
+            }
         }
 
         let hasJointLimit = profile.medicalCautions.contains(.kneeOrJointLimitation)
         let sessions: [String]
-        if hasJointLimit {
+        if hasPregnancyCaution {
+            sessions = [
+                "Clinician-cleared walking at conversational pace, gentle mobility, and breathing work.",
+                "Gentle strength basics after obstetric clearance: wall push-ups, supported rows, light hip hinges, and posture work.",
+                "Restorative mobility and easy movement; stop exercise and seek care for bleeding, dizziness, chest pain, calf swelling, painful contractions, or fluid leakage."
+            ]
+        } else if hasJointLimit {
             sessions = [
                 "Low-impact walk intervals, wall push-ups, hip hinges, and gentle core.",
                 "Supported sit-to-stand, rows, light shoulder press, and dead bugs.",
@@ -221,10 +237,10 @@ public final class PakistaniRecommendationEngine {
             ]
         }
 
-        let titlePrefix = hasJointLimit ? "Low-impact \(profile.trainingPlace.rawValue)" : profile.trainingPlace.rawValue
+        let titlePrefix = hasPregnancyCaution ? "Pregnancy clinician-reviewed" : (hasJointLimit ? "Low-impact \(profile.trainingPlace.rawValue)" : profile.trainingPlace.rawValue)
 
         return WorkoutBlock(
-            title: "\(titlePrefix) \(profile.goal.rawValue) Plan",
+            title: hasPregnancyCaution ? "\(titlePrefix) Movement Plan" : "\(titlePrefix) \(profile.goal.rawValue) Plan",
             daysPerWeek: days,
             sessions: Array(sessions.prefix(days)),
             scheduleNotes: buildWorkoutScheduleNotes(profile)
@@ -238,6 +254,9 @@ public final class PakistaniRecommendationEngine {
         }
         if profile.lifestyleModes.contains(.officeRoutine) {
             notes.append("Use short walks after lunch and dinner to support glucose control.")
+        }
+        if profile.medicalCautions.contains(.pregnancy) {
+            notes.append("Pregnancy safety: use only clinician-cleared activity, keep intensity conversational, avoid overheating, and stop for warning symptoms.")
         }
         return notes
     }
@@ -283,7 +302,11 @@ public final class PakistaniRecommendationEngine {
     }
 
     private func buildPlanFocus(_ profile: UserProfile) -> [String] {
-        [profile.goal.rawValue, profile.trainingPlace.rawValue] + profile.lifestyleModes.map(\.rawValue).sorted()
+        var focus = [profile.goal.rawValue, profile.trainingPlace.rawValue] + profile.lifestyleModes.map(\.rawValue).sorted()
+        if profile.medicalCautions.contains(.pregnancy) {
+            focus.append("Pregnancy safety review")
+        }
+        return focus
     }
 }
 

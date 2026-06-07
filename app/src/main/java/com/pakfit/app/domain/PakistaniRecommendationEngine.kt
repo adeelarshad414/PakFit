@@ -15,16 +15,17 @@ class PakistaniRecommendationEngine {
     }
 
     private fun buildPlanInternal(profile: UserProfile): FitnessPlan {
+        val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
         val maintenanceCalories = estimateMaintenanceCalories(profile)
         val calorieAdjustment = when (profile.goal) {
-            Goal.FAT_LOSS -> -400
-            Goal.MUSCLE_GAIN -> 250
+            Goal.FAT_LOSS -> if (hasPregnancyCaution) 0 else -400
+            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution) 0 else 250
             Goal.GENERAL_FITNESS -> 0
         }
         val calories = (maintenanceCalories + calorieAdjustment).coerceAtLeast(1_400)
         val proteinMultiplier = when (profile.goal) {
-            Goal.FAT_LOSS -> 1.8
-            Goal.MUSCLE_GAIN -> 2.0
+            Goal.FAT_LOSS -> if (hasPregnancyCaution) 1.5 else 1.8
+            Goal.MUSCLE_GAIN -> if (hasPregnancyCaution) 1.5 else 2.0
             Goal.GENERAL_FITNESS -> 1.5
         }
 
@@ -166,6 +167,10 @@ class PakistaniRecommendationEngine {
         if (LifestyleMode.BUDGET_FRIENDLY in profile.lifestyleModes) {
             guidance += "Build low-cost plates around daal, chana, lobia, eggs or dahi when suitable, seasonal sabzi, and measured roti or rice."
         }
+        if (MedicalCaution.PREGNANCY in profile.medicalCautions) {
+            guidance += "Pregnancy safety: pause weight-loss calorie deficits and review nutrition targets with your obstetric clinician; use steady meals with protein, daal or chana, sabzi, fruit, dairy when suitable, and safe hydration."
+            guidance += "Pregnancy food safety: avoid self-prescribed supplements or restrictive dieting from app guidance and ask your clinician about prenatal nutrition, iron, folate, vitamin D, and B12 needs."
+        }
 
         return guidance
     }
@@ -251,11 +256,17 @@ class PakistaniRecommendationEngine {
         focus += profile.goal.label
         focus += profile.trainingPlace.label
         profile.lifestyleModes.forEach { focus += it.label }
+        if (MedicalCaution.PREGNANCY in profile.medicalCautions) {
+            focus += "Pregnancy safety review"
+        }
         return focus
     }
 
     private fun buildWorkout(profile: UserProfile): WorkoutBlock {
-        val days = when (profile.goal) {
+        val hasPregnancyCaution = MedicalCaution.PREGNANCY in profile.medicalCautions
+        val days = if (hasPregnancyCaution) {
+            3
+        } else when (profile.goal) {
             Goal.FAT_LOSS -> 4
             Goal.MUSCLE_GAIN -> 4
             Goal.GENERAL_FITNESS -> 3
@@ -263,6 +274,11 @@ class PakistaniRecommendationEngine {
 
         val hasJointLimit = MedicalCaution.KNEE_OR_JOINT_LIMITATION in profile.medicalCautions
         val sessions = when {
+            hasPregnancyCaution -> listOf(
+                "Clinician-cleared walking at conversational pace, gentle mobility, and breathing work.",
+                "Gentle strength basics after obstetric clearance: wall push-ups, supported rows, light hip hinges, and posture work.",
+                "Restorative mobility and easy movement; stop exercise and seek care for bleeding, dizziness, chest pain, calf swelling, painful contractions, or fluid leakage."
+            )
             hasJointLimit && profile.trainingPlace == TrainingPlace.HOME -> listOf(
                 "Low-impact walk intervals, wall push-ups, hip hinges, and gentle core.",
                 "Supported sit-to-stand, backpack rows, light shoulder press, and dead bugs.",
@@ -319,14 +335,16 @@ class PakistaniRecommendationEngine {
             sessions
         }
 
-        val titlePrefix = if (hasJointLimit) {
+        val titlePrefix = if (hasPregnancyCaution) {
+            "Pregnancy clinician-reviewed"
+        } else if (hasJointLimit) {
             "Low-impact ${profile.trainingPlace.label}"
         } else {
             profile.trainingPlace.label
         }
 
         return WorkoutBlock(
-            title = "$titlePrefix ${profile.goal.label} Plan",
+            title = if (hasPregnancyCaution) "$titlePrefix Movement Plan" else "$titlePrefix ${profile.goal.label} Plan",
             daysPerWeek = days,
             sessions = timedSessions.take(days),
             scheduleNotes = buildWorkoutScheduleNotes(profile)
@@ -339,6 +357,9 @@ class PakistaniRecommendationEngine {
         )
         if (LifestyleMode.RAMADAN_FASTING in profile.lifestyleModes) {
             notes += "Ramadan timing: prefer easier movement while fasting and keep harder sessions after iftar, after Taraweeh, or when hydration is restored."
+        }
+        if (MedicalCaution.PREGNANCY in profile.medicalCautions) {
+            notes += "Pregnancy safety: use only clinician-cleared activity, keep intensity conversational, avoid overheating, and stop for warning symptoms."
         }
         return notes
     }

@@ -64,6 +64,46 @@ final class PakFitCoreTests: XCTestCase {
         XCTAssertTrue(recommendation.warnings[0].message.localizedCaseInsensitiveContains("fasting"))
     }
 
+    func testPregnancyCautionRemovesFatLossDeficitAndUsesClinicianReviewedMovementPlan() {
+        let baseProfile = UserProfile(
+            age: 29,
+            weightKg: 72,
+            heightCm: 162,
+            gender: .female,
+            goal: .fatLoss,
+            trainingPlace: .home
+        )
+        let ordinaryFatLossPlan = PakistaniRecommendationEngine().buildPlan(profile: baseProfile)
+        let pregnancyRecommendation = PakistaniRecommendationEngine().buildRecommendation(
+            profile: UserProfile(
+                age: 29,
+                weightKg: 72,
+                heightCm: 162,
+                gender: .female,
+                goal: .fatLoss,
+                trainingPlace: .home,
+                medicalCautions: [.pregnancy]
+            )
+        )
+
+        let plan = pregnancyRecommendation.plan
+        let allGuidance = (plan.mealGuidance + plan.workout.sessions + plan.workout.scheduleNotes).joined(separator: " ")
+
+        XCTAssertTrue(plan.nutritionTargets.calories > ordinaryFatLossPlan.nutritionTargets.calories)
+        XCTAssertTrue(plan.workout.title.localizedCaseInsensitiveContains("Pregnancy"))
+        XCTAssertFalse(plan.workout.title.localizedCaseInsensitiveContains("Fat loss"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("clinician"))
+        XCTAssertTrue(allGuidance.localizedCaseInsensitiveContains("pause weight-loss calorie deficits"))
+        XCTAssertTrue(
+            allGuidance.localizedCaseInsensitiveContains("stop exercise") ||
+            allGuidance.localizedCaseInsensitiveContains("stop for warning")
+        )
+        XCTAssertTrue(plan.planFocus.contains("Pregnancy safety review"))
+        XCTAssertTrue(
+            pregnancyRecommendation.warnings.first { $0.caution == .pregnancy }?.message.localizedCaseInsensitiveContains("obstetric") == true
+        )
+    }
+
     func testDailyTrackerSupportsMealHourlyAndManualCalories() {
         let engine = FoodRecordEngine()
         var catalog = engine.defaultCatalog()

@@ -20,7 +20,7 @@ The current safety gate is conservative and based on these source categories:
 
 | Caution | App Action | Reason |
 | --- | --- | --- |
-| Pregnancy | Medical review warning | Pregnancy can be safe for activity, but complications require clinician evaluation. |
+| Pregnancy | Medical review warning plus plan modification | Pregnancy can be safe for activity, but complications require clinician evaluation; ordinary fat-loss deficits and aggressive workout labels should pause. |
 | Diabetes medication | Medical review warning | Exercise can affect blood glucose and some medicines increase low-glucose risk. |
 | Heart symptoms | Medical review warning | Chest discomfort, shortness of breath, and related symptoms require medical evaluation. |
 | Kidney disease | Medical review warning | Activity and protein targets may need clinician or dietitian tailoring. |
@@ -36,6 +36,14 @@ Given a user selects a medical caution
 When a recommendation is generated  
 Then safety warnings appear in structured warning fields  
 And the app does not hide the warning inside meal or workout guidance
+
+### Scenario: Pregnancy modifies plan output
+
+Given a user selects pregnancy and fat loss
+When the recommendation engine builds a plan
+Then the plan pauses the fat-loss calorie deficit
+And the workout title does not present fat loss
+And nutrition and movement guidance require obstetric clinician review
 
 ### Scenario: Warning language is calm
 

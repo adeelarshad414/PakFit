@@ -112,6 +112,9 @@ bash scripts/validate-ios-clinical-mental-parity.sh
 echo "== PCOS clinical safety gate =="
 bash scripts/validate-pcos-clinical-safety.sh
 
+echo "== pregnancy plan safety gate =="
+bash scripts/validate-pregnancy-plan-safety.sh
+
 echo "== iOS analysis dashboard parity gate =="
 bash scripts/validate-ios-analysis-dashboard-parity.sh
 

@@ -13,6 +13,7 @@
 
 - Safe user receives a plan and no warnings.
 - Pregnancy creates medical review warning.
+- Pregnancy removes ordinary fat-loss calorie deficit behavior and switches to clinician-reviewed gentle movement.
 - Diabetes medication creates medical review warning.
 - Heart symptoms create medical review warning.
 - Kidney disease creates medical review warning.
