@@ -39,6 +39,7 @@ IOS_HEALTH_MARKER_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-health-marker-parity.md"
 IOS_LIFESTYLE_COACH_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-lifestyle-coach-parity.md"
 IOS_CLINICAL_MENTAL_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-clinical-mental-parity.md"
 IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-analysis-dashboard-parity.md"
+IOS_APP_HANDOFF_DOC_FILE="$ROOT_DIR/docs/ios-app-handoff-artifact.md"
 
 if [[ ! -f "$DEBUG_METADATA_FILE" || ! -f "$RELEASE_METADATA_FILE" ]]; then
   echo "Missing Android APK metadata. Run scripts/validate-release.sh first." >&2
@@ -181,6 +182,7 @@ VERSION_NAME="$(metadata_value "$RELEASE_METADATA_FILE" versionName)"
 VERSION_CODE="$(metadata_number "$RELEASE_METADATA_FILE" versionCode)"
 STORE_RELEASE_NOTES_FILE="$STORE_RELEASE_NOTES_DIR/PakFit-v${VERSION_NAME}.md"
 STORE_SCREENSHOT_CONTACT_SHEET="$STORE_SCREENSHOT_DIR/00-pakfit-screen-contact-sheet.png"
+IOS_APP_HANDOFF_FILE="${IOS_APP_HANDOFF_FILE:-$ROOT_DIR/outputs/PakFit/PakFit-v${VERSION_NAME}-ios-app-handoff.zip}"
 
 if [[ -z "$VERSION_NAME" || -z "$VERSION_CODE" || -z "$APPLICATION_ID" || -z "$DEBUG_VARIANT_NAME" || -z "$RELEASE_VARIANT_NAME" ]]; then
   echo "Could not read APK metadata from Android output-metadata.json files." >&2
@@ -493,6 +495,24 @@ if [[ -f "$IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE" ]]; then
   IOS_ANALYSIS_DASHBOARD_PARITY_DOC_STATUS="$IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE"
   IOS_ANALYSIS_DASHBOARD_PARITY_DOC_SHA256="$(sha256_file "$IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE")"
 fi
+IOS_APP_HANDOFF_GATE_STATUS="not checked"
+if bash scripts/validate-ios-app-handoff.sh >/dev/null 2>&1; then
+  IOS_APP_HANDOFF_GATE_STATUS="passed"
+fi
+IOS_APP_HANDOFF_DOC_STATUS="missing"
+IOS_APP_HANDOFF_DOC_SHA256=""
+if [[ -f "$IOS_APP_HANDOFF_DOC_FILE" ]]; then
+  IOS_APP_HANDOFF_DOC_STATUS="$IOS_APP_HANDOFF_DOC_FILE"
+  IOS_APP_HANDOFF_DOC_SHA256="$(sha256_file "$IOS_APP_HANDOFF_DOC_FILE")"
+fi
+IOS_APP_HANDOFF_STATUS="missing"
+IOS_APP_HANDOFF_BYTES=""
+IOS_APP_HANDOFF_SHA256=""
+if [[ -f "$IOS_APP_HANDOFF_FILE" ]]; then
+  IOS_APP_HANDOFF_STATUS="$IOS_APP_HANDOFF_FILE"
+  IOS_APP_HANDOFF_BYTES="$(wc -c < "$IOS_APP_HANDOFF_FILE" | tr -d ' ')"
+  IOS_APP_HANDOFF_SHA256="$(sha256_file "$IOS_APP_HANDOFF_FILE")"
+fi
 ANDROID_SOURCE_VERSION_NAME="$(android_source_setting_value versionName)"
 ANDROID_SOURCE_VERSION_CODE="$(android_source_number_value versionCode)"
 ANDROID_SOURCE_APPLICATION_ID="$(android_source_setting_value applicationId)"
@@ -687,6 +707,19 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS analysis dashboard parity policy: Swift analysis models, analysis dashboard engine, smoke tests, adherence score, weekly/monthly summaries, progress rows, charts/graphs, trends, todos, history, accessibility labels, docs, and store listing copy checked"
   echo "- iOS analysis dashboard parity boundary: iPhone device QA, VoiceOver, large-text review, signed production build review, and product analytics copy review remain external before public release"
   echo
+  echo "## iOS Application Handoff Artifact"
+  echo
+  echo "- iOS app handoff artifact: $IOS_APP_HANDOFF_STATUS"
+  if [[ -n "$IOS_APP_HANDOFF_BYTES" ]]; then
+    echo "- iOS app handoff artifact bytes: $IOS_APP_HANDOFF_BYTES"
+    echo "- iOS app handoff artifact SHA-256: $IOS_APP_HANDOFF_SHA256"
+  fi
+  echo "- iOS app handoff documentation: $IOS_APP_HANDOFF_DOC_STATUS"
+  echo "- iOS app handoff documentation SHA-256: ${IOS_APP_HANDOFF_DOC_SHA256:-missing}"
+  echo "- iOS app handoff artifact gate: $IOS_APP_HANDOFF_GATE_STATUS"
+  echo "- iOS app handoff policy: versioned Xcode project, SwiftUI app target, PakFitCore module, tests, AppIcon assets, manifest, and per-file checksums exported without signing material"
+  echo "- iOS app handoff boundary: signed IPA, simulator .app, App Store archive, provisioning profiles, Apple certificates, full Xcode.app, and App Store Connect upload remain external"
+  echo
   echo "## Android APK"
   echo
   echo "- Application ID: $APPLICATION_ID"
@@ -825,6 +858,8 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS network security gate: $IOS_NETWORK_SECURITY_STATUS"
   echo "- iOS signing hygiene gate: $IOS_SIGNING_HYGIENE_STATUS"
   echo "- iOS signing policy: Apple certificates, provisioning profiles, export options, App Store credentials, development team, profiles, signing identities, and manual signing remain external"
+  echo "- iOS app handoff artifact: $IOS_APP_HANDOFF_STATUS"
+  echo "- iOS app handoff artifact gate: $IOS_APP_HANDOFF_GATE_STATUS"
   echo "- App icon asset gate: $APP_ICON_GATE_STATUS"
   echo "- Platform compatibility gate: $PLATFORM_COMPATIBILITY_STATUS"
   echo "- Android build toolchain gate: $ANDROID_BUILD_TOOLCHAIN_STATUS"
@@ -845,6 +880,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS lifestyle coach parity: editable daily burn/lifestyle controls, Swift coach review engine, dynamic strengths/actions, docs, and store listing copy checked"
   echo "- iOS clinical and mental wellness parity: editable risk factors, PHQ-9, GAD-7, crisis flags, Pakistan support resources, clinical/mental engines, smoke tests, docs, and store listing copy checked"
   echo "- iOS analysis dashboard parity: local analysis models, dashboard engine, weekly/monthly summaries, charts, trends, todos, history, accessibility labels, docs, and store listing copy checked"
+  echo "- iOS app handoff artifact gate: versioned Xcode project, SwiftUI app source, core module, tests, app icons, manifest, checksums, and signing boundary checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
   echo "- App identity: Android application ID/display name and iOS bundle ID/display name checked"
   echo "- Store listing: current app identity/version, release notes, privacy boundaries, English-only copy, and unsafe medical/outcome claim scan checked"
@@ -884,6 +920,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS Lifestyle Coach manual QA still requires iPhone device review, VoiceOver, large text, and health/coach copy review."
   echo "- iOS Clinical and Mental Wellness manual QA still requires iPhone device review, VoiceOver, large text, clinical copy review, mental health safety review, and store age-suitability review."
   echo "- iOS Analysis Dashboard manual QA still requires iPhone device review, VoiceOver, large text, and product analytics copy review."
+  echo "- iOS application handoff archive is local release evidence only; signed IPA, simulator .app, archive validation, TestFlight, and App Store Connect submission require full Xcode.app and external Apple signing assets."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."
 } > "$REPORT_FILE"
 

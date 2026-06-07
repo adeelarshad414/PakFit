@@ -35,7 +35,8 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Validate iOS lifestyle coach parity before release evidence is accepted.
 - Validate iOS clinical and mental wellness parity before release evidence is accepted.
 - Validate iOS analysis dashboard parity before release evidence is accepted.
-- Provide export scripts that copy the built debug APK, release APK, and release AAB to versioned destinations using build metadata.
+- Validate iOS application handoff artifact export before release evidence is accepted.
+- Provide export scripts that copy the built debug APK, release APK, release AAB, and iOS application handoff archive to versioned destinations using build metadata.
 - Add GitHub Actions CI for Android unit tests, lint, debug APK, release APK, and release AAB artifact upload.
 - Add dependency inventory generation and artifact upload to CI.
 - Add dependency advisory monitoring configuration validation to CI.
@@ -48,6 +49,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add iOS lifestyle coach parity validation to CI.
 - Add iOS clinical and mental wellness parity validation to CI.
 - Add iOS analysis dashboard parity validation to CI.
+- Add iOS application handoff artifact validation and upload to CI.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
 - Add source quality gates for English-only app source and obvious hardcoded secret patterns.
 - Add platform privacy gates for iOS privacy manifest, iOS permission privacy, iOS network security, iOS signing hygiene, Android backup/data-extraction posture, Android permission minimization, Android exported surface, Android network security, food photo privacy, store listing/release notes, store privacy disclosure consistency, generated screenshot previews, and Android release signing hygiene.
@@ -58,7 +60,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - CI must not require backend services, production signing secrets, analytics credentials, or cloud health data.
 - Android artifact uploads must use generated build output only.
 - Release signing secrets must stay outside the repository and be injected through secure environment variables only when a production upload keystore exists.
-- iOS App Store archive/signing remains blocked until full Xcode and signing assets are available.
+- iOS App Store archive/signing remains blocked until full Xcode and signing assets are available; the local handoff artifact is review evidence only.
 
 ## Acceptance Evidence
 
@@ -93,8 +95,10 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - iOS lifestyle coach parity validation is part of the required validation path.
 - iOS clinical and mental wellness parity validation is part of the required validation path.
 - iOS analysis dashboard parity validation is part of the required validation path.
+- iOS application handoff artifact validation is part of the required validation path.
 - Dependency inventory and dynamic/SNAPSHOT dependency blocking are part of the required validation path.
 - `scripts/export-android-debug-apk.sh` can export a versioned debug APK after validation.
 - `scripts/export-android-release-artifacts.sh` can export versioned release APK and AAB artifacts after validation.
+- `scripts/export-ios-app-handoff.sh` can export a versioned iOS application handoff artifact after validation.
 - `.github/workflows/pakfit-ci.yml` defines Android, iOS Swift, and source-gate jobs.
 - README and release spec document the repeatable gates.

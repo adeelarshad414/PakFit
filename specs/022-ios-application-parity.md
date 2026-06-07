@@ -35,6 +35,7 @@ Add an iOS application path for PakFit so the product is no longer Android-only.
 - Unit-test online search URL generation.
 - Unit-test food photo estimates for catalog matches and unknown foods.
 - Provide a no-XCTest smoke runner for local Command Line Tools environments that cannot load `XCTest`.
+- Export a versioned iOS application handoff archive for environments that can validate Swift source but cannot produce signed IPA/App Store artifacts.
 
 ## Acceptance Evidence
 
@@ -43,3 +44,4 @@ Add an iOS application path for PakFit so the product is no longer Android-only.
 - `swift run PakFitCoreSmokeTests` passes in a Command Line Tools environment.
 - README documents Android and iOS run/test paths.
 - Android APK remains available as the current Android artifact.
+- `scripts/export-ios-app-handoff.sh` exports the current SwiftUI iOS application source, Xcode project, AppIcon assets, manifest, and checksums for local review.

@@ -22,7 +22,7 @@ jobs:
       - name: Install source and screenshot gate tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ripgrep python3-pip
+          sudo apt-get install -y ripgrep python3-pip zip unzip
           python3 -m pip install Pillow==12.2.0
 
       - name: Set up JDK 17
@@ -79,6 +79,9 @@ jobs:
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh
 
+      - name: Validate iOS app handoff artifact
+        run: bash scripts/validate-ios-app-handoff.sh
+
       - name: Validate store privacy disclosures
         run: bash scripts/validate-store-privacy-disclosures.sh
 
@@ -118,6 +121,9 @@ jobs:
       - name: Generate dependency inventory
         run: bash scripts/generate-dependency-inventory.sh
 
+      - name: Export iOS app handoff artifact
+        run: bash scripts/export-ios-app-handoff.sh
+
       - name: Generate release evidence report
         run: bash scripts/generate-release-report.sh
 
@@ -140,6 +146,13 @@ jobs:
         with:
           name: PakFit-release-aab
           path: app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+      - name: Upload iOS app handoff artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PakFit-ios-app-handoff
+          path: outputs/PakFit/*ios-app-handoff.zip
           if-no-files-found: error
 
       - name: Upload release evidence report
@@ -193,7 +206,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install ripgrep
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep zip unzip
 
       - name: English-only app source check
         run: |
@@ -241,3 +254,6 @@ jobs:
 
       - name: Validate iOS analysis dashboard parity
         run: bash scripts/validate-ios-analysis-dashboard-parity.sh
+
+      - name: Validate iOS app handoff artifact
+        run: bash scripts/validate-ios-app-handoff.sh

@@ -59,6 +59,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - iOS permission privacy gate keeping camera/photo purpose strings food-photo scoped
 - iOS network security gate keeping Swift runtime URLs HTTPS-only and blocking ATS cleartext opt-outs
 - iOS signing hygiene gate keeping Apple certificates, provisioning profiles, export options, and App Store credentials outside source control
+- iOS application handoff artifact with versioned Xcode project, SwiftUI source, Swift core, tests, AppIcon assets, manifest, and checksums
 - Food photo privacy gate proving preview-only capture and blocking image-byte persistence/upload patterns in this local-first build
 - Store privacy disclosure consistency gate aligning Android permissions, iOS privacy manifest, privacy policy, Google Play Data safety, App Store privacy, and store listing claims
 - Consent and clinical-boundary gate before saving/exporting sensitive local health snapshots
@@ -71,6 +72,7 @@ PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coachin
 - iOS clinical and mental wellness parity gate for editable risk factors, screeners, crisis resources, and clinical insight reports
 - iOS analysis dashboard parity gate for local summaries, charts, trends, todos, and history reporting
 - Android release hardening with R8 minification, resource shrinking, lint gates, and versioned APK/AAB evidence
+- iOS app handoff artifact gate for local review evidence while signed IPA/App Store archive creation remains external
 - Cross-platform version alignment gate for Android source/APK metadata and iOS project metadata
 - Checked-in Gradle Wrapper pinned to Gradle 8.14.5 with distribution checksum and wrapper integrity gate
 - Strict Gradle dependency verification metadata with SHA-256 checksums for resolved Android artifacts
@@ -137,19 +139,28 @@ Open `ios/PakFitIOS/PakFitIOS.xcodeproj` in Xcode, select the `PakFitIOS` target
 
 This Codex machine currently has Command Line Tools selected instead of full Xcode, so simulator builds require installing/selecting Xcode.app first.
 
+Export the local iOS application handoff artifact:
+
+```bash
+OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-ios-app-handoff.sh
+```
+
+The handoff archive is source/project review evidence, not a signed IPA or simulator `.app`.
+
 ## Release Validation
 
 ```bash
 bash scripts/validate-release.sh
 OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-debug-apk.sh
 OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-android-release-artifacts.sh
+OUTPUT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit bash scripts/export-ios-app-handoff.sh
 REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/reports bash scripts/generate-dependency-inventory.sh
 REPORT_DIR=/Users/adeel.arshad/Documents/Codex/2026-06-02/you-are-health-fitness-workout-and/outputs/PakFit/reports bash scripts/generate-release-report.sh
 ```
 
-GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
+GitHub Actions CI is defined in `.github/workflows/pakfit-ci.yml` for Android tests/lint/APK/AAB artifacts, iOS application handoff artifacts, dependency inventory, iOS Swift validation, English-only source checks, and basic secret-pattern checks.
 
-Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, dependency advisory monitoring is documented in `docs/dependency-advisory-monitoring.md`, security governance is documented in `SECURITY.md` and `docs/security-governance.md`, accessibility readiness is documented in `docs/accessibility-readability.md`, diagnostic privacy is documented in `docs/diagnostics-privacy.md`, adult-use safety is documented in `docs/adult-use-safety.md`, iOS setup parity is documented in `docs/ios-setup-parity.md`, iOS health marker parity is documented in `docs/ios-health-marker-parity.md`, iOS lifestyle coach parity is documented in `docs/ios-lifestyle-coach-parity.md`, iOS clinical and mental wellness parity is documented in `docs/ios-clinical-mental-parity.md`, iOS analysis dashboard parity is documented in `docs/ios-analysis-dashboard-parity.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
+Store/privacy drafts live under `docs/`, and the iOS app includes `PrivacyInfo.xcprivacy` plus an AppIcon asset catalog for current local-only UserDefaults state behavior and branded app packaging. Store identity metadata is documented in `docs/store-metadata.md`, store listing copy is drafted in `docs/store-listing.md`, versioned release notes live under `docs/release-notes/`, release signing posture is documented in `docs/release-signing.md`, dependency advisory monitoring is documented in `docs/dependency-advisory-monitoring.md`, security governance is documented in `SECURITY.md` and `docs/security-governance.md`, accessibility readiness is documented in `docs/accessibility-readability.md`, diagnostic privacy is documented in `docs/diagnostics-privacy.md`, adult-use safety is documented in `docs/adult-use-safety.md`, iOS setup parity is documented in `docs/ios-setup-parity.md`, iOS health marker parity is documented in `docs/ios-health-marker-parity.md`, iOS lifestyle coach parity is documented in `docs/ios-lifestyle-coach-parity.md`, iOS clinical and mental wellness parity is documented in `docs/ios-clinical-mental-parity.md`, iOS analysis dashboard parity is documented in `docs/ios-analysis-dashboard-parity.md`, iOS application handoff evidence is documented in `docs/ios-app-handoff-artifact.md`, and platform SDK posture is documented in `docs/platform-compatibility.md`.
 
 Store screenshot previews can be rendered and validated with `bash scripts/validate-store-screenshots.sh`. Set `PAKFIT_SCREENSHOT_DIR=/absolute/output/path` to write them outside the ignored repo output folder.
 

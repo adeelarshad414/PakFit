@@ -14,6 +14,7 @@ PakFit iOS is the SwiftUI application path for the Pakistani health, fitness, wo
 - Unit tests for the core engines under `ios/PakFitIOS/Tests`.
 - Xcode project shell at `ios/PakFitIOS/PakFitIOS.xcodeproj`.
 - Swift Package at `ios/PakFitIOS/Package.swift` for command-line core tests.
+- Versioned iOS application handoff export through `scripts/export-ios-app-handoff.sh`.
 
 ## Test
 
@@ -35,6 +36,16 @@ Open `ios/PakFitIOS/PakFitIOS.xcodeproj`, select the `PakFitIOS` target, choose 
 
 This Codex environment currently has Apple Command Line Tools selected instead of full Xcode, so simulator builds require installing/selecting Xcode.app first.
 
+## Export Handoff Artifact
+
+From the repository root:
+
+```bash
+OUTPUT_DIR=/absolute/output/path bash scripts/export-ios-app-handoff.sh
+```
+
+The archive contains the Xcode project, Swift package, SwiftUI app source, shared Swift core, tests, AppIcon assets, manifest, and checksums. It is review evidence only; signed IPA, simulator `.app`, archive validation, TestFlight, and App Store Connect upload require full Xcode.app plus external Apple signing assets.
+
 ## Release Gates
 
-The iOS path is checked by `scripts/validate-release.sh`, including Swift smoke tests, SwiftUI target compile, AppIcon validation, privacy manifest validation, permission purpose-string validation, network security validation, and food photo privacy validation.
+The iOS path is checked by `scripts/validate-release.sh`, including Swift smoke tests, SwiftUI target compile, AppIcon validation, privacy manifest validation, permission purpose-string validation, network security validation, signing hygiene validation, iOS application handoff artifact validation, and food photo privacy validation.

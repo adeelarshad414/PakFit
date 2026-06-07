@@ -53,6 +53,12 @@ Export the built release APK and AAB:
 OUTPUT_DIR=/path/to/output bash scripts/export-android-release-artifacts.sh
 ```
 
+Export the iOS application handoff artifact:
+
+```bash
+OUTPUT_DIR=/path/to/output bash scripts/export-ios-app-handoff.sh
+```
+
 Generate release evidence:
 
 ```bash
@@ -75,10 +81,12 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - Build release APK and Android App Bundle.
 - Upload debug APK artifact.
 - Upload release APK and AAB artifacts.
+- Export and upload the versioned iOS application handoff artifact.
 - Generate and upload release evidence report.
 - Validate built Android APK metadata matches Android/iOS source version metadata.
 - Run iOS Swift core smoke tests.
 - Compile the SwiftUI app target.
+- Validate the iOS application handoff artifact export.
 - Run English-only source check.
 - Run basic hardcoded secret-pattern smoke check.
 - Validate iOS privacy manifest format and UserDefaults required-reason declaration.
@@ -113,6 +121,7 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 - iOS network security gate passing.
 - Food photo privacy gate passing.
 - Debug APK, release APK, and release AAB build.
+- Versioned iOS application handoff artifact exports with manifest and checksums.
 - Release APK uses R8 minification and resource shrinking.
 - APK version metadata updated for meaningful MVP revisions.
 - Health safety reviewed.
@@ -127,6 +136,13 @@ REPORT_DIR=/path/to/reports bash scripts/generate-release-report.sh
 Given a developer has Android SDK and Java configured
 When they run the documented release validation command
 Then debug APK, release APK, release AAB, and release evidence report artifacts are generated
+
+### Scenario: iOS handoff evidence is reproducible
+
+Given a developer has shell, zip, and the checked-in iOS project
+When they run the documented iOS handoff export command
+Then a versioned archive is generated with the Xcode project, SwiftUI source, Swift core, tests, AppIcon assets, manifest, and checksums
+And the archive is clearly labeled as not being a signed IPA or App Store archive
 
 ### Scenario: Android and iOS versions stay aligned
 

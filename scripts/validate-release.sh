@@ -187,6 +187,12 @@ bash scripts/validate-ios-network-security.sh
 echo "== iOS signing hygiene gate =="
 bash scripts/validate-ios-signing-hygiene.sh
 
+echo "== iOS app handoff artifact gate =="
+bash scripts/validate-ios-app-handoff.sh
+
+echo "== iOS app handoff artifact export =="
+bash scripts/export-ios-app-handoff.sh
+
 echo "== Android backup privacy gate =="
 ANDROID_MANIFEST="$ROOT_DIR/app/src/main/AndroidManifest.xml"
 BACKUP_RULES="$ROOT_DIR/app/src/main/res/xml/backup_rules.xml"

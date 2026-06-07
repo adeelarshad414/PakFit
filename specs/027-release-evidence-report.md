@@ -34,6 +34,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - Include iOS lifestyle coach parity documentation, checksum, gate status, and coach/device QA boundary.
 - Include iOS clinical and mental wellness parity documentation, checksum, gate status, and clinical/mental health QA boundary.
 - Include iOS analysis dashboard parity documentation, checksum, gate status, and analytics/device QA boundary.
+- Include iOS application handoff artifact path, size, checksum, documentation checksum, gate status, and Xcode/signing boundary.
 - Include Android Auto Backup and backup/data-extraction sensitive snapshot exclusion status.
 - Include Android declared permission count, permission policy, and camera hardware feature posture.
 - Include Android exported component count, exported component policy, and exported surface gate status.
@@ -50,7 +51,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 
 - The report generator must work without backend credentials, signing secrets, analytics keys, or cloud services.
 - The report should write to ignored output folders by default.
-- CI should upload the report as an artifact when Android debug and release build outputs exist.
+- CI should upload the report as an artifact when Android debug/release build outputs and the iOS handoff artifact exist.
 
 ## Acceptance Evidence
 
@@ -79,6 +80,7 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes iOS lifestyle coach parity evidence.
 - The report includes iOS clinical and mental wellness parity evidence.
 - The report includes iOS analysis dashboard parity evidence.
+- The report includes iOS application handoff artifact evidence.
 - The report includes Android backup privacy status.
 - The report includes Android permission privacy status.
 - The report includes Android exported surface status.
@@ -88,3 +90,4 @@ Add a repeatable release evidence report for PakFit so each Android debug APK, r
 - The report includes food photo privacy status.
 - The report includes dependency inventory status and checksums.
 - GitHub Actions uploads release evidence reports as artifacts.
+- GitHub Actions uploads the versioned iOS application handoff archive as an artifact.
