@@ -34,6 +34,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Validate iOS health marker parity before release evidence is accepted.
 - Validate iOS lifestyle coach parity before release evidence is accepted.
 - Validate iOS clinical and mental wellness parity before release evidence is accepted.
+- Validate PCOS clinical safety before release evidence is accepted.
 - Validate iOS analysis dashboard parity before release evidence is accepted.
 - Validate iOS application handoff artifact export before release evidence is accepted.
 - Provide export scripts that copy the built debug APK, release APK, release AAB, and iOS application handoff archive to versioned destinations using build metadata.
@@ -48,6 +49,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - Add iOS health marker parity validation to CI.
 - Add iOS lifestyle coach parity validation to CI.
 - Add iOS clinical and mental wellness parity validation to CI.
+- Add PCOS clinical safety validation to CI.
 - Add iOS analysis dashboard parity validation to CI.
 - Add iOS application handoff artifact validation and upload to CI.
 - Add GitHub Actions CI for iOS Swift smoke tests and SwiftUI app target compile.
@@ -94,6 +96,7 @@ Move PakFit from manual-only validation toward repeatable production release evi
 - iOS health marker parity validation is part of the required validation path.
 - iOS lifestyle coach parity validation is part of the required validation path.
 - iOS clinical and mental wellness parity validation is part of the required validation path.
+- PCOS clinical safety validation is part of the required validation path.
 - iOS analysis dashboard parity validation is part of the required validation path.
 - iOS application handoff artifact validation is part of the required validation path.
 - Dependency inventory and dynamic/SNAPSHOT dependency blocking are part of the required validation path.

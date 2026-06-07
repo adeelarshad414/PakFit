@@ -115,6 +115,9 @@ public enum ClinicalRiskFactor: String, CaseIterable, Hashable, Codable {
     case lowIronDiet = "Low-iron diet"
     case heavyPeriodsOrBloodLoss = "Heavy periods or blood loss"
     case smokingOrTobacco = "Smoking or tobacco"
+    case irregularOrMissedPeriods = "Irregular or missed periods"
+    case excessHairOrPersistentAcne = "Excess hair or persistent acne"
+    case knownPcos = "Known PCOS"
 }
 
 public enum ClinicalRiskType: String, CaseIterable, Hashable, Codable {
@@ -123,6 +126,7 @@ public enum ClinicalRiskType: String, CaseIterable, Hashable, Codable {
     case cardiovascular = "Cardiovascular"
     case vitaminDDeficiency = "Vitamin D deficiency"
     case ironDeficiencyAnemia = "Iron-deficiency anemia"
+    case pcosMetabolicReproductive = "PCOS metabolic and reproductive"
 }
 
 public enum ClinicalRiskLevel: String, CaseIterable, Hashable, Codable {

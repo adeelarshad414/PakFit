@@ -151,6 +151,16 @@ func runPakFitCoreSmokeTests() throws {
     try expect(clinicalReport.insights.contains { $0.type == .type2Diabetes && $0.level == .high }, "clinical insights should include diabetes risk")
     try expect(clinicalReport.insights.contains { $0.type == .cardiovascular && $0.level == .high }, "clinical insights should include cardiovascular risk")
 
+    let pcosReport = ClinicalIntelligenceEngine().buildReport(
+        profile: UserProfile(age: 29, weightKg: 76, heightCm: 160, gender: .female),
+        labProfile: LabProfile(hba1cPercent: 5.8),
+        riskFactors: [.irregularOrMissedPeriods, .excessHairOrPersistentAcne]
+    )
+    let pcosInsight = pcosReport.insights.first { $0.type == .pcosMetabolicReproductive }
+    try expect(pcosInsight?.level == .high, "PCOS screening should rise with cycle signs, androgen-sign clues, BMI, and glucose")
+    try expect(pcosInsight?.explanationEnglish.localizedCaseInsensitiveContains("does not diagnose") == true, "PCOS screening should avoid diagnosis language")
+    try expect(pcosInsight?.actionSteps.contains { $0.localizedCaseInsensitiveContains("Do not self-start") } == true, "PCOS screening should block self-started medicines or supplements")
+
     let mentalReport = MentalWellnessEngine().buildReport(input: MentalWellnessInput(
         phq9Score: 18,
         gad7Score: 13,

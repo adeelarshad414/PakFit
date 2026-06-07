@@ -2,12 +2,12 @@
 
 The iOS Health workflow now exposes clinical risk insights and mental wellness screening controls for Pakistani users instead of only storing those values for snapshots.
 
-The workflow covers PHQ-9, GAD-7, crisis support, diabetes risk, BP risk, heart risk, vitamin D risk, and anemia risk.
+The workflow covers PHQ-9, GAD-7, crisis support, diabetes risk, BP risk, heart risk, vitamin D risk, anemia risk, and PCOS metabolic/reproductive screening.
 
 ## Current iOS Clinical Inputs And Insights
 
-- Clinical risk factors for family history diabetes, family history high BP, early heart disease, high-salt routine, low sun exposure, low-iron diet, heavy periods or blood loss, and smoking or tobacco.
-- Clinical risk insights for diabetes risk, BP risk, heart risk, vitamin D risk, and anemia risk.
+- Clinical risk factors for family history diabetes, family history high BP, early heart disease, high-salt routine, low sun exposure, low-iron diet, heavy periods or blood loss, smoking or tobacco, irregular or missed periods, excess hair or persistent acne, and known PCOS.
+- Clinical risk insights for diabetes risk, BP risk, heart risk, vitamin D risk, anemia risk, and PCOS metabolic/reproductive screening.
 - Non-diagnostic risk levels, action steps, and source categories.
 
 ## Current iOS Mental Wellness Inputs

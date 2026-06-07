@@ -8,7 +8,10 @@ enum class ClinicalRiskFactor(val label: String) {
     LOW_SUN_EXPOSURE("Low sun exposure"),
     LOW_IRON_DIET("Low-iron diet"),
     HEAVY_PERIODS_OR_BLOOD_LOSS("Heavy periods or blood loss"),
-    SMOKING_OR_TOBACCO("Smoking or tobacco")
+    SMOKING_OR_TOBACCO("Smoking or tobacco"),
+    IRREGULAR_OR_MISSED_PERIODS("Irregular or missed periods"),
+    EXCESS_HAIR_OR_PERSISTENT_ACNE("Excess hair or persistent acne"),
+    KNOWN_PCOS("Known PCOS")
 }
 
 data class ClinicalRiskFactorInput(
@@ -22,7 +25,8 @@ enum class ClinicalRiskType(val label: String) {
     HYPERTENSION("Hypertension"),
     CARDIOVASCULAR("Cardiovascular"),
     VITAMIN_D_DEFICIENCY("Vitamin D deficiency"),
-    IRON_DEFICIENCY_ANEMIA("Iron-deficiency anemia")
+    IRON_DEFICIENCY_ANEMIA("Iron-deficiency anemia"),
+    PCOS_METABOLIC_REPRODUCTIVE("PCOS metabolic and reproductive")
 }
 
 enum class ClinicalRiskLevel(val label: String, val priority: Int) {
@@ -58,7 +62,8 @@ class ClinicalIntelligenceEngine {
             hypertensionInsight(profile, labProfile, riskFactors),
             cardiovascularInsight(profile, labProfile, riskFactors),
             vitaminDInsight(profile, riskFactors),
-            ironAnemiaInsight(profile, labProfile, riskFactors)
+            ironAnemiaInsight(profile, labProfile, riskFactors),
+            pcosInsight(profile, labProfile, riskFactors)
         ).sortedWith(
             compareByDescending<ClinicalRiskInsight> { it.level.priority }
                 .thenByDescending { it.score }
@@ -228,6 +233,39 @@ class ClinicalIntelligenceEngine {
                 "Add iron-rich Pakistani foods when suitable: saag, daal, chana, lobia, beef, eggs, fish, and vitamin C from lemon or fruit."
             ),
             sourceCategory = "NHLBI anemia causes and risk factor guidance"
+        )
+    }
+
+    private fun pcosInsight(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: ClinicalRiskFactorInput
+    ): ClinicalRiskInsight {
+        val bmi = bmi(profile)
+        var score = 0
+
+        if (profile.gender == Gender.FEMALE) score += 1
+        if (riskFactors.has(ClinicalRiskFactor.KNOWN_PCOS)) score += 4
+        if (riskFactors.has(ClinicalRiskFactor.IRREGULAR_OR_MISSED_PERIODS)) score += 3
+        if (riskFactors.has(ClinicalRiskFactor.EXCESS_HAIR_OR_PERSISTENT_ACNE)) score += 2
+        if (bmi >= 27.5) score += 2 else if (bmi >= 23.0) score += 1
+        if (labProfile.hba1cPercent != null && labProfile.hba1cPercent >= 5.7) score += 1
+        if (labProfile.fastingBloodSugarMgDl != null && labProfile.fastingBloodSugarMgDl >= 100) score += 1
+        if (labProfile.diabetesStatus != DiabetesStatus.NOT_DIABETIC) score += 1
+        if (profile.gender != Gender.FEMALE && !riskFactors.has(ClinicalRiskFactor.KNOWN_PCOS)) score = 0
+
+        return ClinicalRiskInsight(
+            type = ClinicalRiskType.PCOS_METABOLIC_REPRODUCTIVE,
+            level = riskLevel(score),
+            score = score,
+            title = "PCOS metabolic and reproductive screening",
+            explanationEnglish = "Irregular or missed periods, excess hair growth or persistent acne, higher BMI, and glucose concerns can fit a PCOS review pattern. This screens risk only and does not diagnose PCOS.",
+            actionSteps = listOf(
+                "Discuss irregular cycles, excess facial/body hair, persistent acne, fertility concerns, or glucose changes with a gynecologist, endocrinologist, or qualified clinician.",
+                "Use steady meals with protein, daal or chana, sabzi, high-fiber roti/rice portions, and post-meal walking to support insulin resistance risk.",
+                "Do not self-start hormones, metformin, fertility medicines, or supplements from app guidance; review options with a clinician."
+            ),
+            sourceCategory = "NICHD PCOS symptom guidance and CDC PCOS diabetes risk guidance"
         )
     }
 

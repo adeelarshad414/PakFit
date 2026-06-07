@@ -1809,7 +1809,7 @@ struct ClinicalRiskInputPanel: View {
     var body: some View {
         Panel(title: "Clinical Risk Factors") {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Optional risk factors help screen diabetes, BP, heart, vitamin D, and anemia risk without diagnosing disease.")
+                Text("Optional risk factors help screen diabetes, BP, heart, vitamin D, anemia, and PCOS review signs without diagnosing disease.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 ToggleGrid(
@@ -1898,6 +1898,8 @@ struct ClinicalRiskInsightRow: View {
             return "sun.max.fill"
         case .ironDeficiencyAnemia:
             return "cross.vial.fill"
+        case .pcosMetabolicReproductive:
+            return "stethoscope"
         }
     }
 }

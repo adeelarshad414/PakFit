@@ -1680,7 +1680,7 @@ private fun ClinicalRiskInputCard(
 ) {
     ControlCard(title = "Clinical Risk Inputs") {
         Text(
-            text = "Optional screening context for family history, food routine, sun exposure, iron intake, and tobacco.",
+            text = "Optional screening context for family history, food routine, sun exposure, iron intake, tobacco, and PCOS review signs.",
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
         )
         ChoiceFlow(

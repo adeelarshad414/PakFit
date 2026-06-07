@@ -38,6 +38,7 @@ IOS_SETUP_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-setup-parity.md"
 IOS_HEALTH_MARKER_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-health-marker-parity.md"
 IOS_LIFESTYLE_COACH_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-lifestyle-coach-parity.md"
 IOS_CLINICAL_MENTAL_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-clinical-mental-parity.md"
+PCOS_CLINICAL_SAFETY_DOC_FILE="$ROOT_DIR/docs/pcos-clinical-safety.md"
 IOS_ANALYSIS_DASHBOARD_PARITY_DOC_FILE="$ROOT_DIR/docs/ios-analysis-dashboard-parity.md"
 IOS_APP_HANDOFF_DOC_FILE="$ROOT_DIR/docs/ios-app-handoff-artifact.md"
 
@@ -485,6 +486,16 @@ if [[ -f "$IOS_CLINICAL_MENTAL_PARITY_DOC_FILE" ]]; then
   IOS_CLINICAL_MENTAL_PARITY_DOC_STATUS="$IOS_CLINICAL_MENTAL_PARITY_DOC_FILE"
   IOS_CLINICAL_MENTAL_PARITY_DOC_SHA256="$(sha256_file "$IOS_CLINICAL_MENTAL_PARITY_DOC_FILE")"
 fi
+PCOS_CLINICAL_SAFETY_STATUS="not checked"
+if bash scripts/validate-pcos-clinical-safety.sh >/dev/null 2>&1; then
+  PCOS_CLINICAL_SAFETY_STATUS="passed"
+fi
+PCOS_CLINICAL_SAFETY_DOC_STATUS="missing"
+PCOS_CLINICAL_SAFETY_DOC_SHA256=""
+if [[ -f "$PCOS_CLINICAL_SAFETY_DOC_FILE" ]]; then
+  PCOS_CLINICAL_SAFETY_DOC_STATUS="$PCOS_CLINICAL_SAFETY_DOC_FILE"
+  PCOS_CLINICAL_SAFETY_DOC_SHA256="$(sha256_file "$PCOS_CLINICAL_SAFETY_DOC_FILE")"
+fi
 IOS_ANALYSIS_DASHBOARD_PARITY_STATUS="not checked"
 if bash scripts/validate-ios-analysis-dashboard-parity.sh >/dev/null 2>&1; then
   IOS_ANALYSIS_DASHBOARD_PARITY_STATUS="passed"
@@ -699,6 +710,14 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS clinical and mental wellness parity policy: Swift clinical/mental models, clinical intelligence engine, mental wellness engine, smoke tests, risk factor controls, PHQ-9, GAD-7, crisis flags, Pakistan resources, clinical insights, docs, and store listing copy checked"
   echo "- iOS clinical and mental wellness parity boundary: iPhone device QA, VoiceOver, large-text review, clinical copy review, mental health safety review, signed production build review, and store age-suitability review remain external before public release"
   echo
+  echo "## PCOS Clinical Safety"
+  echo
+  echo "- PCOS clinical safety doc: $PCOS_CLINICAL_SAFETY_DOC_STATUS"
+  echo "- PCOS clinical safety doc SHA-256: ${PCOS_CLINICAL_SAFETY_DOC_SHA256:-missing}"
+  echo "- PCOS clinical safety gate: $PCOS_CLINICAL_SAFETY_STATUS"
+  echo "- PCOS clinical safety policy: Android/iOS PCOS risk factors, metabolic/reproductive insight, clinician-review actions, official source categories, no diagnosis wording, and no self-started medicine/supplement guidance checked"
+  echo "- PCOS clinical safety boundary: clinical copy review, device QA, fertility/medication review, legal/privacy review, and store age-suitability review remain external before public release"
+  echo
   echo "## iOS Analysis Dashboard Parity"
   echo
   echo "- iOS analysis dashboard parity doc: $IOS_ANALYSIS_DASHBOARD_PARITY_DOC_STATUS"
@@ -879,6 +898,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS health marker parity: editable iOS clinical marker controls, emergency symptom input, lab-profile writeback, docs, and store listing copy checked"
   echo "- iOS lifestyle coach parity: editable daily burn/lifestyle controls, Swift coach review engine, dynamic strengths/actions, docs, and store listing copy checked"
   echo "- iOS clinical and mental wellness parity: editable risk factors, PHQ-9, GAD-7, crisis flags, Pakistan support resources, clinical/mental engines, smoke tests, docs, and store listing copy checked"
+  echo "- PCOS clinical safety: Android/iOS PCOS review signs, non-diagnostic screening insight, clinician-review actions, source categories, and no self-start medicine/supplement boundary checked"
   echo "- iOS analysis dashboard parity: local analysis models, dashboard engine, weekly/monthly summaries, charts, trends, todos, history, accessibility labels, docs, and store listing copy checked"
   echo "- iOS app handoff artifact gate: versioned Xcode project, SwiftUI app source, core module, tests, app icons, manifest, checksums, and signing boundary checked"
   echo "- Version alignment: Android source, Android APK metadata, and iOS project version metadata checked"
@@ -919,6 +939,7 @@ mkdir -p "$REPORT_DIR"
   echo "- iOS Health marker manual QA still requires iPhone device review, VoiceOver, large text, and clinical copy review."
   echo "- iOS Lifestyle Coach manual QA still requires iPhone device review, VoiceOver, large text, and health/coach copy review."
   echo "- iOS Clinical and Mental Wellness manual QA still requires iPhone device review, VoiceOver, large text, clinical copy review, mental health safety review, and store age-suitability review."
+  echo "- PCOS Clinical Safety manual QA still requires clinical copy review, fertility/medication boundary review, device QA, legal/privacy review, and store age-suitability review."
   echo "- iOS Analysis Dashboard manual QA still requires iPhone device review, VoiceOver, large text, and product analytics copy review."
   echo "- iOS application handoff archive is local release evidence only; signed IPA, simulator .app, archive validation, TestFlight, and App Store Connect submission require full Xcode.app and external Apple signing assets."
   echo "- Privacy docs are drafts and require legal/privacy review before public store submission."

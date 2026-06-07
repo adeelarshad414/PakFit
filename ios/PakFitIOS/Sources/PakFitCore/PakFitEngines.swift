@@ -1109,7 +1109,8 @@ public final class ClinicalIntelligenceEngine {
             hypertensionInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors),
             cardiovascularInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors),
             vitaminDInsight(profile: profile, riskFactors: riskFactors),
-            ironAnemiaInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors)
+            ironAnemiaInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors),
+            pcosInsight(profile: profile, labProfile: labProfile, riskFactors: riskFactors)
         ].sorted {
             if $0.level.priority != $1.level.priority {
                 return $0.level.priority > $1.level.priority
@@ -1273,6 +1274,45 @@ public final class ClinicalIntelligenceEngine {
                 "Add iron-rich Pakistani foods when suitable: saag, daal, chana, lobia, beef, eggs, fish, and vitamin C from lemon or fruit."
             ],
             sourceCategory: "NHLBI anemia causes and risk factor guidance"
+        )
+    }
+
+    private func pcosInsight(
+        profile: UserProfile,
+        labProfile: LabProfile,
+        riskFactors: Set<ClinicalRiskFactor>
+    ) -> ClinicalRiskInsight {
+        let profileBmi = bmi(profile)
+        var score = 0
+
+        if profile.gender == .female { score += 1 }
+        if riskFactors.contains(.knownPcos) { score += 4 }
+        if riskFactors.contains(.irregularOrMissedPeriods) { score += 3 }
+        if riskFactors.contains(.excessHairOrPersistentAcne) { score += 2 }
+        if profileBmi >= 27.5 {
+            score += 2
+        } else if profileBmi >= 23.0 {
+            score += 1
+        }
+        if let hba1c = labProfile.hba1cPercent, hba1c >= 5.7 { score += 1 }
+        if let fasting = labProfile.fastingBloodSugarMgDl, fasting >= 100 { score += 1 }
+        if labProfile.diabetesStatus != .notDiabetic { score += 1 }
+        if profile.gender != .female && !riskFactors.contains(.knownPcos) {
+            score = 0
+        }
+
+        return ClinicalRiskInsight(
+            type: .pcosMetabolicReproductive,
+            level: riskLevel(score),
+            score: score,
+            title: "PCOS metabolic and reproductive screening",
+            explanationEnglish: "Irregular or missed periods, excess hair growth or persistent acne, higher BMI, and glucose concerns can fit a PCOS review pattern. This screens risk only and does not diagnose PCOS.",
+            actionSteps: [
+                "Discuss irregular cycles, excess facial/body hair, persistent acne, fertility concerns, or glucose changes with a gynecologist, endocrinologist, or qualified clinician.",
+                "Use steady meals with protein, daal or chana, sabzi, high-fiber roti/rice portions, and post-meal walking to support insulin resistance risk.",
+                "Do not self-start hormones, metformin, fertility medicines, or supplements from app guidance; review options with a clinician."
+            ],
+            sourceCategory: "NICHD PCOS symptom guidance and CDC PCOS diabetes risk guidance"
         )
     }
 

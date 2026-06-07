@@ -110,6 +110,31 @@ class ClinicalIntelligenceEngineTest {
         assertTrue(anemia.actionSteps.any { it.contains("saag", ignoreCase = true) || it.contains("daal", ignoreCase = true) })
     }
 
+    @Test
+    fun pcosScreeningUsesCycleAndAndrogenSignsWithoutDiagnosisOrMedicineAdvice() {
+        val report = engine.buildReport(
+            profile = UserProfile(gender = Gender.FEMALE, heightCm = 160, weightKg = 76.0),
+            labProfile = LabProfile(hba1cPercent = 5.8),
+            riskFactors = ClinicalRiskFactorInput(
+                selected = setOf(
+                    ClinicalRiskFactor.IRREGULAR_OR_MISSED_PERIODS,
+                    ClinicalRiskFactor.EXCESS_HAIR_OR_PERSISTENT_ACNE
+                )
+            )
+        )
+
+        val pcos = report.insight(ClinicalRiskType.PCOS_METABOLIC_REPRODUCTIVE)
+
+        assertEquals(ClinicalRiskLevel.HIGH, pcos.level)
+        assertTrue(pcos.title.contains("PCOS", ignoreCase = true))
+        assertTrue(pcos.explanationEnglish.contains("screen", ignoreCase = true))
+        assertFalse(pcos.explanationEnglish.contains("you have PCOS", ignoreCase = true))
+        assertTrue(pcos.actionSteps.any { it.contains("gynecologist", ignoreCase = true) || it.contains("clinician", ignoreCase = true) })
+        assertTrue(pcos.actionSteps.any { it.contains("Do not self-start", ignoreCase = true) })
+        assertTrue(pcos.sourceCategory.contains("NICHD", ignoreCase = true))
+        assertTrue(pcos.sourceCategory.contains("CDC", ignoreCase = true))
+    }
+
     private fun ClinicalIntelligenceReport.insight(type: ClinicalRiskType): ClinicalRiskInsight {
         return insights.first { it.type == type }
     }

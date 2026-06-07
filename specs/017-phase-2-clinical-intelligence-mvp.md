@@ -9,7 +9,7 @@ The current repository is an Android-only Jetpack Compose MVP. This slice implem
 ## In Scope
 
 - On-device rule-based predictive screening insights for Pakistani/South Asian users.
-- Clinical risk summaries for type 2 diabetes, hypertension, cardiovascular risk, vitamin D deficiency risk, and iron-deficiency anemia risk.
+- Clinical risk summaries for type 2 diabetes, hypertension, cardiovascular risk, vitamin D deficiency risk, iron-deficiency anemia risk, and PCOS metabolic/reproductive screening.
 - Urdu and English explanations for each screening insight.
 - Action steps that encourage doctor review, lab follow-up, safe lifestyle changes, and food-first Pakistani guidance.
 - PHQ-9 and GAD-7 score interpretation for mental wellness screening.
@@ -53,6 +53,7 @@ The app must generate screening insights for:
 - Cardiovascular risk
 - Vitamin D deficiency risk
 - Iron-deficiency anemia risk
+- PCOS metabolic/reproductive screening
 
 Each insight must include:
 
@@ -159,6 +160,13 @@ When insights are generated
 Then iron-deficiency anemia risk is high  
 And action steps include clinician review and iron-rich Pakistani foods
 
+### Scenario: PCOS metabolic/reproductive screening insight
+
+Given a female user has irregular or missed periods, excess hair or persistent acne, higher BMI, and elevated HbA1c
+When insights are generated
+Then PCOS metabolic/reproductive screening risk is high
+And action steps include clinician review and a warning not to self-start hormones, metformin, fertility medicines, or supplements
+
 ### Scenario: Mental wellness scoring
 
 Given PHQ-9 score is 15 and GAD-7 score is 16  
@@ -181,6 +189,8 @@ And Pakistan emergency and mental health resources are listed
 - NHLBI heart disease risk factor guidance
 - NIH Office of Dietary Supplements vitamin D fact sheet
 - NHLBI anemia causes and risk factor guidance
+- NICHD PCOS symptom guidance
+- CDC PCOS and diabetes risk guidance
 - APA PHQ-9 adapted severity measure and scoring guidance
 - University of Washington HIV Curriculum GAD-7 scoring guidance
 - WHO Eastern Mediterranean Region Pakistan crisis resources
