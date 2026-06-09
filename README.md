@@ -2,6 +2,8 @@
 
 PakFit is a spec-first Pakistani health, fitness, workout, and nutrition coaching product with Android and iOS application paths.
 
+See [`about.md`](about.md) for a customer-friendly overview of the application purpose, features, usage, privacy posture, and production readiness.
+
 ## Current Slice
 
 - Kotlin Android app with Jetpack Compose
